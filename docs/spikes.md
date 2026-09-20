@@ -15,7 +15,7 @@ Fixtures saved: `tests/fixtures/wda_source/*.xml` (6 screens), `tests/fixtures/i
 | S1 WDA `/source` | **PASS** — 0.37–0.73 s | < 1.5 s | idb stays optional (Phase 4). |
 | S2 simctl | **PASS** with two caveats (clone, recordVideo) | sanity | Clone from shutdown template; recording is change-driven. |
 | S3 idb | **PASS** — 0.14–0.20 s, but leaf-only tree, ASCII-only typing | vs S1 | Tier-2 = compact AX list, not a full tree; input via WDA. |
-| S4 go-ios | **PARTIAL** — USB/info/apps/tunnel pass; WDA-on-device pending | device | Signing needs P12+profile or xcodebuild free team; Developer Mode + passcode flow. |
+| S4 go-ios | **PARTIAL** — USB/info/apps/tunnel/screenshot pass; WDA build blocked by the Apple account's device cap | device | Doctor probes for Developer Mode, pairing, team device quota; `--tunnel-info-port` must match the tunnel. |
 | S5 MJPEG | **PASS** — 11.6 fps, first frame 0.18 s, 53 KB/frame | fps/latency | Even-dimension scale filter for x264. |
 | S6 `/wda/keys` | **PASS** — Unicode, `\n`, `\b`, `clear`, `setValue`, pasteboard | — | `\n` in single-line fields advances focus; typing works with hardware keyboard on. |
 | S7 iOSWorld | **PASS (harness)** — 3 apps built+installed; task run needs LLM key + Appium | learn format | Trajectory schema captured below. |
@@ -87,13 +87,15 @@ dropped; `IdbClient` shells out to `idb … --json`.**
 | `ios list` / `ios info` | Detected over USB: `00008110-001A10AC14B9401E`, iPhone14,7, 26.6.2, `PasswordProtected: true`. |
 | `ios apps --list` | Works without tunnel. |
 | `ios tunnel start --userspace` (background) | Negotiated in < 1 s, no sudo; `GET :60105/tunnels` lists the device (`userspaceTunPort` 60106). |
-| `ios screenshot` (instruments) | Fails until Developer Mode is on (`DVTSecureSocketProxy unavailable`). |
-| `ios devmode get/enable` | Reported `false`; `enable` on a passcode-locked phone cannot flip it, it only reveals the Settings › Privacy & Security › Developer Mode menu (user toggles + reboot). `devicectl` pairing succeeded (`connected (no DDI)`). |
-| WDA on device | **Pending** at time of writing: needs Developer Mode on and a signing path. go-ios 1.3.2 signs only with `ios sign app --p12file --profile` or `ios sign provision appstoreconnect` (API key) — **no free-personal-team signing**; that route is `xcodebuild -project WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner -destination id=<udid> -allowProvisioningUpdates DEVELOPMENT_TEAM=<team> build-for-testing` + `ios runwda`. `ios ui download wda` fetches Appium's `WebDriverAgentRunner-Runner.zip` for the P12 path. |
+| `ios screenshot` (instruments) | Fails until Developer Mode is on (`DVTSecureSocketProxy unavailable`). With Developer Mode on **and `--tunnel-info-port=60105`** (the CLI default 28100 does not match a tunnel started with `ios tunnel start --userspace`): 2.0 s, 5 MB PNG. |
+| `ios devmode get/enable` | Reported `false`; `enable` on a passcode-locked phone cannot flip it, it only reveals the Settings › Privacy & Security › Developer Mode menu (user toggles + reboot). After that: `DeveloperModeEnabled: true`, `devicectl` shows `connected` (DDI mounted). |
+| WDA on device | **Blocked by the Apple account.** go-ios 1.3.2 signs only with `ios sign app --p12file --profile` or `ios sign provision appstoreconnect` (API key) — **no free-personal-team signing**. The free-team route, `xcodebuild -project WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner -destination id=<udid> -allowProvisioningUpdates DEVELOPMENT_TEAM=T6VGM6ZBBG build-for-testing` (WDA v16.12.9 source), fails in 7 s with `Communication with Apple failed: Your development team has reached the maximum number of registered iPhone devices` → no profile for `…WebDriverAgentRunner.xctrunner`. Free teams register at most 3 devices per membership year and cannot remove them; resolution is another Apple ID, a paid team, or the annual reset. Not retried in Phase 0; the command sequence above is what Phase 3 runs. |
 
 Design changes: RunnerManager device path offers both signing routes (Xcode free team by default,
 P12+profile for labs/CI); doctor gains probes for Developer Mode, passcode, CoreDevice pairing,
-signing identity (`security find-identity -p codesigning`), and the tunnel. `docs/device-setup.md`
+signing identity (`security find-identity -p codesigning`), the team's device quota (surface the
+xcodebuild error verbatim with the fix), and the tunnel; every go-ios call that needs the tunnel
+passes `--tunnel-info-port` from the tunnel's own info API. `docs/device-setup.md`
 (Phase 3) documents the passcode → Developer Mode menu → reboot flow.
 
 ## S5 — WDA MJPEG server

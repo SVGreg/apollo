@@ -33,7 +33,7 @@ Tasks
 
 Exit criteria: CI green on mock driver; spike table filled with numbers; any design change from spikes reflected in `technical-design.md`.
 
-Status 2026-09-20: tasks 1–5 done (`APOLLO_MOCK_DRIVER=1 APOLLO_FAKE_LLM=1 apollo run … --standalone` passes end-to-end; `make smoke-mock`); S1–S3, S5–S7 done, S4 partial (WDA on device pending Developer Mode + signing on the test phone).
+Status 2026-09-20: tasks 1–5 done (`APOLLO_MOCK_DRIVER=1 APOLLO_FAKE_LLM=1 apollo run … --standalone` passes end-to-end; `make smoke-mock`); S1–S3, S5–S7 done, S4 partial (device detection, tunnel, screenshot verified; WDA build blocked by the personal team's registered-device cap — needs another Apple ID or a paid team before Phase 3).
 
 ---
 

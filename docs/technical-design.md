@@ -289,7 +289,7 @@ simulators are leased — quitting it shuts them all down.
   Then `ios runwda` (needs `ios tunnel start --userspace` running) and `ios forward 8100 8100`.
   Prerequisites the doctor checks: Developer Mode (`ios devmode get`; on a passcode-locked phone
   `ios devmode enable` only reveals the Settings menu — the user toggles and reboots), CoreDevice
-  pairing (`devicectl list devices`), a codesigning identity (`security find-identity -p codesigning`).
+  pairing (`devicectl list devices`), a codesigning identity (`security find-identity -p codesigning`), and the team's registered-device quota (free teams: 3/year, non-removable — the S4 blocker).
 - Health: `/status` sessionless probe; restart on 3 consecutive failures; `apollo runner status`.
 
 ---
