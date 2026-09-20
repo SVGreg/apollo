@@ -1,0 +1,13 @@
+Apollo — iOS device automation framework
+Copyright 2026 Sergii Tarasov
+
+Licensed under the Apache License, Version 2.0.
+
+This product is a fork of Artemis (https://github.com/google/artemis),
+Copyright 2026 Google LLC, licensed under the Apache License, Version 2.0.
+The import point is commit 371aa6df56880643da57b30da936e9812fb0ec66; files
+carrying a "Copyright 2026 Google LLC" header originate there and retain it.
+
+Artemis in turn includes source code developed by Minitap, Inc.
+(https://github.com/minitap-ai/mobile-use), licensed under the Apache License,
+Version 2.0.
