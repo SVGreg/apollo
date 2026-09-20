@@ -307,7 +307,9 @@ simulators are leased — quitting it shuts them all down.
 | `core/diagnostics/*` | New probes (§5.1 last row); `emulator_manager.py` → `simulator_manager.py`; `hierarchy_parity.py` kept and pointed at the normalizer (golden XML fixtures for known screens). |
 | `mcp_server/tools/diagnose.py` | Re-target probes; `launch_avd` → `boot_simulator`. |
 | `interfaces/cli/commands/{helper→runner, doctor}` | As above. New `bench` command. |
-| `apps/admin_console/services/device_stream_service.py` | MJPEG proxy. |
+| `apps/admin_console/services/device_stream_service.py` | `simctl io screenshot` polling first (Phase 1b), WDA MJPEG proxy (Phase 2). |
+| `apps/admin_console/routers/system.py`, `core/diagnostics/readiness.py` | The console's Run button is gated by `GET /api/system/readiness`; the report is produced by the same probes as `apollo doctor` and `mobile_diagnose`, so retargeting the probes to Xcode/simulators/WDA unblocks all three. `/emulator/*` → simulator boot/shutdown; `/adb/*` → not applicable. |
+| `apps/showcase_ui/src` (Angular) | Setup Guide steps 1 and 3, device panel, labels, recommended task cards; the API contracts (`/api/devices`, readiness schema, stream) stay identical. Rebuilt bundle committed under `apollo/resources/showcase_ui`. The only frontend work in the project. |
 | `platform/{darwin,linux,windows}.py`, `start.sh`, `Makefile install-deps` | Install: Xcode CLT check, `brew install facebook/fb/idb` (opt.), `go-ios` (brew or npm), `ffmpeg`, `uv`. Linux/Windows: devices-only mode stub (not v1). |
 | Prompts (`agents/*/prompts.py`, `*.md`, `mcp_server/rules.md`) | Vocabulary: "package"→"bundle id", BACK semantics ("iOS has no system back: use the navigation bar back control or edge swipe; expect Cancel/Done/Close"), APP_SWITCH gesture, Control Center / Notification Center swipes, permission sheets, iOS keyboard behaviours ("return" key labels), Home indicator, no intents. |
 | `config/artemis.jsonc` → `apollo.jsonc` | Add `device.platform: "ios"`, `ios.runner`, `ios.hierarchy_backend`, `ios.wda.{version,port_base,mjpeg_port_base,snapshot_max_depth}`, `ios.signing.{team_id,identity}`, `ios.tunnel.mode: userspace`, `ios.alerts`, `ios.prefer_devicectl`. |
@@ -322,7 +324,7 @@ simulators are leased — quitting it shuts them all down.
   `apollo doctor [--probe-device] [--boot-simulator <name>]`, `apollo batch`, `apollo trace`, `apollo server|restart|stop|status`, `apollo bench iosworld`.
 - MCP (IDE-facing): `mobile_run_task`, `mobile_manage_task`, `mobile_get_device_state`, `mobile_inspect_trace`, `mobile_diagnose` — identical schemas; `device_serial` accepts simulator or device UDID.
 - SDK: `ApolloClient(url, token)` with `health/readiness/capabilities/list_devices/submit/get_task/wait_for_task/run/stop`.
-- Web console: unchanged UI; live view via MJPEG proxy; replay from traces.
+- Web console (`apollo ui`, `localhost:8000`): same UI and flows as Artemis — Setup Guide (keys, device), task composer, live screen, task queue, replay from traces. Already boots on Apollo; becomes usable for iOS once readiness, device listing and streaming are retargeted (Phase 1b).
 - Docker: simulators cannot run in Linux containers; the `playground` deployment is replaced by a macOS-host runbook (and optional EC2 Mac, as iOSWorld uses).
 
 ---

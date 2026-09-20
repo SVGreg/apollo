@@ -47,7 +47,8 @@ uv run pyright --project pyright-core.json
 ```
 
 Upstream tracking: [`docs/upstream-sync.md`](docs/upstream-sync.md). Phase 0 spike results:
-[`docs/spikes.md`](docs/spikes.md).
+[`docs/spikes.md`](docs/spikes.md). Target workflow (`apollo run` / `batch` / `ui` / `mcp`) and when each
+lands: [`docs/development-plan.md#how-apollo-is-used`](docs/development-plan.md#how-apollo-is-used-target-workflow-same-as-artemis).
 
 ## License
 
