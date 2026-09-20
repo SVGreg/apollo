@@ -202,12 +202,15 @@ def _helper_row(results: list[ProbeResult]) -> ExtraRow | None:
     person pre-install it so the first task does not pay the install delay, and
     tells them the helper is a thing they can remove.
     """
+    adb = next((r for r in results if r.id == "android_adb"), None)
+    if adb is None:
+        # iOS: the WebDriverAgent runner is reported inside the device probe itself.
+        return None
     from apollo.clients.screen_client_factory import resolve_backend
     from apollo.runtime.helper_manager import helper_manager
 
     if resolve_backend().value == "uiautomator":
         return None
-    adb = next((r for r in results if r.id == "android_adb"), None)
     devices = (adb.metadata.get("devices") if adb else None) or []
     ready = [str(d.get("serial")) for d in devices if d.get("state") == "device"]
     if len(ready) != 1:
@@ -333,7 +336,7 @@ def _render_footer(console: Console, verdict: Verdict, results: list[ProbeResult
             Panel(
                 "[bold green]🎉 All system checks passed![/bold green]\n\n"
                 "Run your first automation task now:\n"
-                '  [bold cyan]apollo run "Open Settings and check Battery level"[/bold cyan]',
+                '  [bold cyan]apollo run "Open Settings, go to General > About and read the iOS version"[/bold cyan]',
                 title="Status: Ready",
                 expand=False,
             )
@@ -346,7 +349,7 @@ def _render_footer(console: Console, verdict: Verdict, results: list[ProbeResult
                 "[bold green]Required checks passed.[/bold green] Optional components are "
                 "missing; tasks can run, but some features (video replay, OCR) are off.\n\n"
                 "Run your first automation task now:\n"
-                '  [bold cyan]apollo run "Open Settings and check Battery level"[/bold cyan]',
+                '  [bold cyan]apollo run "Open Settings, go to General > About and read the iOS version"[/bold cyan]',
                 title="Status: Ready (optional gaps)",
                 expand=False,
             )

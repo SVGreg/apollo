@@ -94,6 +94,68 @@ _GLOBAL_CONTROLLER = None
 _CONTROLLERS: dict[str, Any] = {}
 
 
+def _get_ios_controller(target_serial: str | None):
+    """Controller for an iOS simulator, or None when the target is not one."""
+    from apollo.clients import simctl
+
+    if not simctl.simctl_available():
+        return None
+    if target_serial and DevicePlatform.infer(target_serial) != DevicePlatform.IOS:
+        return None
+    try:
+        devices = simctl.list_devices_sync()
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        logger.debug(f"simctl list failed: {exc}")
+        return None
+    if target_serial:
+        chosen = next((d for d in devices if d.udid == target_serial), None)
+        if chosen is None:
+            raise Exception(f"Simulator '{target_serial}' not found (xcrun simctl list devices).")
+    else:
+        booted = [d for d in devices if d.is_booted]
+        if not booted:
+            return None
+        chosen = booted[0]
+
+    from apollo.runtime.runner_manager import RunnerManager
+
+    async def _screen():
+        client, _ = await RunnerManager().ensure_simulator_runner(chosen.udid)
+        try:
+            return await client.screen_info()
+        finally:
+            await client.aclose()
+
+    width, height = 1206, 2622  # common iPhone geometry until the first observation
+    try:
+        asyncio.get_running_loop()
+        in_loop = True
+    except RuntimeError:
+        in_loop = False
+    if not in_loop:
+        try:
+            screen = asyncio.run(_screen())
+            width, height = screen.width_px, screen.height_px
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            logger.warning(f"WDA not reachable yet on {chosen.udid}: {exc}")
+    # Inside a running loop (FastMCP tool call) the driver provisions WDA lazily and the
+    # first get_screen_data() corrects the dimensions on the context.
+
+    ctx = ApolloContext(
+        trace_id="mcp-session",
+        device=DeviceContext(
+            host_platform=platform.os_type.name,
+            mobile_platform=DevicePlatform.IOS,
+            device_id=chosen.udid,
+            device_width=width,
+            device_height=height,
+        ),
+    )
+    controller = UnifiedMobileController(ctx)
+    logger.info(f"Lazy iOS controller initialized for simulator {chosen.name} ({chosen.udid})")
+    return controller
+
+
 def _get_controller(device_serial: str | None = None):
     """Lazy-load device controller on-demand, caching per device serial."""
     global _GLOBAL_CONTROLLER, _CONTROLLERS
@@ -126,11 +188,24 @@ def _get_controller(device_serial: str | None = None):
             _GLOBAL_CONTROLLER = controller
         return controller
 
+    # iOS: a booted simulator (or the requested UDID). The driver provisions WDA lazily;
+    # dimensions come from the runner so the pixel contract matches the screenshots.
+    ios_controller = _get_ios_controller(target_serial)
+    if ios_controller is not None:
+        if target_serial:
+            _CONTROLLERS[target_serial] = ios_controller
+        _CONTROLLERS[ios_controller.ctx.device.device_id] = ios_controller
+        if _GLOBAL_CONTROLLER is None:
+            _GLOBAL_CONTROLLER = ios_controller
+        return ios_controller
+
     host = os.environ.get("ADB_HOST", "localhost")
     port_str = os.environ.get("ADB_PORT", "5037")
     port = int(port_str) if port_str.isdigit() else 5037
     if "ADB_SERVER_SOCKET" not in os.environ and (host != "localhost" or port != 5037):
         os.environ["ADB_SERVER_SOCKET"] = f"tcp:{host}:{port}"
+    if AdbClient is None:
+        raise Exception("No iOS simulator is booted and adbutils is not installed.")
     adb = AdbClient(host=host, port=port)
 
     devices = adb.device_list()

@@ -282,6 +282,7 @@ async def test_remote_endpoint_blocks_local_wireless_connection(monkeypatch):
     assert "Switch to local ADB" in result["message"]
 
 
+@pytest.mark.android  # Android emulator/ADB semantics; Apollo boots iOS simulators here
 @pytest.mark.asyncio
 async def test_remote_endpoint_blocks_local_emulator_launch(monkeypatch):
     monkeypatch.setattr(

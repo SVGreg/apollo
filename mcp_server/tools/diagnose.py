@@ -108,6 +108,11 @@ def _scrub(value: Any) -> Any:
     return value
 
 
+def _find_device_probe(results):
+    """The device probe: iOS ("ios_device") on Apollo, "android_adb" upstream."""
+    return _find(results, "ios_device") or _find(results, "android_adb")
+
+
 def _find(results: list[ProbeResult], probe_id: str) -> ProbeResult | None:
     return next((r for r in results if r.id == probe_id), None)
 
@@ -159,14 +164,25 @@ def _compact_device(report: SystemReadinessReport) -> dict[str, Any] | None:
     device = report.active_device
     if device is None:
         return None
-    return {
+    compact: dict[str, Any] = {
         "serial": device.serial,
         "state": device.state,
         "model": device.model,
-        "android_version": device.android_version,
         "is_locked": device.is_locked,
         "is_emulator": device.is_emulator,
     }
+    if device.os_version:
+        compact["platform"] = "ios"
+        compact["os_version"] = device.os_version
+        ios_probe = _find(report.probes, "ios_device")
+        runner = ios_probe.metadata.get("runner") if ios_probe else None
+        if runner:
+            compact["webdriveragent"] = {
+                k: runner.get(k) for k in ("installed", "ready", "port", "runner_version")
+            }
+    else:
+        compact["android_version"] = device.android_version
+    return compact
 
 
 def _compact_emulator(raw: dict[str, Any]) -> dict[str, Any]:
@@ -324,17 +340,23 @@ async def _handle_launch_avd(
 ) -> tuple[dict[str, Any] | None, list[str]]:
     """Validate the AVD name and start it once; returns (emulator state, next_steps lines)."""
     installed = list((adb_result.metadata.get("installed_avds") if adb_result else None) or [])
+    devices = list((adb_result.metadata.get("devices") if adb_result else None) or [])
     current = _emulator_status()
 
-    if name not in installed:
+    # iOS: accept a simulator name, a "Name (version)" label from the probe, or a UDID.
+    known_names = {str(d.get("model", "")).lower() for d in devices}
+    known_udids = {str(d.get("serial", "")).lower() for d in devices}
+    base_name = name.split(" (")[0].strip().lower()
+    known = name in installed or name.lower() in known_udids or base_name in known_names
+    if not known:
         listing = ", ".join(installed) or "none"
         advice = (
             "Pass one of them as launch_avd."
             if installed
-            else "Create one in Android Studio's Device Manager or ask the user to connect a phone."
+            else "Install an iOS runtime (xcodebuild -downloadPlatform iOS) or create a simulator in Xcode."
         )
         return current, [
-            f"[REQUIRED] AVD '{name}' is not installed, so nothing was launched. Installed AVDs: "
+            f"[REQUIRED] Simulator '{name}' is not known, so nothing was booted. Available: "
             f"{listing}. {advice}"
         ]
 
@@ -518,6 +540,9 @@ def _hierarchy_backend() -> str:
 
 def _helper_target(adb_result: ProbeResult | None, requested_device: str | None) -> str | None:
     """The one ready device whose helper state is worth reporting, or None."""
+    if adb_result is not None and adb_result.id == "ios_device":
+        # iOS: the WebDriverAgent runner is reported in the device probe's `runner` facts.
+        return None
     devices = (adb_result.metadata.get("devices") if adb_result else None) or []
     ready = [str(d.get("serial")) for d in devices if d.get("state") == "device"]
     if requested_device:
@@ -735,7 +760,7 @@ def _next_steps(
 ) -> list[str]:
     steps: list[str] = []
     needs_restart = False
-    adb_result = _find(results, "android_adb")
+    adb_result = _find_device_probe(results)
     installed_avds = [
         str(a) for a in (adb_result.metadata.get("installed_avds") if adb_result else None) or []
     ]
@@ -917,7 +942,7 @@ async def _apply_safe_fixes(
     if cleanup is not None:
         applied.append(cleanup)
 
-    adb = next((p for p in report.probes if p.id == "android_adb"), None)
+    adb = _find_device_probe(report.probes)
     if adb is None or not adb.metadata.get("installed"):
         return applied
 
@@ -977,7 +1002,7 @@ async def _run_extras(
     probe_device: bool,
 ) -> dict[str, Any]:
     """Optional, slower work: emulator launch, live key checks, device smoke test, lock state."""
-    adb_result = _find(results, "android_adb")
+    adb_result = _find_device_probe(results)
     launch_steps: list[str] = []
     if launch_avd:
         emulator, launch_steps = await _handle_launch_avd(launch_avd, adb_result)
@@ -1004,7 +1029,7 @@ def _requested_device_ready(results: list[ProbeResult], requested_device: str | 
     """A caller-named device counts as a blocker: attached and authorized, or not ready."""
     if not requested_device:
         return True
-    adb_result = _find(results, "android_adb")
+    adb_result = _find_device_probe(results)
     if adb_result is None:
         return False
     devices = adb_result.metadata.get("devices") or []
@@ -1159,14 +1184,13 @@ async def mobile_diagnose(
         device_serial: Optional serial the user wants to use; the report
           then states explicitly whether that device is attached, authorized
           and idle.
-        launch_avd: Name of an installed Android Virtual Device to boot in
-          the background (pick it from the `next_steps` guidance or the
-          android_adb facts `installed_avds`). Returns immediately; boot
-          takes 1-3 minutes, so call mobile_diagnose again (without
-          launch_avd) after about 60 seconds and watch `emulator.status`.
-          Never pass it while the status is starting/waiting_for_adb/booting.
-          Use it when no device is attached and an AVD exists instead of
-          asking the user to start an emulator.
+        launch_avd: iOS Simulator to boot in the background: its name
+          ("iPhone 17 Pro"), a "Name (version)" label from the ios_device
+          facts `installed_avds`, or a UDID. Returns immediately; a cold boot
+          takes 15-30 seconds, so call mobile_diagnose again (without
+          launch_avd) after about 30 seconds and watch `emulator.status`.
+          Never pass it while the status is starting/booting. Use it when no
+          simulator is booted instead of asking the user to start one.
         verify_credentials: When true, checks every configured API key
           against its provider over the network (about 12 seconds worst
           case, keys stay on the server). Use it when tasks fail with

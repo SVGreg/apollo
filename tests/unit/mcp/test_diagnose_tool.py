@@ -749,7 +749,7 @@ def test_launch_avd_rejects_uninstalled_avd_without_launching(temp_trace_env):
     launch.assert_not_awaited()
     assert result["emulator"] is None
     assert any(
-        s.startswith("[REQUIRED] AVD 'Nope' is not installed") and "Pixel_8, Tablet_API_35" in s
+        s.startswith("[REQUIRED] Simulator 'Nope' is not known") and "Pixel_8, Tablet_API_35" in s
         for s in result["next_steps"]
     )
 

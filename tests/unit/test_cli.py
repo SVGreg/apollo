@@ -807,7 +807,7 @@ def test_cli_doctor_all_pass_renders_table_in_fix_order(monkeypatch):
     assert out.count("✔ OK") == 7
     assert "Node.js / npm" in out and "Showcase UI" in out
     assert "All system checks passed" in out
-    assert 'apollo run "Open Settings and check Battery level"' in out
+    assert 'apollo run "Open Settings, go to General > About and read the iOS version"' in out
 
     order = [
         "Title python_runtime",

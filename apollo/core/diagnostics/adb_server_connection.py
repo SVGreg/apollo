@@ -298,7 +298,8 @@ class AdbServerConnectionManager:
         settings.ADB_HOST = endpoint.host
         settings.ADB_PORT = endpoint.port
         endpoint.apply_to_environment()
-        logger.info(
+        # Android-only plumbing that still initialises at import; keep it out of the console.
+        logger.debug(
             f"Activated {endpoint.mode} ADB server endpoint {endpoint.host}:{endpoint.port}"
         )
 

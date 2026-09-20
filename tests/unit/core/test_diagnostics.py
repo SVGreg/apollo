@@ -51,7 +51,7 @@ async def test_readiness_engine_run_all():
     probe_ids = [p.id for p in report.probes]
     assert "python_runtime" in probe_ids
     assert "system_config" in probe_ids
-    assert "android_adb" in probe_ids
+    assert "ios_device" in probe_ids  # the device probe is iOS on Apollo
     assert "gemini_api_key" in probe_ids
     assert "vision_ocr_key" in probe_ids
     assert "toolchain" in probe_ids

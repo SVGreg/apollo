@@ -44,10 +44,10 @@ async def mobile_get_device_state(view_type: str, device_serial: str | None = No
             returns the image's local file URI.
           - "hierarchy": returns the simplified text-labeled element list —
             exactly what the automation subagent sees when making decisions.
-        device_serial: Optional device serial (e.g. "emulator-5554") to inspect
-          a specific device; omitted → the default connected device. With
-          several devices attached, confirm the target with the user
-          (`adb devices -l` lists serials).
+        device_serial: Optional simulator/device UDID to inspect a specific
+          device; omitted → the booted simulator. With several simulators
+          booted, confirm the target with the user (`xcrun simctl list devices`
+          or mobile_diagnose lists them).
     """
     try:
         controller = _get_controller(device_serial=device_serial)
@@ -69,7 +69,8 @@ async def mobile_get_device_state(view_type: str, device_serial: str | None = No
             safe_device_id = "".join(
                 [c if c.isalnum() or c in ("-", "_") else "_" for c in device_id]
             )
-            screenshot_filename = f"live_screenshot_{safe_device_id}.jpg"
+            ext = "png" if screenshot_bytes[:4] == b"\x89PNG" else "jpg"
+            screenshot_filename = f"live_screenshot_{safe_device_id}.{ext}"
             screenshot_path = os.path.join(project_root, screenshot_filename)
 
             with open(screenshot_path, "wb") as f:

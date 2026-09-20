@@ -402,15 +402,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     return 'bash scripts/install_deps.sh';
   });
 
+  // Apollo drives iOS simulators: the "platform tools" are Xcode's simctl (macOS only).
   public adbInstallCmd = computed(() => {
-    const os = this.effectiveOs();
-    if (os === 'windows') {
-      return 'winget install Google.PlatformTools';
-    }
-    if (os === 'darwin') {
-      return 'brew install android-platform-tools';
-    }
-    return 'sudo apt-get install -y adb';
+    return 'sudo xcode-select -s /Applications/Xcode.app && sudo xcodebuild -license accept';
   });
 
   public toolchainInstallCmd = computed(() => {

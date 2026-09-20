@@ -21,7 +21,7 @@ import time
 from typing import Any
 
 from apollo.core.diagnostics.adb_server_connection import adb_server_connection
-from apollo.core.diagnostics.probes.adb_probe import AdbDeviceProbe
+from apollo.core.diagnostics.probes.ios_probe import IosDeviceProbe, IosToolchainProbe
 from apollo.core.diagnostics.probes.base import BaseProbe
 from apollo.core.diagnostics.probes.credentials_probe import (
     LLMCredentialsProbe,
@@ -31,7 +31,6 @@ from apollo.core.diagnostics.probes.runtime_probe import (
     PythonRuntimeProbe,
     SystemConfigProbe,
 )
-from apollo.core.diagnostics.probes.toolchain_probe import ToolchainProbe
 from apollo.core.diagnostics.schema import (
     DeviceInfo,
     ProbeAction,
@@ -63,10 +62,12 @@ class ReadinessEngine:
         self._probes: dict[str, BaseProbe] = {}
         self._python_probe = PythonRuntimeProbe()
         self._config_probe = SystemConfigProbe()
-        self._toolchain_probe = ToolchainProbe()
+        self._toolchain_probe = IosToolchainProbe()
         self._credentials_probe = LLMCredentialsProbe()
         self._ocr_probe = VisionOCRProbe()
-        self._adb_probe = AdbDeviceProbe()
+        # iOS device probe; kept under the historical attribute name so the rest of the
+        # engine (target serial, submission gate, active device) stays untouched.
+        self._adb_probe = IosDeviceProbe()
         self._report_cache: SystemReadinessReport | None = None
         self._report_cache_time = 0.0
         self._report_cache_generation = -1
@@ -210,7 +211,7 @@ class ReadinessEngine:
 
         # Extract active device info from ADB probe metadata if available
         active_device: DeviceInfo | None = None
-        adb_result = next((r for r in results if r.id == "android_adb"), None)
+        adb_result = next((r for r in results if r.id in ("ios_device", "android_adb")), None)
         if adb_result and adb_result.metadata.get("active_device"):
             try:
                 active_device = DeviceInfo(**adb_result.metadata["active_device"])
@@ -356,43 +357,37 @@ class ReadinessEngine:
         return await asyncio.to_thread(_restart_sync)
 
     async def launch_emulator(self, avd_name: str) -> dict[str, Any]:
-        """Launch an Android emulator by AVD name in the background and track its lifecycle."""
-        if not adb_server_connection.current_endpoint().is_local_default:
-            return {
-                "avd_name": avd_name,
-                "status": "failed",
-                "pid": None,
-                "serial": None,
-                "error": "Switch to local ADB before launching a local emulator.",
-                "stage_message": "Local ADB is not active",
-                "progress_percent": 0,
-                "started_at": None,
-                "elapsed_seconds": 0,
-                "logs": [],
-                "can_retry": True,
-            }
-        from apollo.core.diagnostics.emulator_manager import emulator_manager
+        """Boot an iOS Simulator by name or UDID in the background and track its lifecycle.
 
-        state = await emulator_manager.launch(avd_name)
+        Keeps the Android method name and state schema so the console's device panel
+        and ``mobile_diagnose`` work unchanged."""
+        from apollo.core.diagnostics.simulator_manager import simulator_manager
+
+        state = await simulator_manager.launch(avd_name)
+        self.invalidate_cache()
         return state.model_dump()
 
-    def get_emulator_status(self) -> dict[str, Any]:
-        """Query current status of background emulator launch."""
-        from apollo.core.diagnostics.emulator_manager import emulator_manager
+    async def boot_simulator(self, name_or_udid: str) -> dict[str, Any]:
+        return await self.launch_emulator(name_or_udid)
 
-        return emulator_manager.get_status().model_dump()
+    def get_emulator_status(self) -> dict[str, Any]:
+        """Query current status of a background simulator boot."""
+        from apollo.core.diagnostics.simulator_manager import simulator_manager
+
+        return simulator_manager.get_status().model_dump()
 
     async def stop_emulator(self) -> dict[str, Any]:
-        """Stop current running emulator."""
-        from apollo.core.diagnostics.emulator_manager import emulator_manager
+        """Shut down the simulator booted from here."""
+        from apollo.core.diagnostics.simulator_manager import simulator_manager
 
-        return await emulator_manager.stop()
+        result = await simulator_manager.stop()
+        self.invalidate_cache()
+        return result
 
     def dismiss_emulator(self) -> dict[str, Any]:
-        """Dismiss current emulator launch state."""
-        from apollo.core.diagnostics.emulator_manager import emulator_manager
+        from apollo.core.diagnostics.simulator_manager import simulator_manager
 
-        return emulator_manager.dismiss()
+        return simulator_manager.dismiss()
 
     async def connect_wireless_adb(self, host: str, port: int = 5555) -> dict[str, Any]:
         """Connect to an Android device over Wi-Fi via adb connect."""

@@ -25,6 +25,25 @@ from apollo.core.diagnostics.schema import (
 )
 
 
+_KEY_ENV = {
+    "anthropic": "ANTHROPIC_API_KEY",
+    "openai": "OPENAI_API_KEY",
+    "google": "GOOGLE_API_KEY",
+    "openrouter": "OPEN_ROUTER_API_KEY",
+    "xai": "XAI_API_KEY",
+}
+
+
+def _configured_default_provider() -> str | None:
+    """Provider named by the `default` block of config/apollo.jsonc (or the active preset)."""
+    try:
+        from apollo.config.llm import parse_llm_config
+
+        return str(parse_llm_config().operator.provider)
+    except Exception:  # pylint: disable=broad-exception-caught
+        return None
+
+
 class LLMCredentialsProbe(BaseProbe):
     """Probe verifying Gemini and multi-provider multimodal LLM credentials."""
 
@@ -161,6 +180,58 @@ class LLMCredentialsProbe(BaseProbe):
             "current_gemini_key": gemini_key.get_secret_value() if gemini_key else "",
             "api_keys": api_keys_map,
         }
+
+        # Case 0: the configured default provider (config/apollo.jsonc) has its key — report
+        # that one as active; the default is what tasks actually run on.
+        default_provider = _configured_default_provider()
+        default_entry = next(
+            (p for p in configured_providers if p["provider"] == default_provider), None
+        )
+        if default_entry is not None and default_provider != "google":
+            metadata["default_provider"] = default_provider
+            return ProbeResult(
+                id=self.probe_id,
+                category=self.category,
+                title="Multimodal LLM API Key",
+                status=ProbeStatus.PASS,
+                is_blocker=self.is_blocker,
+                summary=f"Active ({default_entry['label']})",
+                description=(
+                    f"{default_entry['label']} credential is active ({default_entry['masked']}) "
+                    f"and is the configured default provider."
+                ),
+                metadata=metadata,
+                actions=[
+                    ProbeAction(
+                        action_type="hint",
+                        label="Provider Active",
+                        payload=f"{default_entry['label']} is the default provider in config/apollo.jsonc.",
+                    )
+                ],
+            )
+        if default_provider and default_entry is None and default_provider != "google":
+            metadata["default_provider"] = default_provider
+            return ProbeResult(
+                id=self.probe_id,
+                category=self.category,
+                title="Multimodal LLM API Key",
+                status=ProbeStatus.FAIL,
+                is_blocker=self.is_blocker,
+                summary=f"{default_provider} key missing",
+                description=(
+                    f"config/apollo.jsonc defaults to provider '{default_provider}' but no "
+                    f"{_KEY_ENV.get(default_provider, 'API key')} is set in .env."
+                ),
+                metadata=metadata,
+                actions=[
+                    ProbeAction(
+                        action_type="hint",
+                        label="Set the key",
+                        payload=f"Add {_KEY_ENV.get(default_provider, 'the provider key')}=… to .env "
+                        "or change the default provider in config/apollo.jsonc.",
+                    )
+                ],
+            )
 
         # Case 1: Gemini API Key configured (Standard / Recommended)
         if gemini_key:

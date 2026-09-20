@@ -118,6 +118,18 @@ search, Reminders add, Contacts add, Photos open, Maps search, Messages compose 
 browse (the iOS 26 simulator ships no Notes, Clock or Mail). Integration smoke (no LLM) runs in CI
 on `macos-26`.
 
+Status 2026-09-20: **done except the CI integration smoke.** `apollo doctor` → Ready with iOS probes
+(Xcode/simctl, booted simulators, WDA runner status, ffmpeg/go-ios/idb toolchain, configured-provider
+key). Console: Setup Guide shows Xcode & simulators, the device panel lists/boots simulators
+(`/emulator/*` → `SimulatorManager`), Run button enabled, live view (WDA MJPEG when a task's runner
+is up, half-size JPEG `simctl` polling otherwise), a task launched from the composer completed with
+step replay. MCP: `mobile_diagnose` (iOS facts, `launch_avd="iPhone 17 Pro"` boots a simulator),
+`mobile_get_device_state` (screenshot/hierarchy), `mobile_run_task` → `mobile_manage_task` →
+`mobile_inspect_trace` verified over stdio; `rules.md` rewritten for iOS. Task set run so far: 6/10
+(About lookup, Bold Text, Reminders, Contacts, Safari, Calendar); Photos/Maps/Messages/Files and the
+Pro profile remain. `mcp/device_server.py` (13 low-level tools) and `apollo runner` CLI deferred to
+Phase 2; the CI `macos-26` integration smoke is not wired yet.
+
 ---
 
 ## Phase 2 — Full parity on simulators (weeks 5–6)

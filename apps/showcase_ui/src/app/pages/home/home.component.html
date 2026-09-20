@@ -92,7 +92,7 @@
       <div class="step-title-row">
         <h3 class="step-title">System & Environment</h3>
       </div>
-      <p class="step-desc">Core tools, Android debug bridge, and video recording runtime</p>
+      <p class="step-desc">Python runtime, Xcode simulators, and the recording toolchain</p>
     </div>
 
     <button
@@ -186,8 +186,8 @@
             <span class="material-symbols-outlined item-icon">construction</span>
           </div>
           <div class="item-title-group">
-            <div class="item-name">Android Platform-Tools</div>
-            <div class="item-subtitle">{{ !adbProbe() ? 'Checking…' : (adbProbe()?.metadata?.['installed'] ? 'ADB Installed' : 'ADB Missing') }}</div>
+            <div class="item-name">Xcode &amp; iOS Simulators</div>
+            <div class="item-subtitle">{{ !adbProbe() ? 'Checking…' : (adbProbe()?.metadata?.['installed'] ? (adbProbe()?.metadata?.['xcode_version'] || 'simctl ready') : 'Xcode Missing') }}</div>
           </div>
           <div class="item-status">
             <span class="status-dot" [class.dot-pass]="adbProbe()?.metadata?.['installed']" [class.dot-fail]="adbProbe()?.status === 'fail'"></span>
@@ -672,9 +672,9 @@
             </div>
             <div class="step-info">
               <div class="step-title-row">
-                <h3 class="step-title">Android Device & Emulator Connection</h3>
+                <h3 class="step-title">iOS Simulator &amp; Device Connection</h3>
               </div>
-              <p class="step-desc">Local emulator, attached phone, wireless device, or another ADB server</p>
+              <p class="step-desc">Boot a simulator here, or connect an iPhone over USB (physical devices arrive in Phase 3)</p>
             </div>
 
             <button
@@ -691,7 +691,7 @@
               class="btn-restart-adb"
               [disabled]="isRestartingAdb()"
               (click)="restartAdbServer()"
-              [title]="isRemoteAdbServer() ? 'Refresh devices without stopping the remote ADB server' : 'Restart local ADB daemon'"
+              title="Re-scan simulators and devices"
             >
               @if (isRestartingAdb()) {
               <span class="material-symbols-outlined spinning">sync</span>
@@ -701,7 +701,7 @@
               <span class="feedback-text">{{ adbRestartFeedback() }}</span>
               } @else {
               <span class="material-symbols-outlined">sync</span>
-              <span>{{ isRemoteAdbServer() ? 'Refresh Devices' : 'Restart ADB' }}</span>
+              <span>Refresh Devices</span>
               }
             </button>
           </div>
@@ -734,6 +734,10 @@
                       @if (activeDevice()?.android_version) {
                         <span class="meta-dot">·</span>
                         <span>Android {{ activeDevice()?.android_version }}</span>
+                      }
+                      @if (activeDevice()?.os_version) {
+                        <span class="meta-dot">·</span>
+                        <span>iOS {{ activeDevice()?.os_version }}</span>
                       }
                       @if (isRemoteAdbServer()) {
                         <span class="meta-dot">·</span>
@@ -788,11 +792,11 @@
                       <div class="tracker-titles">
                         <div class="tracker-main-heading">
                           <h4 class="tracker-title">
-                            Launching Android Emulator: <span class="avd-highlight">{{ emulatorLaunchState()?.avd_name || activeDevice()?.serial || 'Virtual Device' }}</span>
+                            Booting Simulator: <span class="avd-highlight">{{ emulatorLaunchState()?.avd_name || activeDevice()?.serial || 'Virtual Device' }}</span>
                           </h4>
                           <span class="stage-tag-badge">{{ emulatorLaunchState()?.status === 'booting' ? 'OS Booting' : 'Starting' }}</span>
                         </div>
-                        <p class="tracker-subtitle">{{ emulatorLaunchState()?.stage_message || 'Initializing Android Virtual Device...' }}</p>
+                        <p class="tracker-subtitle">{{ emulatorLaunchState()?.stage_message || 'Initializing simulator Virtual Device...' }}</p>
                       </div>
                     </div>
                     <div class="tracker-actions">
@@ -847,7 +851,7 @@
                           <span>3</span>
                         }
                       </div>
-                      <span class="step-label">3. Android OS Boot</span>
+                      <span class="step-label">3. iOS Boot</span>
                     </div>
 
                     <div class="step-line" [class.done]="emulatorLaunchState()?.status === 'ready'"></div>
@@ -877,7 +881,7 @@
                   <!-- Helpful Status Notice -->
                   <div class="boot-tip-banner">
                     <span class="material-symbols-outlined tip-icon">info</span>
-                    <span>Android virtualization cold boot usually takes 20-45 seconds. Live progress is actively tracked above—please do not click launch repeatedly.</span>
+                    <span>A simulator cold boot usually takes 15-30 seconds. Live progress is actively tracked above—please do not click launch repeatedly.</span>
                   </div>
 
                   <!-- Expandable Console Log Stream -->
@@ -911,7 +915,7 @@
                       </div>
                       <div class="failed-titles">
                         <h4 class="failed-title">Emulator Launch Failed</h4>
-                        <p class="failed-desc">{{ emulatorLaunchState()?.error || 'The Android emulator process failed to start or crashed during initialization.' }}</p>
+                        <p class="failed-desc">{{ emulatorLaunchState()?.error || 'The simulator boot failed to start or crashed during initialization.' }}</p>
                       </div>
                     </div>
                     <button type="button" class="btn-dismiss-failed" (click)="dismissEmulatorStatus()" title="Dismiss error">
@@ -968,13 +972,13 @@
                       </div>
                       <div class="method-info">
                         <div class="method-title-row">
-                          <span class="method-title">Android Emulator</span>
+                          <span class="method-title">iOS Simulator</span>
                         </div>
                         <span class="method-desc">
                           @if (installedAvds().length > 0) {
-                            {{ installedAvds().length }} local virtual device{{ installedAvds().length > 1 ? 's' : '' }} available
+                            {{ installedAvds().length }} simulator{{ installedAvds().length > 1 ? 's' : '' }} available
                           } @else {
-                            Launch a local Android Virtual Device
+                            Boot a local iOS Simulator
                           }
                         </span>
                       </div>
@@ -996,9 +1000,9 @@
                       </div>
                       <div class="method-info">
                         <div class="method-title-row">
-                          <span class="method-title">USB Cable</span>
+                          <span class="method-title">USB iPhone / iPad</span>
                         </div>
-                        <span class="method-desc">Connect physical phone via USB</span>
+                        <span class="method-desc">Physical device over USB (Phase 3)</span>
                       </div>
                       </div>
                       <div class="method-card-right">
@@ -1006,6 +1010,7 @@
                       </div>
                   </button>
 
+                  @if (false) {
                   <button
                     type="button"
                     class="method-nav-card"
@@ -1027,7 +1032,9 @@
                         <span class="radio-indicator" [class.checked]="activeAdbGuideTab() === 'wifi'"></span>
                       </div>
                   </button>
+                  }
 
+                  @if (false) {
                   <button
                     type="button"
                     class="method-nav-card"
@@ -1049,6 +1056,7 @@
                       <span class="radio-indicator" [class.checked]="activeAdbGuideTab() === 'remote'"></span>
                     </div>
                   </button>
+                  }
                 </div>
 
                 @if (activeAdbGuideTab() !== 'remote' && isRemoteAdbServer()) {
@@ -1082,7 +1090,7 @@
                         <div class="section-header-bar">
                           <div class="section-title-group">
                             <span class="material-symbols-outlined header-icon">devices</span>
-                            <span class="section-title">Installed Virtual Devices (AVD)</span>
+                            <span class="section-title">Installed Simulators</span>
                             <span class="count-badge">{{ installedAvds().length }} Available</span>
                           </div>
                         </div>
@@ -1097,7 +1105,7 @@
                                 <div class="avd-meta">
                                   <div class="avd-heading">
                                     <span class="avd-name">{{ avd }}</span>
-                                    <span class="avd-type-pill">Virtual Device</span>
+                                    <span class="avd-type-pill">Simulator</span>
                                   </div>
                                 </div>
                               </div>
@@ -1109,14 +1117,14 @@
                                   [class.launching]="launchingAvd() === avd || (isEmulatorLaunching() && emulatorLaunchState()?.avd_name === avd)"
                                   [disabled]="isEmulatorLaunching() || isRemoteAdbServer()"
                                   (click)="launchAvdEmulator(avd)"
-                                  [title]="isEmulatorLaunching() ? 'An emulator is currently launching...' : 'Launch ' + avd"
+                                  [title]="isEmulatorLaunching() ? 'A simulator is booting...' : 'Boot ' + avd"
                                 >
                                   @if (launchingAvd() === avd || (isEmulatorLaunching() && emulatorLaunchState()?.avd_name === avd)) {
                                     <span class="spinner-icon"></span>
                                     <span>{{ emulatorLaunchState()?.status === 'booting' ? 'Booting OS' : 'Starting' }} ({{ emulatorLaunchState()?.elapsed_seconds || 0 }}s)</span>
                                   } @else {
                                     <span class="material-symbols-outlined action-icon">play_arrow</span>
-                                    <span>Launch</span>
+                                    <span>Boot</span>
                                   }
                                 </button>
                               </div>
@@ -1133,163 +1141,21 @@
                             </div>
                             <div class="banner-titles">
                               <div class="banner-title-row">
-                                <h4 class="empty-title">No Android Virtual Devices (AVD) Detected</h4>
-                                <div class="os-selector-pills">
-                                  <button type="button" class="os-pill" [class.active]="effectiveOs() === 'linux'"
-                                    (click)="setSelectedOs('linux')">Linux</button>
-                                  <button type="button" class="os-pill" [class.active]="effectiveOs() === 'darwin'"
-                                    (click)="setSelectedOs('darwin')">macOS</button>
-                                  <button type="button" class="os-pill" [class.active]="effectiveOs() === 'windows'"
-                                    (click)="setSelectedOs('windows')">Windows</button>
-                                </div>
+                                <h4 class="empty-title">No iOS Simulators Detected</h4>
                               </div>
-                              <p class="empty-desc">Follow the step-by-step instructions below to install and start an emulator:</p>
+                              <p class="empty-desc">Install Xcode 26 and an iOS runtime, then re-check.</p>
                             </div>
-                          </div>
-
-                          <div class="mode-switch-pills">
-                            <button
-                              type="button"
-                              class="pill-btn"
-                              [class.active]="emulatorSetupMode() === 'studio'"
-                              (click)="setEmulatorSetupMode('studio')"
-                            >
-                              <span class="material-symbols-outlined pill-icon">desktop_windows</span>
-                              <span>Android Studio (GUI)</span>
-                            </button>
-                            <button
-                              type="button"
-                              class="pill-btn"
-                              [class.active]="emulatorSetupMode() === 'cli'"
-                              (click)="setEmulatorSetupMode('cli')"
-                            >
-                              <span class="material-symbols-outlined pill-icon">terminal</span>
-                              <span>Command Line (CLI)</span>
-                            </button>
                           </div>
                         </div>
-
-                        <!-- Option 1: Android Studio Guide -->
-                        @if (emulatorSetupMode() === 'studio') {
-                          <div class="steps-flow-grid emu-flow-grid">
-                            <div class="flow-step-card">
-                              <div class="step-card-header">
-                                <span class="step-number-badge">1</span>
-                                <span class="material-symbols-outlined step-card-icon">download</span>
-                              </div>
-                              <div class="step-card-title">Install Android Studio</div>
-                              <div class="step-card-desc">
-                                Download for {{ effectiveOs() === 'darwin' ? 'macOS' : (effectiveOs() === 'windows' ? 'Windows' : 'Linux') }} from <a href="https://developer.android.com/studio" target="_blank" rel="noopener" class="guide-link">developer.android.com/studio</a> and install.
-                              </div>
-                            </div>
-
-                            <div class="flow-step-card">
-                              <div class="step-card-header">
-                                <span class="step-number-badge">2</span>
-                                <span class="material-symbols-outlined step-card-icon">developer_mode</span>
-                              </div>
-                              <div class="step-card-title">Open Device Manager</div>
-                              <div class="step-card-desc">
-                                On Studio welcome screen, open <strong>More Actions &gt; Virtual Device Manager</strong> (or <strong>Tools &gt; Device Manager</strong>).
-                              </div>
-                            </div>
-
-                            <div class="flow-step-card">
-                              <div class="step-card-header">
-                                <span class="step-number-badge">3</span>
-                                <span class="material-symbols-outlined step-card-icon">add_circle</span>
-                              </div>
-                              <div class="step-card-title">Create Virtual Device</div>
-                              <div class="step-card-desc">
-                                Click <strong>Create Device</strong>, choose <strong>Pixel 8</strong>, select <strong>Android 14 (API 34)</strong>, and click <strong>Finish</strong>.
-                              </div>
-                            </div>
-
-                            <div class="flow-step-card">
-                              <div class="step-card-header">
-                                <span class="step-number-badge">4</span>
-                                <span class="material-symbols-outlined step-card-icon">play_arrow</span>
-                              </div>
-                              <div class="step-card-title">Launch Emulator</div>
-                              <div class="step-card-desc">
-                                Click ▶ <strong>Play</strong> in Device Manager. Apollo will detect and connect to it automatically!
-                              </div>
-                            </div>
-                          </div>
-                        }
-
-                        <!-- Option 2: Command Line Guide -->
-                        @if (emulatorSetupMode() === 'cli') {
-                          <div class="cli-steps-list">
-                            <div class="cli-step-item">
-                              <div class="step-badge-num">1</div>
-                              <div class="step-content">
-                                <div class="step-title">{{ emuHypervisorTitle() }}</div>
-                                <p class="step-text">{{ emuHypervisorDesc() }}</p>
-                                <div class="code-box small-box">
-                                  <span class="terminal-prefix">{{ effectiveOs() === 'windows' ? 'PS>' : '$' }}</span>
-                                  <code class="code-text">{{ emuHypervisorCmd() }}</code>
-                                  <button type="button" class="btn-copy-code" [class.copied]="copiedId() === 'emu_kvm'"
-                                    (click)="copyToClipboard(emuHypervisorCmd(), 'emu_kvm')">
-                                    <span class="material-symbols-outlined">{{ copiedId() === 'emu_kvm' ? 'check' : 'content_copy' }}</span>
-                                    <span>{{ copiedId() === 'emu_kvm' ? 'Copied!' : 'Copy' }}</span>
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="cli-step-item">
-                              <div class="step-badge-num">2</div>
-                              <div class="step-content">
-                                <div class="step-title">Download Emulator & System Image (API 34)</div>
-                                <p class="step-text">Install Android 14 Google APIs system image using SDK Manager:</p>
-                                <div class="code-box small-box">
-                                  <span class="terminal-prefix">{{ effectiveOs() === 'windows' ? 'PS>' : '$' }}</span>
-                                  <code class="code-text">{{ emuSdkInstallCmd() }}</code>
-                                  <button type="button" class="btn-copy-code" [class.copied]="copiedId() === 'emu_sdk'"
-                                    (click)="copyToClipboard(emuSdkInstallCmd(), 'emu_sdk')">
-                                    <span class="material-symbols-outlined">{{ copiedId() === 'emu_sdk' ? 'check' : 'content_copy' }}</span>
-                                    <span>{{ copiedId() === 'emu_sdk' ? 'Copied!' : 'Copy' }}</span>
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="cli-step-item">
-                              <div class="step-badge-num">3</div>
-                              <div class="step-content">
-                                <div class="step-title">Create Virtual Device (Pixel 8 AVD)</div>
-                                <p class="step-text">Initialize a new Android Virtual Device named <code>Pixel_8_API_34</code>:</p>
-                                <div class="code-box small-box">
-                                  <span class="terminal-prefix">{{ effectiveOs() === 'windows' ? 'PS>' : '$' }}</span>
-                                  <code class="code-text">{{ emuCreateAvdCmd() }}</code>
-                                  <button type="button" class="btn-copy-code" [class.copied]="copiedId() === 'emu_create'"
-                                    (click)="copyToClipboard(emuCreateAvdCmd(), 'emu_create')">
-                                    <span class="material-symbols-outlined">{{ copiedId() === 'emu_create' ? 'check' : 'content_copy' }}</span>
-                                    <span>{{ copiedId() === 'emu_create' ? 'Copied!' : 'Copy' }}</span>
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="cli-step-item">
-                              <div class="step-badge-num">4</div>
-                              <div class="step-content">
-                                <div class="step-title">Start the Emulator</div>
-                                <p class="step-text">Launch the virtual device (or add <code>-no-window</code> for headless execution):</p>
-                                <div class="code-box small-box">
-                                  <span class="terminal-prefix">{{ effectiveOs() === 'windows' ? 'PS>' : '$' }}</span>
-                                  <code class="code-text">emulator -avd Pixel_8_API_34 -no-boot-anim</code>
-                                  <button type="button" class="btn-copy-code" [class.copied]="copiedId() === 'emu_run'"
-                                    (click)="copyToClipboard('emulator -avd Pixel_8_API_34 -no-boot-anim', 'emu_run')">
-                                    <span class="material-symbols-outlined">{{ copiedId() === 'emu_run' ? 'check' : 'content_copy' }}</span>
-                                    <span>{{ copiedId() === 'emu_run' ? 'Copied!' : 'Copy' }}</span>
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        }
+                        <div class="code-box small-box">
+                          <span class="terminal-prefix">$</span>
+                          <code class="code-text">xcodebuild -downloadPlatform iOS &amp;&amp; xcrun simctl list devices available</code>
+                          <button type="button" class="btn-copy-code" [class.copied]="copiedId() === 'ios_runtime_cmd'"
+                            (click)="copyToClipboard('xcodebuild -downloadPlatform iOS && xcrun simctl list devices available', 'ios_runtime_cmd')">
+                            <span class="material-symbols-outlined">{{ copiedId() === 'ios_runtime_cmd' ? 'check' : 'content_copy' }}</span>
+                            <span>{{ copiedId() === 'ios_runtime_cmd' ? 'Copied!' : 'Copy' }}</span>
+                          </button>
+                        </div>
                       </div>
                     }
 
@@ -1301,7 +1167,7 @@
                   <div class="method-details-panel">
                     <div class="usb-guide-intro">
                       <span class="material-symbols-outlined intro-icon">cable</span>
-                      <span>Connect your Android phone via USB cable and enable USB Debugging:</span>
+                      <span>Physical iPhones/iPads are not supported yet (Phase 3). For now, use a simulator:</span>
                     </div>
 
                     <div class="steps-flow-grid">
@@ -1311,7 +1177,7 @@
                           <span class="material-symbols-outlined step-card-icon">usb</span>
                         </div>
                         <div class="step-card-title">Connect USB Cable</div>
-                        <div class="step-card-desc">Plug your Android phone into this computer with a data cable.</div>
+                        <div class="step-card-desc">Coming in Phase 3: plug the iPhone in, enable Developer Mode, trust this Mac.</div>
                       </div>
 
                       <div class="flow-step-card">
@@ -1612,7 +1478,7 @@
                 <div class="error-msg-box">
                   <span class="material-symbols-outlined err-icon">error</span>
                   <div>
-                    <strong>Android Platform Tools (adb) not found.</strong> Please install ADB on your operating system:
+                    <strong>Xcode / simctl not found.</strong> Install Xcode 26 from the App Store, open it once, then select it:
                   </div>
                 </div>
 
@@ -1644,9 +1510,9 @@
                     </div>
                     <div class="code-box small-box">
                       <span class="terminal-prefix">$</span>
-                      <code class="code-text">brew install android-platform-tools</code>
+                      <code class="code-text">sudo xcode-select -s /Applications/Xcode.app</code>
                       <button type="button" class="btn-copy-code" [class.copied]="copiedId() === 'mac_adb'"
-                        (click)="copyToClipboard('brew install android-platform-tools', 'mac_adb')">
+                        (click)="copyToClipboard('sudo xcode-select -s /Applications/Xcode.app', 'mac_adb')">
                         <span class="material-symbols-outlined">{{ copiedId() === 'mac_adb' ? 'check' : 'content_copy' }}</span>
                         <span>{{ copiedId() === 'mac_adb' ? 'Copied!' : 'Copy' }}</span>
                       </button>
@@ -1686,7 +1552,7 @@
               </div>
               <div class="ready-text-group">
                 <h4 class="ready-title">System Ready for Autonomous Tasks</h4>
-                <p class="ready-desc">All dependencies, AI model credentials, and Android device are verified and ready to run.</p>
+                <p class="ready-desc">All dependencies, AI model credentials, and an iOS simulator are verified and ready to run.</p>
               </div>
             </div>
             <button type="button" class="btn-proceed-launch" (click)="setTab('launcher')">
@@ -1711,8 +1577,8 @@
             <span class="material-symbols-outlined warn-icon">{{ adbProbe()?.summary === 'Device Locked' ? 'lock' : 'warning' }}</span>
             <span>
               {{ adbProbe()?.summary === 'Device Locked'
-                ? 'Android device is locked. Unlock it and enter the home screen before running a task.'
-                : 'Prerequisites incomplete: runtime, credentials, or Android device is not ready. Click here to open Setup Guide.' }}
+                ? 'Device is locked. Unlock it and enter the home screen before running a task.'
+                : 'Prerequisites incomplete: runtime, credentials, or iOS simulator is not ready. Click here to open Setup Guide.' }}
             </span>
             <span class="material-symbols-outlined arrow">arrow_forward</span>
           </div>
@@ -1821,7 +1687,7 @@
                 class="btn-run-composer"
                 [class.btn-run-pro]="selectedProfile() === 'pro'"
                 [disabled]="!taskGoal().trim() || isSubmitting() || !isReady()"
-                [title]="!isReady() ? (adbProbe()?.summary === 'Device Locked' ? 'Unlock the Android device before running' : 'Complete System Setup before running') : 'Run task'"
+                [title]="!isReady() ? (adbProbe()?.summary === 'Device Locked' ? 'Unlock the device before running' : 'Complete System Setup before running') : 'Run task'"
                 (click)="runTask()"
               >
                 @if (isSubmitting()) {

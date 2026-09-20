@@ -312,6 +312,20 @@ class Agent:
         publish_startup_progress(
             "model_warmup", "Warming the model connection", session_id=self._session_id
         )
+        # The warm-up is Gemini-specific; skip it when tasks run on another provider so a
+        # configured (but unused) Google key does not burn quota on every task start.
+        try:
+            from apollo.config.llm import parse_llm_config
+
+            default_provider = str(parse_llm_config().operator.provider)
+        except Exception:  # pylint: disable=broad-exception-caught
+            default_provider = "google"
+        if default_provider != "google":
+            logger.info(f"LLM provider is {default_provider}; skipping Gemini pre-warming.")
+            publish_startup_progress(
+                "model_ready", "Model connection is ready", session_id=self._session_id
+            )
+            return
         logger.info("Starting background pre-warming of Gemini API connection pools...")
         try:
             key = api_key

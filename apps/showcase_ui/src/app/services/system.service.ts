@@ -55,7 +55,8 @@ export class SystemService {
   public pythonProbe = computed(() => this.probes().find(p => p.id === 'python_runtime') || null);
   public configProbe = computed(() => this.probes().find(p => p.id === 'system_config') || null);
   public toolchainProbe = computed(() => this.probes().find(p => p.id === 'toolchain') || null);
-  public adbProbe = computed(() => this.probes().find(p => p.id === 'android_adb') || null);
+  // Device probe: iOS simulators/devices (id 'ios_device'); 'android_adb' kept for upstream parity.
+  public adbProbe = computed(() => this.probes().find(p => p.id === 'ios_device' || p.id === 'android_adb') || null);
   public llmProbe = computed(() => this.probes().find(p => p.id === 'gemini_api_key' || p.id === 'llm_api_key') || null);
   public geminiProbe = computed(() => this.llmProbe());
   public ocrProbe = computed(() => this.probes().find(p => p.id === 'vision_ocr_key' || p.id === 'ocr_api_key') || null);

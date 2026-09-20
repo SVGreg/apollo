@@ -6,6 +6,7 @@ an event loop; the driver uses the async ones.
 """
 
 import asyncio
+import contextlib
 import json
 import os
 import shutil
@@ -108,6 +109,11 @@ async def _run(args: list[str], *, timeout: float = 60.0, env: dict[str, str] | 
     except TimeoutError:
         proc.kill()
         raise SimctlError(f"simctl {' '.join(args)} timed out after {timeout}s") from None
+    except asyncio.CancelledError:
+        # A cancelled caller must not leave simctl running (it would block loop shutdown).
+        with contextlib.suppress(ProcessLookupError):
+            proc.kill()
+        raise
     if proc.returncode != 0:
         raise SimctlError(
             f"simctl {' '.join(args)} failed ({proc.returncode}): {err.decode(errors='replace').strip()}"

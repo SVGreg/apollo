@@ -61,6 +61,9 @@ class DeviceInfo(BaseModel):
     android_version: str | None = Field(
         default=None, description="Android OS release version (e.g. 14)"
     )
+    os_version: str | None = Field(
+        default=None, description="iOS version for simulators/devices (e.g. 26.2)"
+    )
     screen_resolution: str | None = Field(
         default=None, description="Screen width x height (e.g. 1080x2400)"
     )

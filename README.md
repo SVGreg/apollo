@@ -5,9 +5,10 @@ Apollo is an autonomous, natural-language iOS automation framework: a fork of
 iOS Simulators and physical iPhones/iPads driven through WebDriverAgent, `xcrun simctl` and
 `go-ios`.
 
-> **Status: Phase 1a (simulator thin slice).** `apollo run` drives a booted iOS Simulator through
-> WebDriverAgent with the Flash profile. Web console, MCP install and `apollo doctor` are next
-> (Phase 1b). See [`docs/development-plan.md`](docs/development-plan.md) for the roadmap and
+> **Status: Phase 1b (simulator, all interfaces).** `apollo run`, the web console (`apollo ui`),
+> `apollo doctor` and the MCP server (`apollo mcp --install claude`) all drive a booted iOS
+> Simulator through WebDriverAgent. Physical devices, recording and the Pro-profile long tasks are
+> next. See [`docs/development-plan.md`](docs/development-plan.md) for the roadmap and
 > [`docs/technical-design.md`](docs/technical-design.md) for the design.
 
 ## Quick start
@@ -69,6 +70,21 @@ APOLLO_LLM_PRESET=gemini-flagship uv run apollo run "…" --standalone --device-
 Free-tier Gemini keys rate-limit long tasks (429 with 40–50 s retry delays); Claude keys have no
 such issue in our runs.
 
+### Web console, doctor and IDE agents
+
+```sh
+uv run apollo doctor                 # Xcode, simulators, WDA, keys, toolchain → "Ready"
+uv run apollo ui                     # localhost:8000 — setup guide, device panel, task composer,
+                                     # live screen, step replay, task queue
+uv run apollo mcp --install claude   # registers mobile_run_task / mobile_manage_task /
+                                     # mobile_inspect_trace / mobile_get_device_state / mobile_diagnose
+                                     # (also: codex, cursor, antigravity, all)
+```
+
+`mobile_diagnose(launch_avd="iPhone 17 Pro")` boots a simulator from the IDE; `xcrun simctl boot
+<udid>` is the manual equivalent. Never quit Simulator.app while tasks run — it shuts every
+simulator down.
+
 ### Without a device or key
 
 ```sh
@@ -81,8 +97,7 @@ make smoke-mock     # Flash loop against the in-memory mock driver with a fake L
 - The simulator's Settings has no Airplane Mode / Wi-Fi / Bluetooth / Cellular rows; ask for
   things the simulator has (General, Accessibility, Display, Calendar, Reminders, Contacts, Safari,
   Maps, Photos, Files, Messages). There is no Notes, Clock or Mail app on the iOS 26 runtime.
-- Screen recording, the web console's device panel/live view, `apollo doctor` and `apollo mcp
-  --install` still assume Android; they are Phase 1b/2 work.
+- Screen recording is not available yet (Phase 2); the console's replay uses per-step screenshots.
 - `run_adb_command` is replaced by an allowlisted `simctl` host command on iOS
   (`simctl openurl …`, `simctl listapps`, `simctl privacy grant …`); there is no on-device shell.
 

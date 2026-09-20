@@ -30,6 +30,7 @@ export interface DeviceInfo {
   model: string | null;
   product: string | null;
   android_version: string | null;
+  os_version?: string | null;
   screen_resolution: string | null;
   is_locked: boolean | null;
   is_emulator: boolean;
