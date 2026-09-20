@@ -5,6 +5,10 @@ Apollo is an autonomous, natural-language iOS automation framework: a fork of
 iOS Simulators and physical iPhones/iPads driven through WebDriverAgent, `xcrun simctl` and
 `go-ios`.
 
+<p align="center">
+  <img src="./docs/assets/apollo-demo.gif" alt="Apollo driving an iOS Simulator from the web console: a Maps task typed into the composer, executed step by step on the iPhone 17 Pro simulator" width="100%" />
+</p>
+
 > **Status: Phase 1b (simulator, all interfaces).** `apollo run`, the web console (`apollo ui`),
 > `apollo doctor` and the MCP server (`apollo mcp --install claude`) all drive a booted iOS
 > Simulator through WebDriverAgent. Physical devices, recording and the Pro-profile long tasks are
