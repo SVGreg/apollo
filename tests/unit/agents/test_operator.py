@@ -15,10 +15,10 @@
 import json
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
-from artemis.agents.operator.operator import OperatorNode
-from artemis.config.agent import MemoryTranscriptConfig
-from artemis.context import ArtemisContext
-from artemis.core.tool_failure import ToolFailure
+from apollo.agents.operator.operator import OperatorNode
+from apollo.config.agent import MemoryTranscriptConfig
+from apollo.context import ApolloContext
+from apollo.core.tool_failure import ToolFailure
 import pytest
 
 # These tests exercise the legacy 2-message prompt path. Since M5 the
@@ -30,7 +30,7 @@ LEGACY_TRANSCRIPT = MemoryTranscriptConfig(enabled=False)
 @pytest.mark.asyncio
 async def test_operator_node_fast_path():
     # Mock context and state
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.execution_setup = None
     mock_ctx.data_engine = None
     mock_ctx.trace_id = "test-trace"
@@ -68,7 +68,7 @@ async def test_operator_node_fast_path():
     mock_llm.bind_tools.return_value = mock_llm  # Allow chaining
 
     # Patch dependencies
-    with patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm):
         node = OperatorNode(mock_ctx, transcript_config=LEGACY_TRANSCRIPT)
         node_update = await node(mock_state)
 
@@ -83,9 +83,9 @@ async def test_operator_node_fast_path():
 
 @pytest.mark.asyncio
 async def test_perform_action_validation():
-    from artemis.agents.operator.operator import OperatorNode
+    from apollo.agents.operator.operator import OperatorNode
     from unittest.mock import MagicMock
-    from artemis.graph.state import State
+    from apollo.graph.state import State
 
     mock_ctx = MagicMock()
     node = OperatorNode(mock_ctx, transcript_config=LEGACY_TRANSCRIPT)
@@ -244,9 +244,9 @@ async def test_coordinate_click_requires_and_records_the_models_description():
     tested on the model's behalf: the recorded semantics are exactly what the
     model declared, kept apart from the observed ``target_*`` fields.
     """
-    from artemis.agents.operator.operator import OperatorNode
+    from apollo.agents.operator.operator import OperatorNode
     from unittest.mock import MagicMock
-    from artemis.graph.state import State
+    from apollo.graph.state import State
 
     mock_ctx = MagicMock()
     node = OperatorNode(mock_ctx, transcript_config=LEGACY_TRANSCRIPT)
@@ -312,9 +312,9 @@ async def test_coordinate_click_requires_and_records_the_models_description():
 
 @pytest.mark.asyncio
 async def test_coordinate_swipe_requires_description_directional_does_not():
-    from artemis.agents.operator.operator import OperatorNode
+    from apollo.agents.operator.operator import OperatorNode
     from unittest.mock import MagicMock
-    from artemis.graph.state import State
+    from apollo.graph.state import State
 
     node = OperatorNode(MagicMock(), transcript_config=LEGACY_TRANSCRIPT)
     mock_state = MagicMock(spec=State)
@@ -346,12 +346,12 @@ async def test_coordinate_swipe_requires_description_directional_does_not():
 
 @pytest.mark.asyncio
 async def test_operator_node_multiple_actions():
-    from artemis.agents.operator.operator import OperatorNode
-    from artemis.context import ArtemisContext
+    from apollo.agents.operator.operator import OperatorNode
+    from apollo.context import ApolloContext
     from unittest.mock import AsyncMock, MagicMock, patch
     import json
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.execution_setup = None
     mock_ctx.data_engine = None
 
@@ -383,7 +383,7 @@ async def test_operator_node_multiple_actions():
     mock_llm.ainvoke = AsyncMock(return_value=mock_response)
     mock_llm.bind_tools.return_value = mock_llm
 
-    with patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm):
         node = OperatorNode(mock_ctx, transcript_config=LEGACY_TRANSCRIPT)
         node_update = await node(mock_state)
 
@@ -410,11 +410,11 @@ async def test_operator_node_multiple_actions():
 
 @pytest.mark.asyncio
 async def test_operator_node_no_record_step():
-    from artemis.agents.operator.operator import OperatorNode
-    from artemis.context import ArtemisContext
+    from apollo.agents.operator.operator import OperatorNode
+    from apollo.context import ApolloContext
     from unittest.mock import AsyncMock, MagicMock, patch
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = MagicMock()
     mock_ctx.data_engine.current_session_id = "test-session"
 
@@ -435,7 +435,7 @@ async def test_operator_node_no_record_step():
     mock_llm.ainvoke = AsyncMock(return_value=mock_response)
     mock_llm.bind_tools.return_value = mock_llm
 
-    with patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm):
         node = OperatorNode(mock_ctx, transcript_config=LEGACY_TRANSCRIPT)
         node_update = await node(mock_state)
 
@@ -447,11 +447,11 @@ async def test_operator_node_no_record_step():
 
 @pytest.mark.asyncio
 async def test_operator_dynamic_prompt():
-    from artemis.agents.operator.operator import OperatorNode, PromptComponent
-    from artemis.context import ArtemisContext
+    from apollo.agents.operator.operator import OperatorNode, PromptComponent
+    from apollo.context import ApolloContext
     from unittest.mock import AsyncMock, MagicMock, patch
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = None
 
     mock_state = MagicMock()
@@ -485,7 +485,7 @@ async def test_operator_dynamic_prompt():
     mock_llm.ainvoke.side_effect = mock_ainvoke
     mock_llm.bind_tools.return_value = mock_llm
 
-    with patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm):
         node = OperatorNode(
             mock_ctx, prompt_components=[MockComponent()], transcript_config=LEGACY_TRANSCRIPT
         )
@@ -494,13 +494,13 @@ async def test_operator_dynamic_prompt():
 
 @pytest.mark.asyncio
 async def test_operator_history_compression():
-    from artemis.agents.operator.operator import OperatorNode
-    from artemis.context import ArtemisContext
+    from apollo.agents.operator.operator import OperatorNode
+    from apollo.context import ApolloContext
     from unittest.mock import AsyncMock, MagicMock, patch
     import json
     import hashlib
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = MagicMock()
 
     subgoal_old_hash = hashlib.md5(b"subgoal_old").hexdigest()
@@ -616,9 +616,9 @@ async def test_operator_history_compression():
     mock_llm.bind_tools.return_value = mock_llm
 
     with (
-        patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm),
+        patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm),
         patch(
-            "artemis.agents.operator.operator.OperatorNode._get_active_subgoal_hash",
+            "apollo.agents.operator.operator.OperatorNode._get_active_subgoal_hash",
             return_value=subgoal_current_hash,
         ),
         patch("pathlib.Path.exists", return_value=True),
@@ -630,11 +630,11 @@ async def test_operator_history_compression():
 
 @pytest.mark.asyncio
 async def test_operator_tracks_subagent_calls():
-    from artemis.agents.operator.operator import OperatorNode
-    from artemis.context import ArtemisContext
+    from apollo.agents.operator.operator import OperatorNode
+    from apollo.context import ApolloContext
     from unittest.mock import AsyncMock, MagicMock, patch
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.execution_setup = None
     mock_ctx.data_engine = None
 
@@ -682,9 +682,9 @@ async def test_operator_tracks_subagent_calls():
     mock_diagnoser_tool.ainvoke = AsyncMock(return_value="Diagnosis result")
 
     with (
-        patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm),
+        patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm),
         patch(
-            "artemis.agents.operator.operator.trace_langchain_tool",
+            "apollo.agents.operator.operator.trace_langchain_tool",
             side_effect=lambda t, ctx: t,
         ),
     ):
@@ -704,12 +704,12 @@ async def test_operator_tracks_subagent_calls():
 
 @pytest.mark.asyncio
 async def test_operator_defer_action_for_gathering():
-    from artemis.agents.operator.operator import OperatorNode
-    from artemis.context import ArtemisContext
+    from apollo.agents.operator.operator import OperatorNode
+    from apollo.context import ApolloContext
     from unittest.mock import AsyncMock, MagicMock, patch
     import json
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.execution_setup = None
     mock_ctx.data_engine = None
 
@@ -780,9 +780,9 @@ async def test_operator_defer_action_for_gathering():
     mock_diagnoser_tool.func = None
 
     with (
-        patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm),
+        patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm),
         patch(
-            "artemis.agents.operator.operator.trace_langchain_tool",
+            "apollo.agents.operator.operator.trace_langchain_tool",
             side_effect=lambda t, ctx: t,
         ),
     ):
@@ -806,9 +806,9 @@ async def test_operator_defer_action_for_gathering():
 
 @pytest.mark.asyncio
 async def test_wait_actions_translation():
-    from artemis.agents.operator.operator import OperatorNode
+    from apollo.agents.operator.operator import OperatorNode
     from unittest.mock import MagicMock
-    from artemis.graph.state import State
+    from apollo.graph.state import State
 
     mock_ctx = MagicMock()
     node = OperatorNode(mock_ctx, transcript_config=LEGACY_TRANSCRIPT)
@@ -831,9 +831,9 @@ async def test_wait_actions_translation():
 
 @pytest.mark.asyncio
 async def test_long_press_action_translation():
-    from artemis.agents.operator.operator import OperatorNode
+    from apollo.agents.operator.operator import OperatorNode
     from unittest.mock import MagicMock
-    from artemis.graph.state import State
+    from apollo.graph.state import State
 
     mock_ctx = MagicMock()
     node = OperatorNode(mock_ctx, transcript_config=LEGACY_TRANSCRIPT)
@@ -912,12 +912,12 @@ async def test_long_press_action_translation():
 
 @pytest.mark.asyncio
 async def test_operator_no_defer_for_note_updating():
-    from artemis.agents.operator.operator import OperatorNode
-    from artemis.context import ArtemisContext
+    from apollo.agents.operator.operator import OperatorNode
+    from apollo.context import ApolloContext
     from unittest.mock import AsyncMock, MagicMock, patch
     import json
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.execution_setup = None
     mock_ctx.data_engine = None
 
@@ -977,9 +977,9 @@ async def test_operator_no_defer_for_note_updating():
     mock_update_note_tool.func = None
 
     with (
-        patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm),
+        patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm),
         patch(
-            "artemis.agents.operator.operator.trace_langchain_tool",
+            "apollo.agents.operator.operator.trace_langchain_tool",
             side_effect=lambda t, ctx: t,
         ),
     ):
@@ -1003,12 +1003,12 @@ async def test_operator_no_defer_for_note_updating():
 
 @pytest.mark.asyncio
 async def test_operator_defer_for_note_reading():
-    from artemis.agents.operator.operator import OperatorNode
-    from artemis.context import ArtemisContext
+    from apollo.agents.operator.operator import OperatorNode
+    from apollo.context import ApolloContext
     from unittest.mock import AsyncMock, MagicMock, patch
     import json
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.execution_setup = None
     mock_ctx.data_engine = None
 
@@ -1073,9 +1073,9 @@ async def test_operator_defer_for_note_reading():
     mock_read_note_tool.func = None
 
     with (
-        patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm),
+        patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm),
         patch(
-            "artemis.agents.operator.operator.trace_langchain_tool",
+            "apollo.agents.operator.operator.trace_langchain_tool",
             side_effect=lambda t, ctx: t,
         ),
     ):
@@ -1103,12 +1103,12 @@ async def test_operator_defer_for_note_reading():
 
 @pytest.mark.asyncio
 async def test_operator_no_defer_for_note_appending():
-    from artemis.agents.operator.operator import OperatorNode
-    from artemis.context import ArtemisContext
+    from apollo.agents.operator.operator import OperatorNode
+    from apollo.context import ApolloContext
     from unittest.mock import AsyncMock, MagicMock, patch
     import json
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.execution_setup = None
     mock_ctx.data_engine = None
 
@@ -1167,9 +1167,9 @@ async def test_operator_no_defer_for_note_appending():
     mock_append_note_tool.func = None
 
     with (
-        patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm),
+        patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm),
         patch(
-            "artemis.agents.operator.operator.trace_langchain_tool",
+            "apollo.agents.operator.operator.trace_langchain_tool",
             side_effect=lambda t, ctx: t,
         ),
     ):
@@ -1193,12 +1193,12 @@ async def test_operator_no_defer_for_note_appending():
 
 @pytest.mark.asyncio
 async def test_operator_background_tasks_prompt_injection():
-    from artemis.agents.operator.operator import OperatorNode
-    from artemis.context import ArtemisContext
-    from artemis.tools.command_tool import BackgroundTask, get_adb_task_registry
+    from apollo.agents.operator.operator import OperatorNode
+    from apollo.context import ApolloContext
+    from apollo.tools.command_tool import BackgroundTask, get_adb_task_registry
     from unittest.mock import AsyncMock, MagicMock, patch
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.execution_setup = None
     mock_ctx.data_engine = None
 
@@ -1259,9 +1259,9 @@ async def test_operator_background_tasks_prompt_injection():
             return [], None, None, False
 
         with (
-            patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm),
+            patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm),
             patch(
-                "artemis.agents.operator.operator.OperatorNode._invoke_llm_loop",
+                "apollo.agents.operator.operator.OperatorNode._invoke_llm_loop",
                 side_effect=mock_invoke_llm_loop,
             ),
         ):
@@ -1289,11 +1289,11 @@ async def test_operator_background_tasks_prompt_injection():
 
 @pytest.mark.asyncio
 async def test_operator_tool_limit_exceeded_warning():
-    from artemis.agents.operator.operator import OperatorNode
-    from artemis.context import ArtemisContext
+    from apollo.agents.operator.operator import OperatorNode
+    from apollo.context import ApolloContext
     from unittest.mock import AsyncMock, MagicMock, patch
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.execution_setup = None
     mock_ctx.data_engine = None
 
@@ -1330,9 +1330,9 @@ async def test_operator_tool_limit_exceeded_warning():
         return [], None, None, False
 
     with (
-        patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm),
+        patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm),
         patch(
-            "artemis.agents.operator.operator.OperatorNode._invoke_llm_loop",
+            "apollo.agents.operator.operator.OperatorNode._invoke_llm_loop",
             side_effect=mock_invoke_llm_loop,
         ),
     ):
@@ -1358,13 +1358,13 @@ async def test_operator_tool_limit_exceeded_warning():
 
 @pytest.mark.asyncio
 async def test_operator_fallback_function_call_parsing():
-    from artemis.agents.operator.operator import OperatorNode
-    from artemis.context import ArtemisContext
+    from apollo.agents.operator.operator import OperatorNode
+    from apollo.context import ApolloContext
     from unittest.mock import AsyncMock, MagicMock, patch
     from langchain_core.messages import AIMessage
     import json
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.execution_setup = None
     mock_ctx.data_engine = None
 
@@ -1394,7 +1394,7 @@ async def test_operator_fallback_function_call_parsing():
     mock_llm.ainvoke = AsyncMock(return_value=mock_response)
     mock_llm.bind_tools.return_value = mock_llm
 
-    with patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm):
         node = OperatorNode(mock_ctx, transcript_config=LEGACY_TRANSCRIPT)
         node_update = await node(mock_state)
 
@@ -1410,11 +1410,11 @@ async def test_operator_fallback_function_call_parsing():
 
 @pytest.mark.asyncio
 async def test_operator_swipe_translation():
-    from artemis.agents.operator.operator import OperatorNode
-    from artemis.context import ArtemisContext
+    from apollo.agents.operator.operator import OperatorNode
+    from apollo.context import ApolloContext
     from unittest.mock import MagicMock
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_state = MagicMock()
     mock_state.operator_raw_data = {"width": 1080, "height": 2400}
     node = OperatorNode(mock_ctx, transcript_config=LEGACY_TRANSCRIPT)
@@ -1477,11 +1477,11 @@ async def test_operator_swipe_translation():
 
 @pytest.mark.asyncio
 async def test_operator_press_key_translation_is_case_insensitive():
-    from artemis.agents.operator.operator import OperatorNode
-    from artemis.context import ArtemisContext
+    from apollo.agents.operator.operator import OperatorNode
+    from apollo.context import ApolloContext
     from unittest.mock import MagicMock
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_state = MagicMock()
     mock_state.operator_raw_data = {"width": 1080, "height": 2400}
     node = OperatorNode(mock_ctx, transcript_config=LEGACY_TRANSCRIPT)
@@ -1523,7 +1523,7 @@ async def test_operator_press_key_translation_is_case_insensitive():
 async def test_operator_helper_tool_message_status_is_structural(result, expected_status):
     from langchain_core.messages import ToolMessage
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.execution_setup = None
     mock_ctx.data_engine = None
 
@@ -1565,9 +1565,9 @@ async def test_operator_helper_tool_message_status_is_structural(result, expecte
     read_note_tool.func = None
 
     with (
-        patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm),
+        patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm),
         patch(
-            "artemis.agents.operator.operator.trace_langchain_tool",
+            "apollo.agents.operator.operator.trace_langchain_tool",
             side_effect=lambda t, ctx: t,
         ),
     ):
@@ -1596,7 +1596,7 @@ async def test_operator_burst_limit_error_text_is_not_repeated_per_call():
     paragraph travels once; the remaining ToolMessages just point at it."""
     from langchain_core.messages import ToolMessage
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.execution_setup = None
     mock_ctx.data_engine = None
 
@@ -1627,7 +1627,7 @@ async def test_operator_burst_limit_error_text_is_not_repeated_per_call():
     mock_llm.bind_tools.return_value = mock_llm
 
     with (
-        patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm),
+        patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm),
         patch.object(OperatorNode, "_max_burst_actions", return_value=4),
     ):
         node = OperatorNode(mock_ctx, transcript_config=LEGACY_TRANSCRIPT)

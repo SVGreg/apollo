@@ -17,7 +17,7 @@
 from pathlib import Path
 from unittest.mock import patch
 
-from artemis.toolchain import ToolchainResolver, find_adb, find_ffmpeg, find_scrcpy
+from apollo.toolchain import ToolchainResolver, find_adb, find_ffmpeg, find_scrcpy
 
 
 def test_toolchain_env_override():
@@ -26,7 +26,7 @@ def test_toolchain_env_override():
     fake_adb = Path("/tmp/fake_adb_binary")
     fake_adb.touch(exist_ok=True)
 
-    with patch.dict("os.environ", {"ARTEMIS_ADB_PATH": str(fake_adb)}):
+    with patch.dict("os.environ", {"APOLLO_ADB_PATH": str(fake_adb)}):
         resolved = resolver.resolve("adb", force_refresh=True)
         assert resolved == str(fake_adb.resolve())
 

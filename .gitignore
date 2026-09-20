@@ -84,20 +84,20 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Artemis Runtime & Telemetry
+# Apollo Runtime & Telemetry
 traces/
 scratch/
-.artemis_paused
-.artemis_server.json
+.apollo_paused
+.apollo_server.json
 *.log
 data_engine.db
 data_engine.db-journal
 .ipc_port
-.artemis_ipc_port
+.apollo_ipc_port
 .ls_address
 .jetski_ls_address
 .jetski_env
-.artemis_env
+.apollo_env
 live_screenshot*.jpg
 live_screenshot*.png
 

@@ -29,8 +29,8 @@ import re
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
-from artemis.memory.step_memory import StepMemoryService
-from artemis.memory.transcript import (
+from apollo.memory.step_memory import StepMemoryService
+from apollo.memory.transcript import (
     EXECUTION_RESULT_MARKER,
     PLAN_RECITATION_MARKER,
     PRO_UI_LIST_MARKER,
@@ -347,7 +347,7 @@ def test_commit_records_every_step_key_of_a_multi_action_turn():
 def test_render_turn_transcript_is_lossless_over_text_thinking_tools_and_results():
     from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
-    from artemis.memory.transcript import SCREENSHOT_PLACEHOLDER, render_turn_transcript
+    from apollo.memory.transcript import SCREENSHOT_PLACEHOLDER, render_turn_transcript
 
     messages = [
         HumanMessage(
@@ -402,7 +402,7 @@ def test_ledger_turn_transcript_reflects_the_scrubbed_active_region():
     after the scrub edge: the UI list stripped, the validator result present."""
     from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
-    from artemis.memory.transcript import PRO_UI_LIST_MARKER, TranscriptLedger
+    from apollo.memory.transcript import PRO_UI_LIST_MARKER, TranscriptLedger
 
     ledger = TranscriptLedger(clock=lambda: 0.0)
 
@@ -559,7 +559,7 @@ def test_ephemeral_blocks_vanish_at_the_text_edge_and_not_before():
     """(ii) Per-turn notices marked through ``mark_ephemeral`` stay only while
     the observation is the live tail; they are deleted at the text edge
     together with the strip, before the screenshot is resolved at K."""
-    from artemis.memory.transcript import EPHEMERAL_BLOCKS_KEY, mark_ephemeral
+    from apollo.memory.transcript import EPHEMERAL_BLOCKS_KEY, mark_ephemeral
 
     ledger = TranscriptLedger(step_memory=_ready_service(6), image_scrub_depth=3)
 
@@ -719,7 +719,7 @@ def test_last_turn_silent_recognises_streamed_ai_message_chunks():
     """Streamed replies are AIMessageChunk (type "AIMessageChunk"), not "ai"."""
     from langchain_core.messages import AIMessageChunk, HumanMessage
 
-    from artemis.memory.transcript import TranscriptLedger, render_turn_transcript
+    from apollo.memory.transcript import TranscriptLedger, render_turn_transcript
 
     ledger = TranscriptLedger()
     ledger.stage_turn([HumanMessage(content="obs"), AIMessageChunk(content=[])])

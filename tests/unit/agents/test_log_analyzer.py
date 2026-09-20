@@ -21,9 +21,9 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 from langchain_core.tools import StructuredTool
 import pytest
 
-from artemis.agents.log_analyzer.log_analyzer import LogAnalyzerNode
-from artemis.context import ArtemisContext
-from artemis.core.tool_failure import ToolFailure
+from apollo.agents.log_analyzer.log_analyzer import LogAnalyzerNode
+from apollo.context import ApolloContext
+from apollo.core.tool_failure import ToolFailure
 
 _STATUS_CASES = [
     pytest.param(ToolFailure("Error searching logs: device gone"), "error", id="tool_failure"),
@@ -43,7 +43,7 @@ def _text_tool(name: str, result):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("result, expected_status", _STATUS_CASES)
 async def test_agent_loop_tool_message_status_is_structural(result, expected_status):
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.data_engine = None
     node = LogAnalyzerNode(ctx=ctx)
     tool = _text_tool("search_logs", result)
@@ -57,7 +57,7 @@ async def test_agent_loop_tool_message_status_is_structural(result, expected_sta
     messages = [SystemMessage(content="s"), HumanMessage(content="h")]
 
     with patch(
-        "artemis.agents.log_analyzer.log_analyzer.acomplete",
+        "apollo.agents.log_analyzer.log_analyzer.acomplete",
         new=AsyncMock(side_effect=[tool_turn, final_turn]),
     ):
         outcome = await node._run_agent_loop(

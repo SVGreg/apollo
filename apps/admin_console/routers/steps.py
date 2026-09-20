@@ -17,7 +17,7 @@ import traceback
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse
 
-from artemis.config import TEST_OUTPUTS_DIR
+from apollo.config import TEST_OUTPUTS_DIR
 
 try:
     from admin_console.database.repositories.step_repository import step_repo

@@ -15,7 +15,7 @@
 import traceback
 from fastapi import APIRouter, HTTPException
 
-from artemis.config import WORKSPACE_ROOT
+from apollo.config import WORKSPACE_ROOT
 
 try:
     from admin_console.schemas.task_schema import ReplayRequest

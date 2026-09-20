@@ -20,15 +20,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from artemis.agents.explorer.constants import (
+from apollo.agents.explorer.constants import (
     ASK_EXPLORER_CONTEXT_FEEDBACK_DESCRIPTION,
     ASK_EXPLORER_DESCRIPTION,
     ASK_EXPLORER_QUERY_DESCRIPTION,
 )
-from artemis.context import ArtemisContext
-from artemis.graph.state import State
-from artemis.tools.base import ArtemisTool
-from artemis.tools.explorer_tool import (
+from apollo.context import ApolloContext
+from apollo.graph.state import State
+from apollo.tools.base import ApolloTool
+from apollo.tools.explorer_tool import (
     AskExplorerArgs,
     AskExplorerTool,
     ExplorerCandidate,
@@ -53,11 +53,11 @@ from artemis.tools.explorer_tool import (
 @pytest.fixture(autouse=True)
 def _no_env_tier(monkeypatch):
     """The environment override must not leak into tier-resolution assertions."""
-    monkeypatch.delenv("ARTEMIS_EXPLORER_VERSION", raising=False)
+    monkeypatch.delenv("APOLLO_EXPLORER_VERSION", raising=False)
 
 
 def _ctx(width: int | None = 1080, height: int | None = 2400, base_dir: Path | None = None):
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.agent_config = None
     ctx.llm_config = None
     ctx.execution_setup = None
@@ -87,7 +87,7 @@ def _state(screenshot: str | None = "/tmp/test.jpg", raw: dict | None = None):
 def _explorer_returning(raw):
     instance = MagicMock()
     instance.run = AsyncMock(return_value=raw)
-    return patch("artemis.tools.explorer_tool.Explorer", return_value=instance), instance
+    return patch("apollo.tools.explorer_tool.Explorer", return_value=instance), instance
 
 
 # --------------------------------------------------------------------------- #
@@ -96,7 +96,7 @@ def _explorer_returning(raw):
 
 
 def test_tool_contract_is_tier_agnostic():
-    assert issubclass(AskExplorerTool, ArtemisTool)
+    assert issubclass(AskExplorerTool, ApolloTool)
     assert isinstance(ask_explorer, AskExplorerTool)
     assert ask_explorer.name == "ask_explorer"
     assert ask_explorer.category == "explorer"
@@ -337,7 +337,7 @@ def test_render_operator_blocks_adds_the_annotated_image(tmp_path):
     def fake_draw_dots(screenshot_path, points, labels, output_path, **kwargs):
         Path(output_path).write_bytes(b"fake_annotated_image_bytes")
 
-    with patch("artemis.tools.explorer_tool.draw_dots", side_effect=fake_draw_dots) as draw:
+    with patch("apollo.tools.explorer_tool.draw_dots", side_effect=fake_draw_dots) as draw:
         result = render_operator_blocks(ctx, state, "Find buttons", outcome, registered)
 
     draw.assert_called_once()
@@ -369,7 +369,7 @@ def test_render_operator_blocks_numbers_annotations_sequentially(tmp_path):
         seen.append(Path(output_path).name)
         Path(output_path).write_bytes(b"img")
 
-    with patch("artemis.tools.explorer_tool.draw_dots", side_effect=fake_draw_dots):
+    with patch("apollo.tools.explorer_tool.draw_dots", side_effect=fake_draw_dots):
         render_operator_blocks(ctx, state, "B", outcome, registered)
         render_operator_blocks(ctx, state, "B", outcome, registered)
     assert seen == ["explorer_output_1.jpg", "explorer_output_2.jpg"]
@@ -381,7 +381,7 @@ def test_render_operator_blocks_degrades_to_text_when_drawing_fails(tmp_path):
     outcome = ExplorerOutcome(candidates=[ExplorerCandidate("S1", (500, 500), "First Button")])
     registered = [RegisteredCandidate(2, (540, 1200), (500, 500), "First Button")]
 
-    with patch("artemis.tools.explorer_tool.draw_dots", side_effect=OSError("no PIL")):
+    with patch("apollo.tools.explorer_tool.draw_dots", side_effect=OSError("no PIL")):
         result = render_operator_blocks(ctx, state, "Find buttons", outcome, registered)
 
     assert isinstance(result, str)
@@ -391,7 +391,7 @@ def test_render_operator_blocks_degrades_to_text_when_drawing_fails(tmp_path):
 def test_render_operator_blocks_is_plain_text_without_candidates(tmp_path):
     ctx = _ctx(base_dir=tmp_path)
     state = _state(screenshot=str(tmp_path / "shot.jpg"))
-    with patch("artemis.tools.explorer_tool.draw_dots") as draw:
+    with patch("apollo.tools.explorer_tool.draw_dots") as draw:
         result = render_operator_blocks(ctx, state, "x", ExplorerOutcome(message="Nope."), [])
     draw.assert_not_called()
     assert isinstance(result, str)
@@ -412,7 +412,7 @@ async def test_locate_runs_the_resolved_tier_and_parses_the_answer():
     with (
         explorer_patch,
         patch(
-            "artemis.tools.explorer_tool.resolve_explorer_version", return_value="ultra"
+            "apollo.tools.explorer_tool.resolve_explorer_version", return_value="ultra"
         ) as resolve,
     ):
         outcome = await locate(ctx, state, "gear icon", "was wrong", agent_name="validator")
@@ -433,7 +433,7 @@ async def test_locate_forwards_a_programmatic_version_pin():
     with (
         explorer_patch,
         patch(
-            "artemis.tools.explorer_tool.resolve_explorer_version", return_value="pro"
+            "apollo.tools.explorer_tool.resolve_explorer_version", return_value="pro"
         ) as resolve,
     ):
         await locate(ctx, state, "q", version="pro", agent_name="flash")
@@ -448,7 +448,7 @@ async def test_locate_unknown_resolved_tier_falls_back_to_the_default_tier():
     explorer_patch, instance = _explorer_returning(json.dumps({"candidates": []}))
     with (
         explorer_patch,
-        patch("artemis.tools.explorer_tool.resolve_explorer_version", return_value="turbo"),
+        patch("apollo.tools.explorer_tool.resolve_explorer_version", return_value="turbo"),
     ):
         await locate(ctx, state, "q")
     assert instance.run.await_args.kwargs["version"] == "flash"
@@ -458,7 +458,7 @@ async def test_locate_unknown_resolved_tier_falls_back_to_the_default_tier():
 async def test_locate_without_a_screenshot_is_an_error_outcome():
     ctx = _ctx()
     state = _state(screenshot=None)
-    with patch("artemis.tools.explorer_tool.Explorer") as explorer_cls:
+    with patch("apollo.tools.explorer_tool.Explorer") as explorer_cls:
         outcome = await locate(ctx, state, "gear icon")
     explorer_cls.assert_not_called()
     assert outcome.error
@@ -471,7 +471,7 @@ async def test_locate_contains_explorer_exceptions_as_error_outcomes():
     state = _state()
     instance = MagicMock()
     instance.run = AsyncMock(side_effect=RuntimeError("quota exhausted"))
-    with patch("artemis.tools.explorer_tool.Explorer", return_value=instance):
+    with patch("apollo.tools.explorer_tool.Explorer", return_value=instance):
         outcome = await locate(ctx, state, "gear icon")
     assert outcome.error and not outcome.found
     assert outcome.message == "Explorer failed: quota exhausted"
@@ -540,7 +540,7 @@ async def test_langchain_tool_uses_the_operator_presentation(tmp_path):
     def fake_draw_dots(screenshot_path, points, labels, output_path, **kwargs):
         Path(output_path).write_bytes(b"img")
 
-    with explorer_patch, patch("artemis.tools.explorer_tool.draw_dots", side_effect=fake_draw_dots):
+    with explorer_patch, patch("apollo.tools.explorer_tool.draw_dots", side_effect=fake_draw_dots):
         tool = get_ask_explorer_tool(ctx)
         result = await tool.ainvoke(
             {"query": "Find buttons", "context_feedback": "", "state": state}
@@ -577,7 +577,7 @@ async def test_run_explorer_logic_replay_shim_returns_operator_blocks(tmp_path):
     def fake_draw_dots(screenshot_path, points, labels, output_path, **kwargs):
         Path(output_path).write_bytes(b"img")
 
-    with explorer_patch, patch("artemis.tools.explorer_tool.draw_dots", side_effect=fake_draw_dots):
+    with explorer_patch, patch("apollo.tools.explorer_tool.draw_dots", side_effect=fake_draw_dots):
         result = await _run_explorer_logic(ctx, state, "B", "", version="ultra")
 
     assert instance.run.await_args.kwargs["version"] == "ultra"

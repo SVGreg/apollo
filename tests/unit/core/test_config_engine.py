@@ -16,7 +16,7 @@
 
 from unittest.mock import patch
 
-from artemis.config.core import CascadingConfigEngine, interpolate_config_value
+from apollo.config.core import CascadingConfigEngine, interpolate_config_value
 
 
 def test_interpolate_env_variables():

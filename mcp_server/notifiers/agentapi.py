@@ -54,7 +54,7 @@ class AgentApiNotifier(BaseNotifier):
 
             candidates = [
                 os.path.expanduser("~/.gemini/jetski/bin/agentapi"),
-                os.path.expanduser("~/.artemis/bin/agentapi"),
+                os.path.expanduser("~/.apollo/bin/agentapi"),
                 os.path.expanduser("~/bin/agentapi"),
                 "/usr/local/bin/agentapi",
             ]
@@ -82,7 +82,7 @@ class AgentApiNotifier(BaseNotifier):
         """Persists recovered environment to shared files for faster subsequent access."""
         shared_candidates = [
             os.path.expanduser("~/.gemini/jetski/.jetski_env"),
-            os.path.expanduser("~/.artemis/.artemis_env"),
+            os.path.expanduser("~/.apollo/.apollo_env"),
         ]
         try:
             parent_dir = os.path.dirname(
@@ -126,7 +126,7 @@ class AgentApiNotifier(BaseNotifier):
         if not force_proc_scan:
             shared_candidates = [
                 os.path.expanduser("~/.gemini/jetski/.jetski_env"),
-                os.path.expanduser("~/.artemis/.artemis_env"),
+                os.path.expanduser("~/.apollo/.apollo_env"),
             ]
             try:
                 parent_dir = os.path.dirname(

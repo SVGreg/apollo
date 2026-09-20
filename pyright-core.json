@@ -2,16 +2,16 @@
   "venvPath": ".",
   "venv": ".venv",
   "include": [
-    "artemis/graph/state.py",
-    "artemis/graph/visibility.py",
-    "artemis/runtime/adb_endpoint.py",
-    "artemis/runtime/process_probe.py",
-    "artemis/mcp/action_types.py",
-    "artemis/data_engine/models.py",
-    "artemis/agents/explorer/native_runner.py",
-    "artemis/agents/explorer/perception_tools.py",
+    "apollo/graph/state.py",
+    "apollo/graph/visibility.py",
+    "apollo/runtime/adb_endpoint.py",
+    "apollo/runtime/process_probe.py",
+    "apollo/mcp/action_types.py",
+    "apollo/data_engine/models.py",
+    "apollo/agents/explorer/native_runner.py",
+    "apollo/agents/explorer/perception_tools.py",
     "mcp_server/utils/device_utils.py",
-    "packages/artemis-client/src/artemis_client"
+    "packages/apollo-client/src/apollo_client"
   ],
   "exclude": [".venv/**"]
 }

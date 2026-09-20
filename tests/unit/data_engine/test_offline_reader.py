@@ -26,9 +26,9 @@ from unittest.mock import MagicMock
 import pytest
 from PIL import Image
 
-from artemis.context import ArtemisContext
-from artemis.data_engine.engine import DataEngine
-from artemis.data_engine.history_reader import HistoryReader, OfflineHistoryReader
+from apollo.context import ApolloContext
+from apollo.data_engine.engine import DataEngine
+from apollo.data_engine.history_reader import HistoryReader, OfflineHistoryReader
 
 
 def _jpeg(color: str) -> bytes:
@@ -38,7 +38,7 @@ def _jpeg(color: str) -> bytes:
 
 
 def _engine(tmp_path):
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.execution_setup = MagicMock()
     ctx.execution_setup.traces_path = str(tmp_path)
     ctx.device = None

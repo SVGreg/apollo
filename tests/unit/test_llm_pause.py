@@ -3,7 +3,7 @@ import logging
 
 import pytest
 
-from artemis.services import llm
+from apollo.services import llm
 
 
 @pytest.mark.asyncio

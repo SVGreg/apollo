@@ -18,7 +18,7 @@ import logging
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from artemis.agents.explorer.explorer import Explorer
+from apollo.agents.explorer.explorer import Explorer
 from tests.integration.agents.explorer.test_explorer_all_tools.helpers import (
     create_mock_context,
     create_mock_state,
@@ -175,7 +175,7 @@ async def run_single_set(set_idx, query, search_query, labels, coords_nx, coords
 
 async def main():
     import shutil
-    from artemis.config import settings
+    from apollo.config import settings
 
     # Define outputs directory
     outputs_dir = Path(__file__).resolve().parent / "outputs"

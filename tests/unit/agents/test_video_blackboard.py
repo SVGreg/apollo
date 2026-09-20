@@ -17,12 +17,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from artemis.agents.video_analyzer.blackboard import (
+from apollo.agents.video_analyzer.blackboard import (
     VideoBlackboard,
     get_video_blackboard,
 )
-from artemis.agents.video_analyzer.video_analyzer import VideoAnalyzer, _invoke_with_retry
-from artemis.context import ArtemisContext
+from apollo.agents.video_analyzer.video_analyzer import VideoAnalyzer, _invoke_with_retry
+from apollo.context import ApolloContext
 
 
 def test_blackboard_persists_segments_observations_and_evidence(tmp_path):
@@ -103,7 +103,7 @@ def test_blackboard_lease_suppresses_duplicates_and_is_reclaimable():
 
 
 def test_get_video_blackboard_is_shared_by_context():
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx._video_blackboard = None
     ctx.data_engine = None
     ctx.execution_setup = None
@@ -127,7 +127,7 @@ def test_get_video_blackboard_is_shared_by_context():
 
 @pytest.fixture
 def analyzer_context():
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx._video_blackboard = None
     ctx._mobile_controller = None
     ctx.data_engine = None
@@ -143,7 +143,7 @@ def analyzer_context():
 
 @pytest.mark.asyncio
 async def test_spawn_sub_agent_reuses_complete_persistent_coverage(analyzer_context):
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(analyzer_context)
     claim = analyzer.blackboard.claim_segment(10.0, 20.0, "verify login")
     analyzer.blackboard.complete_segment(
@@ -165,7 +165,7 @@ async def test_spawn_sub_agent_reuses_complete_persistent_coverage(analyzer_cont
 
 @pytest.mark.asyncio
 async def test_spawn_sub_agent_returns_partial_and_keeps_prior_success(analyzer_context):
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(analyzer_context)
     claim = analyzer.blackboard.claim_segment(0.0, 60.0, "summarize flow")
     analyzer.blackboard.complete_segment(
@@ -196,7 +196,7 @@ async def test_video_coordinator_retries_transient_failures():
         side_effect=[TimeoutError("timeout one"), ConnectionError("reset"), "completed"]
     )
     with patch(
-        "artemis.agents.video_analyzer.video_analyzer.asyncio.sleep", new_callable=AsyncMock
+        "apollo.agents.video_analyzer.video_analyzer.asyncio.sleep", new_callable=AsyncMock
     ) as sleep:
         result = await _invoke_with_retry(operation, "test coordinator")
 
@@ -207,7 +207,7 @@ async def test_video_coordinator_retries_transient_failures():
 
 @pytest.mark.asyncio
 async def test_audio_analysis_reuses_exact_completed_coverage(analyzer_context):
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(analyzer_context)
     claim = analyzer.blackboard.claim_segment(2.0, 6.0, "hear notification", modality="audio")
     analyzer.blackboard.complete_segment(
@@ -220,7 +220,7 @@ async def test_audio_analysis_reuses_exact_completed_coverage(analyzer_context):
         modality="audio",
     )
 
-    with patch("artemis.agents.video_analyzer.video_analyzer.get_controller") as controller:
+    with patch("apollo.agents.video_analyzer.video_analyzer.get_controller") as controller:
         result = await analyzer.exec_analyze_audio_only(2.0, 6.0, "hear notification")
 
     controller.assert_not_called()
@@ -253,9 +253,9 @@ def test_blackboard_metrics_include_structured_failures(tmp_path):
 def test_session_deletion_removes_video_blackboard_rows(tmp_path):
     from uuid import uuid4
 
-    from artemis.data_engine.engine import DataEngine
+    from apollo.data_engine.engine import DataEngine
 
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.execution_setup = MagicMock(traces_path=str(tmp_path / "traces"))
     ctx.device = None
     engine = DataEngine(ctx)

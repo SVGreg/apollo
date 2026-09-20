@@ -22,7 +22,7 @@ import uvicorn
 
 from apps.admin_console.core.state import state
 from apps.admin_console.routers.tasks import stream_events
-from apps.admin_console.server import ArtemisUvicornServer, app, on_shutdown
+from apps.admin_console.server import ApolloUvicornServer, app, on_shutdown
 
 WINDOWS_FORCE_SIGNAL = getattr(signal, "SIGBREAK", signal.SIGTERM)
 
@@ -92,7 +92,7 @@ async def test_windows_sigint_is_ignored_while_task_is_active():
     state.current_process = MagicMock(returncode=None)
     state.is_shutting_down = False
     state.shutdown_event.clear()
-    server = ArtemisUvicornServer(uvicorn.Config(app))
+    server = ApolloUvicornServer(uvicorn.Config(app))
 
     with (
         patch("apps.admin_console.server.sys.platform", "win32"),
@@ -119,7 +119,7 @@ async def test_non_windows_sigint_and_windows_sigbreak_keep_uvicorn_behavior(
     state.current_process = MagicMock(returncode=None)
     state.is_shutting_down = False
     state.shutdown_event.clear()
-    server = ArtemisUvicornServer(uvicorn.Config(app))
+    server = ApolloUvicornServer(uvicorn.Config(app))
 
     with (
         patch("apps.admin_console.server.sys.platform", platform_name),

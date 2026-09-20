@@ -15,32 +15,32 @@
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from artemis.context import ArtemisContext
-from artemis.tools.base import ArtemisTool
-from artemis.tools.scratchpad import (
+from apollo.context import ApolloContext
+from apollo.tools.base import ApolloTool
+from apollo.tools.scratchpad import (
     UpdateNoteArgs,
     UpdateNotePure,
     UpdateNotePureTool,
     get_update_note_tool_pure,
     update_note_pure,
 )
-from artemis.utils.notes import save_note_content
+from apollo.utils.notes import save_note_content
 import pytest
 
 
 @pytest.fixture
 def mock_ctx(tmp_path):
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.data_engine = MagicMock()
     ctx.data_engine.base_dir = str(tmp_path)
     return ctx
 
 
 def test_update_note_pure_tool_subclass():
-    """Verify UpdateNotePureTool is a subclass of ArtemisTool."""
-    assert issubclass(UpdateNotePureTool, ArtemisTool)
-    assert issubclass(UpdateNotePure, ArtemisTool)
-    assert isinstance(update_note_pure, ArtemisTool)
+    """Verify UpdateNotePureTool is a subclass of ApolloTool."""
+    assert issubclass(UpdateNotePureTool, ApolloTool)
+    assert issubclass(UpdateNotePure, ApolloTool)
+    assert isinstance(update_note_pure, ApolloTool)
     assert isinstance(update_note_pure, UpdateNotePureTool)
 
     assert update_note_pure.name == "update_note_pure"
@@ -78,7 +78,7 @@ async def test_update_note_pure_with_warning(mock_ctx, tmp_path):
     save_note_content(tmp_path, "fuzzy_note", "Target String")
 
     with patch(
-        "artemis.tools.scratchpad.update_note_content",
+        "apollo.tools.scratchpad.update_note_content",
         return_value="Fuzzy match applied",
     ):
         result = await update_note_pure.execute(

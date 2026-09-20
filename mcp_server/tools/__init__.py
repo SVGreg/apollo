@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""MCP Tools package for ARTEMIS."""
+"""MCP Tools package for APOLLO."""
 
 from mcp_server.tools.device_state import mobile_get_device_state
 from mcp_server.tools.diagnose import mobile_diagnose

@@ -17,16 +17,16 @@ from unittest.mock import MagicMock, patch
 
 from langchain_core.messages import ToolMessage
 from langchain_core.tools import StructuredTool
-from artemis.agents.history_analyzer.history_analyzer import HistoryAnalyzer
-from artemis.context import ArtemisContext
-from artemis.core.tool_failure import ToolFailure
+from apollo.agents.history_analyzer.history_analyzer import HistoryAnalyzer
+from apollo.context import ApolloContext
+from apollo.core.tool_failure import ToolFailure
 import pytest
 
 
 @pytest.mark.asyncio
 async def test_history_analyzer_no_history():
     # Mock context with a data engine that has no steps
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = MagicMock()
     mock_ctx.data_engine.get_agent_friendly_steps.return_value = []
 
@@ -38,7 +38,7 @@ async def test_history_analyzer_no_history():
 @pytest.mark.asyncio
 async def test_history_analyzer_simple_query_no_tool_call():
     # Mock context and data engine
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = MagicMock()
     mock_ctx.data_engine.base_dir = "/tmp/fake_traces"
 
@@ -71,7 +71,7 @@ async def test_history_analyzer_simple_query_no_tool_call():
 
     with (
         patch(
-            "artemis.agents.history_analyzer.history_analyzer.get_llm",
+            "apollo.agents.history_analyzer.history_analyzer.get_llm",
             return_value=mock_llm,
         ),
         patch("pathlib.Path.exists", return_value=False),  # Force system prompt fallback
@@ -86,7 +86,7 @@ async def test_history_analyzer_simple_query_no_tool_call():
 @pytest.mark.asyncio
 async def test_history_analyzer_detailed_query_with_tool_call():
     # Mock context and data engine with full details
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = MagicMock()
     mock_ctx.data_engine.base_dir = "/tmp/fake_traces"
 
@@ -145,7 +145,7 @@ async def test_history_analyzer_detailed_query_with_tool_call():
 
     with (
         patch(
-            "artemis.agents.history_analyzer.history_analyzer.get_llm",
+            "apollo.agents.history_analyzer.history_analyzer.get_llm",
             return_value=mock_llm,
         ),
         patch("pathlib.Path.exists", return_value=False),  # Force fallback prompt
@@ -176,7 +176,7 @@ async def test_history_analyzer_detailed_query_with_tool_call():
 
 @pytest.mark.asyncio
 async def test_history_analyzer_read_note_tool_call():
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = MagicMock()
     mock_ctx.data_engine.base_dir = "/tmp/fake_traces"
 
@@ -236,7 +236,7 @@ async def test_history_analyzer_read_note_tool_call():
 
     with (
         patch(
-            "artemis.agents.history_analyzer.history_analyzer.get_llm",
+            "apollo.agents.history_analyzer.history_analyzer.get_llm",
             return_value=mock_llm,
         ),
         patch("pathlib.Path.exists", mock_exists),
@@ -270,7 +270,7 @@ async def test_history_analyzer_read_note_tool_call():
 
 
 def test_history_analyzer_robust_tools_behavior():
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = MagicMock()
     mock_ctx.data_engine.base_dir = "/tmp/fake_traces"
 
@@ -294,7 +294,7 @@ def test_history_analyzer_robust_tools_behavior():
     assert "[Screen]: Action 1" in result_details
 
     # 2. Test read_note with .md suffix
-    from artemis.tools.scratchpad import get_read_note_tool_pure
+    from apollo.tools.scratchpad import get_read_note_tool_pure
 
     read_tool = get_read_note_tool_pure(analyzer.ctx)
 
@@ -311,7 +311,7 @@ def test_history_analyzer_robust_tools_behavior():
 
 @pytest.mark.asyncio
 async def test_history_analyzer_integration_with_task_tree():
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = MagicMock()
     mock_ctx.data_engine.base_dir = "/tmp/fake_traces"
 
@@ -347,14 +347,14 @@ async def test_history_analyzer_integration_with_task_tree():
     # Mock the policy-table compiled-history renderer (M4)
     with (
         patch(
-            "artemis.agents.history_analyzer.history_analyzer.get_llm",
+            "apollo.agents.history_analyzer.history_analyzer.get_llm",
             return_value=mock_llm,
         ),
         patch(
-            "artemis.agents.history_analyzer.history_analyzer.get_note_file_path",
+            "apollo.agents.history_analyzer.history_analyzer.get_note_file_path",
             return_value=mock_path,
         ),
-        patch("artemis.agents.history_analyzer.history_analyzer.build_history_for") as mock_build,
+        patch("apollo.agents.history_analyzer.history_analyzer.build_history_for") as mock_build,
     ):
         mock_build.return_value = "Mocked operation history"
         analyzer = HistoryAnalyzer(mock_ctx)
@@ -396,7 +396,7 @@ def _text_tool(name: str, result):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("result, expected_status", _STATUS_CASES)
 async def test_history_analyzer_tool_message_status_is_structural(result, expected_status):
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = MagicMock()
     mock_ctx.data_engine.base_dir = "/tmp/fake_traces"
     mock_ctx.data_engine.get_agent_friendly_steps.return_value = [
@@ -418,7 +418,7 @@ async def test_history_analyzer_tool_message_status_is_structural(result, expect
 
     with (
         patch(
-            "artemis.agents.history_analyzer.history_analyzer.get_llm",
+            "apollo.agents.history_analyzer.history_analyzer.get_llm",
             return_value=mock_llm,
         ),
         patch.object(

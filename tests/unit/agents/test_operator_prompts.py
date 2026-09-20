@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from artemis.agents.operator.prompts import (
+from apollo.agents.operator.prompts import (
     apply_operator_prompt_contract,
     load_operator_prompts,
 )

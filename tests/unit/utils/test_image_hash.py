@@ -18,7 +18,7 @@ import io
 
 from PIL import Image, ImageDraw
 
-from artemis.utils.image_hash import HASH_SIZE, dhash_hex, hamming_distance_hex
+from apollo.utils.image_hash import HASH_SIZE, dhash_hex, hamming_distance_hex
 
 
 def _screen(draw_fn, size=(270, 600), quality=85) -> bytes:

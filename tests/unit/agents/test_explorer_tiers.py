@@ -22,19 +22,19 @@ from google.genai import types
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 import pytest
 
-from artemis.agents.explorer.explorer import Explorer
-from artemis.agents.explorer.tiers import EXPLORER_TIERS, PERCEPTION_TOOLS, get_tier
-from artemis.config import settings
-from artemis.context import ArtemisContext
-from artemis.graph.state import State
+from apollo.agents.explorer.explorer import Explorer
+from apollo.agents.explorer.tiers import EXPLORER_TIERS, PERCEPTION_TOOLS, get_tier
+from apollo.config import settings
+from apollo.context import ApolloContext
+from apollo.graph.state import State
 
-EXPLORER = "artemis.agents.explorer.explorer"
-RUN_SETUP = "artemis.agents.explorer.run_setup"
-UNIVERSAL_RUNNER = "artemis.agents.explorer.universal_runner"
+EXPLORER = "apollo.agents.explorer.explorer"
+RUN_SETUP = "apollo.agents.explorer.run_setup"
+UNIVERSAL_RUNNER = "apollo.agents.explorer.universal_runner"
 
 
 def _context(model: str = "gemini-3.8-flash", denylist: list[str] | None = None) -> MagicMock:
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.device = MagicMock()
     ctx.device.device_width = 1080
     ctx.device.device_height = 2400
@@ -100,8 +100,8 @@ def screenshot(tmp_path):
 
 @pytest.fixture(autouse=True)
 def _isolated_env(monkeypatch):
-    monkeypatch.delenv("ARTEMIS_EXPLORER_CACHING", raising=False)
-    monkeypatch.setenv("ARTEMIS_USE_FILE_API", "false")
+    monkeypatch.delenv("APOLLO_EXPLORER_CACHING", raising=False)
+    monkeypatch.setenv("APOLLO_USE_FILE_API", "false")
 
 
 # --------------------------------------------------------------------------- #
@@ -299,13 +299,13 @@ def test_caching_precedence(monkeypatch):
         ctx.agent_config.explorer = SimpleNamespace(caching=True)
         assert explorer._resolve_caching(pro, None) is True  # agent config beats tier
 
-        monkeypatch.setenv("ARTEMIS_EXPLORER_CACHING", "false")
+        monkeypatch.setenv("APOLLO_EXPLORER_CACHING", "false")
         assert explorer._resolve_caching(pro, None) is False  # env beats agent config
 
         assert explorer._resolve_caching(pro, True) is True  # explicit beats env
 
     with patch.object(settings, "EXPLORER_CACHING", True):
-        monkeypatch.delenv("ARTEMIS_EXPLORER_CACHING")
+        monkeypatch.delenv("APOLLO_EXPLORER_CACHING")
         ctx.agent_config.explorer = SimpleNamespace(caching=None)
         ctx.execution_setup = SimpleNamespace(explorer=SimpleNamespace(caching=False))
         assert explorer._resolve_caching(pro, None) is False  # execution setup beats settings
@@ -484,7 +484,7 @@ async def test_native_pro_run_skips_cache_by_default(screenshot):
 
 @pytest.mark.asyncio
 async def test_native_file_api_uploads_and_deletes_asynchronously(screenshot, monkeypatch):
-    monkeypatch.setenv("ARTEMIS_USE_FILE_API", "true")
+    monkeypatch.setenv("APOLLO_USE_FILE_API", "true")
     ctx = _context()
     client = _native_client([_submit_response()])
     ctx._genai_client = client

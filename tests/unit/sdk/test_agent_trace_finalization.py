@@ -16,10 +16,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from artemis.sdk.agent import Agent
-from artemis.context import DeviceContext, DevicePlatform
-from artemis.runtime.device_lock import DeviceBusyError
-from artemis.sdk.types.exceptions import AgentError
+from apollo.sdk.agent import Agent
+from apollo.context import DeviceContext, DevicePlatform
+from apollo.runtime.device_lock import DeviceBusyError
+from apollo.sdk.types.exceptions import AgentError
 
 
 @pytest.mark.asyncio
@@ -54,7 +54,7 @@ async def test_device_context_uses_adb_size_without_starting_ui_client():
     agent._adb_client.device.return_value.window_size.return_value = (1080, 2424)
     agent._ui_adb_client = MagicMock()
 
-    from artemis.context import DevicePlatform
+    from apollo.context import DevicePlatform
 
     context = await agent._get_device_context("device-123", DevicePlatform.ANDROID)
 
@@ -79,7 +79,7 @@ async def test_task_that_never_acquires_queue_does_not_create_trace_session():
     agent._prepare_tracing = MagicMock()
 
     with patch(
-        "artemis.sdk.agent.DeviceExecutionLock.acquire",
+        "apollo.sdk.agent.DeviceExecutionLock.acquire",
         side_effect=DeviceBusyError("queue cancelled"),
     ):
         with pytest.raises(DeviceBusyError, match="queue cancelled"):
@@ -118,7 +118,7 @@ async def test_agent_inherits_session_id_from_env_and_propagates_to_tracing(monk
     import uuid
 
     canonical_sid = "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"
-    monkeypatch.setenv("ARTEMIS_SESSION_ID", canonical_sid)
+    monkeypatch.setenv("APOLLO_SESSION_ID", canonical_sid)
 
     agent = Agent()
     assert agent._session_id == canonical_sid
@@ -133,7 +133,7 @@ async def test_agent_inherits_session_id_from_env_and_propagates_to_tracing(monk
 
     context = MagicMock()
     context.device = None
-    with patch("artemis.sdk.agent.DataEngine") as mock_data_engine_cls:
+    with patch("apollo.sdk.agent.DataEngine") as mock_data_engine_cls:
         mock_data_engine = MagicMock()
         mock_data_engine_cls.return_value = mock_data_engine
 

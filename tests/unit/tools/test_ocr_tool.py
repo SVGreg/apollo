@@ -15,11 +15,11 @@
 import base64
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from artemis.context import ArtemisContext
-from artemis.drivers.base import BaseDeviceDriver
-from artemis.graph.state import State
-from artemis.tools.base import ArtemisTool
-from artemis.tools.mobile.ocr import (
+from apollo.context import ApolloContext
+from apollo.drivers.base import BaseDeviceDriver
+from apollo.graph.state import State
+from apollo.tools.base import ApolloTool
+from apollo.tools.mobile.ocr import (
     OCRRecognition,
     OcrArgs,
     OcrRecognition,
@@ -35,7 +35,7 @@ import pytest
 
 @pytest.fixture
 def mock_ctx():
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.device = MagicMock()
     ctx.device.device_width = 1080
     ctx.device.device_height = 2400
@@ -64,12 +64,12 @@ def mock_state(tmp_path):
 
 
 def test_ocr_tool_subclass():
-    """Verify OcrRecognitionTool is a subclass of ArtemisTool."""
-    assert issubclass(OcrRecognitionTool, ArtemisTool)
-    assert issubclass(OcrRecognition, ArtemisTool)
-    assert issubclass(OCRRecognition, ArtemisTool)
-    assert issubclass(OcrTool, ArtemisTool)
-    assert isinstance(ocr_recognition, ArtemisTool)
+    """Verify OcrRecognitionTool is a subclass of ApolloTool."""
+    assert issubclass(OcrRecognitionTool, ApolloTool)
+    assert issubclass(OcrRecognition, ApolloTool)
+    assert issubclass(OCRRecognition, ApolloTool)
+    assert issubclass(OcrTool, ApolloTool)
+    assert isinstance(ocr_recognition, ApolloTool)
     assert isinstance(ocr_recognition, OcrRecognitionTool)
 
     assert ocr_recognition.name == "ocr_recognition"
@@ -109,7 +109,7 @@ async def test_ocr_direct_execution_with_state(mock_ctx, tmp_path):
         }
     ]
     with patch(
-        "artemis.tools.mobile.ocr.perform_ocr",
+        "apollo.tools.mobile.ocr.perform_ocr",
         new_callable=AsyncMock,
         return_value=mock_results,
     ):
@@ -132,7 +132,7 @@ async def test_ocr_direct_execution_with_driver(mock_ctx, mock_driver):
         }
     ]
     with patch(
-        "artemis.tools.mobile.ocr.perform_ocr",
+        "apollo.tools.mobile.ocr.perform_ocr",
         new_callable=AsyncMock,
         return_value=mock_results,
     ):
@@ -149,7 +149,7 @@ async def test_ocr_no_text_detected(mock_ctx, tmp_path):
     simple_state = SimpleState(str(screenshot_file))
 
     with patch(
-        "artemis.tools.mobile.ocr.perform_ocr",
+        "apollo.tools.mobile.ocr.perform_ocr",
         new_callable=AsyncMock,
         return_value=[],
     ):
@@ -163,7 +163,7 @@ async def test_ocr_with_state_command(mock_ctx, mock_state):
     """Verify OcrRecognitionTool returns ToolMessage when state is provided."""
     mock_results = [{"text": "Hello", "position": [{"x": 100, "y": 100}]}]
     with patch(
-        "artemis.tools.mobile.ocr.perform_ocr",
+        "apollo.tools.mobile.ocr.perform_ocr",
         new_callable=AsyncMock,
         return_value=mock_results,
     ):
@@ -198,7 +198,7 @@ async def test_ocr_failure_missing_screenshot(mock_ctx):
 async def test_ocr_callable_execution(mock_ctx, mock_driver):
     """Verify invoking ocr_recognition directly as a callable."""
     with patch(
-        "artemis.tools.mobile.ocr.perform_ocr",
+        "apollo.tools.mobile.ocr.perform_ocr",
         new_callable=AsyncMock,
         return_value=[{"text": "Callable", "position": []}],
     ):
@@ -215,7 +215,7 @@ async def test_get_ocr_tool_langchain_ainvoke(mock_ctx, mock_driver):
     assert ocr_tool.name == "ocr_recognition"
 
     with patch(
-        "artemis.tools.mobile.ocr.perform_ocr",
+        "apollo.tools.mobile.ocr.perform_ocr",
         new_callable=AsyncMock,
         return_value=[{"text": "LangChain", "position": []}],
     ):

@@ -35,13 +35,13 @@ except ImportError:
     from apps.admin_console.services import worker_process_io
     from apps.admin_console.services.media_service import media_service
 
-from artemis.config import (
+from apollo.config import (
     PAUSE_FILE,
     TEST_DATA_DIR,
     TEST_OUTPUTS_DIR,
     WORKSPACE_ROOT,
 )
-from artemis.runtime import (
+from apollo.runtime import (
     AdbEndpoint,
     AdbTarget,
     DeviceExecutionLock,
@@ -73,9 +73,9 @@ class TaskQueueService:
     def _cancel_grace_seconds(cls) -> float:
         """How long a worker may finalize itself before it is killed.
 
-        ``ARTEMIS_CANCEL_GRACE_SECONDS=0`` restores the legacy immediate kill.
+        ``APOLLO_CANCEL_GRACE_SECONDS=0`` restores the legacy immediate kill.
         """
-        raw = os.getenv("ARTEMIS_CANCEL_GRACE_SECONDS")
+        raw = os.getenv("APOLLO_CANCEL_GRACE_SECONDS")
         if raw is None or not raw.strip():
             return cls.DEFAULT_CANCEL_GRACE_SECONDS
         try:
@@ -100,7 +100,7 @@ class TaskQueueService:
         pid: Any,
         process_created_at: float = 0.0,
         session_id: str | None = None,
-        reason: str = "Task stopped from the Artemis frontend.",
+        reason: str = "Task stopped from the Apollo frontend.",
     ) -> tuple[bool, bool]:
         """Ask a worker to cancel itself; hard-kill it once the grace period lapses.
 
@@ -212,7 +212,7 @@ class TaskQueueService:
             task.add_done_callback(cls._forced_stop_tasks.discard)
             return
         threading.Thread(
-            target=_enforce_sync, name=f"artemis-forced-stop-{pid}", daemon=True
+            target=_enforce_sync, name=f"apollo-forced-stop-{pid}", daemon=True
         ).start()
 
     @staticmethod
@@ -520,11 +520,11 @@ class TaskQueueService:
         env["PYTHONUTF8"] = "1"
         env["PYTHONUNBUFFERED"] = "1"
         if state.ipc_port is not None:
-            env["ARTEMIS_IPC_PORT"] = str(state.ipc_port)
+            env["APOLLO_IPC_PORT"] = str(state.ipc_port)
         if sess_id:
-            env["ARTEMIS_SESSION_ID"] = str(sess_id)
-        env["ARTEMIS_TASK_INGRESS"] = str(task_item.get("ingress", "frontend"))
-        env["ARTEMIS_TASK_WORKER"] = "1"
+            env["APOLLO_SESSION_ID"] = str(sess_id)
+        env["APOLLO_TASK_INGRESS"] = str(task_item.get("ingress", "frontend"))
+        env["APOLLO_TASK_WORKER"] = "1"
         target.endpoint.apply_to_environment(env)
         env[DeviceExecutionLock.LOCK_SCOPE_ENV] = target.lock_scope
         queue_ticket = task_item.get("queue_ticket")
@@ -534,7 +534,7 @@ class TaskQueueService:
         cmd = [
             sys.executable,
             "-m",
-            "artemis.main",
+            "apollo.main",
             goal,
             "--profile",
             profile,
@@ -785,7 +785,7 @@ class TaskQueueService:
 
                 notify(
                     conversation_id=conversation_id or "",
-                    message=f"Artemis autonomous task '{goal}' finished with status '{new_status}'.\nTrace ID: {sess_id}",
+                    message=f"Apollo autonomous task '{goal}' finished with status '{new_status}'.\nTrace ID: {sess_id}",
                     title=f"Task {new_status.capitalize()}: {goal[:40]}",
                     event_type=new_status,
                     payload={
@@ -971,7 +971,7 @@ class TaskQueueService:
         # the task can proceed and fail downstream with a clear no-device error.
         if device_serial:
             try:
-                from artemis.runtime import device_pool
+                from apollo.runtime import device_pool
 
                 rejection = await device_pool.validate_explicit_serial_async(device_serial)
             except Exception:
@@ -1082,7 +1082,7 @@ class TaskQueueService:
         single_session_id = session_id if (session_id and len(goals) == 1) else None
         if not device_serial:
             # Device enumeration may block on ADB.
-            from artemis.runtime import device_pool
+            from apollo.runtime import device_pool
 
             try:
                 device_serial = await device_pool.select_device_async()
@@ -1163,7 +1163,7 @@ class TaskQueueService:
                             trace_store.update_trace_status(
                                 str(sid),
                                 "cancelled",
-                                error="Task stopped from the Artemis frontend.",
+                                error="Task stopped from the Apollo frontend.",
                             )
                     except OSError as exc:
                         print(
@@ -1499,7 +1499,7 @@ class TaskQueueService:
                     trace_store.update_trace_status(
                         str(stopped_session_id),
                         "cancelled",
-                        error="Task stopped from the Artemis frontend.",
+                        error="Task stopped from the Apollo frontend.",
                     )
             except Exception as exc:
                 print(f"Failed to update MCP cancellation status: {exc}")

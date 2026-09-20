@@ -16,13 +16,13 @@ import asyncio
 import json
 from unittest.mock import MagicMock, patch
 
-from artemis.context import ArtemisContext
-from artemis.data_engine.engine import DataEngine
+from apollo.context import ApolloContext
+from apollo.data_engine.engine import DataEngine
 
 
 def test_ipc_send_reconnects_and_retries_current_event(tmp_path):
     """A stale Windows TCP socket must not make the triggering SSE event disappear."""
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = mock_execution_setup
@@ -33,9 +33,9 @@ def test_ipc_send_reconnects_and_retries_current_event(tmp_path):
     replacement_socket = MagicMock()
 
     with (
-        patch("artemis.data_engine.engine.read_ipc_port", return_value=49152),
+        patch("apollo.data_engine.engine.read_ipc_port", return_value=49152),
         patch(
-            "artemis.data_engine.engine.socket.create_connection",
+            "apollo.data_engine.engine.socket.create_connection",
             side_effect=[stale_socket, replacement_socket],
         ) as create_connection,
     ):
@@ -52,21 +52,21 @@ def test_ipc_send_reconnects_and_retries_current_event(tmp_path):
 
 def test_ipc_connect_falls_back_to_refreshed_port_file(tmp_path):
     """A UI restart must supersede the worker's stale inherited Windows port."""
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path / "traces")
     mock_ctx.execution_setup = mock_execution_setup
     mock_ctx.device = None
 
-    port_file = tmp_path / ".artemis_ipc_port"
+    port_file = tmp_path / ".apollo_ipc_port"
     port_file.write_text("51629", encoding="utf-8")
     live_socket = MagicMock()
 
     with (
-        patch("artemis.data_engine.engine.read_ipc_port", return_value=49555),
-        patch("artemis.data_engine.engine.get_ipc_port_file", return_value=port_file),
+        patch("apollo.data_engine.engine.read_ipc_port", return_value=49555),
+        patch("apollo.data_engine.engine.get_ipc_port_file", return_value=port_file),
         patch(
-            "artemis.data_engine.engine.socket.create_connection",
+            "apollo.data_engine.engine.socket.create_connection",
             side_effect=[OSError("stale port"), live_socket],
         ) as create_connection,
     ):
@@ -78,7 +78,7 @@ def test_ipc_connect_falls_back_to_refreshed_port_file(tmp_path):
 
 
 def test_ipc_does_not_reconnect_after_engine_shutdown(tmp_path):
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = mock_execution_setup
@@ -86,10 +86,10 @@ def test_ipc_does_not_reconnect_after_engine_shutdown(tmp_path):
     connected_socket = MagicMock()
 
     with (
-        patch("artemis.data_engine.engine.read_ipc_port", return_value=49152),
-        patch("artemis.data_engine.engine.get_ipc_port_file", return_value=tmp_path / "none"),
+        patch("apollo.data_engine.engine.read_ipc_port", return_value=49152),
+        patch("apollo.data_engine.engine.get_ipc_port_file", return_value=tmp_path / "none"),
         patch(
-            "artemis.data_engine.engine.socket.create_connection",
+            "apollo.data_engine.engine.socket.create_connection",
             return_value=connected_socket,
         ) as create_connection,
     ):
@@ -103,17 +103,17 @@ def test_ipc_does_not_reconnect_after_engine_shutdown(tmp_path):
 
 def test_ipc_connection_failure_is_backed_off(tmp_path):
     """A stale desktop port must not block every emitted trace event."""
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = mock_execution_setup
     mock_ctx.device = None
 
     with (
-        patch("artemis.data_engine.engine.read_ipc_port", return_value=49152),
-        patch("artemis.data_engine.engine.get_ipc_port_file", return_value=tmp_path / "none"),
+        patch("apollo.data_engine.engine.read_ipc_port", return_value=49152),
+        patch("apollo.data_engine.engine.get_ipc_port_file", return_value=tmp_path / "none"),
         patch(
-            "artemis.data_engine.engine.socket.create_connection",
+            "apollo.data_engine.engine.socket.create_connection",
             side_effect=TimeoutError("stale port"),
         ) as create_connection,
     ):
@@ -126,7 +126,7 @@ def test_ipc_connection_failure_is_backed_off(tmp_path):
 
 def test_get_or_create_image_updates_missing_data(tmp_path):
     # Setup mock context
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = mock_execution_setup
@@ -162,8 +162,8 @@ def test_get_or_create_image_updates_missing_data(tmp_path):
 
 
 def test_create_image_duplicate_handling(tmp_path):
-    from artemis.data_engine.storage import StorageManager
-    from artemis.data_engine.models import ImageRecord
+    from apollo.data_engine.storage import StorageManager
+    from apollo.data_engine.models import ImageRecord
 
     storage = StorageManager(tmp_path / "data_engine.db", tmp_path)
     image_record = ImageRecord(
@@ -187,8 +187,8 @@ def test_create_image_duplicate_handling(tmp_path):
 
 def test_video_recording_persistence(tmp_path):
     from uuid import uuid4
-    from artemis.data_engine.storage import StorageManager
-    from artemis.data_engine.models import VideoRecordingRecord
+    from apollo.data_engine.storage import StorageManager
+    from apollo.data_engine.models import VideoRecordingRecord
 
     storage = StorageManager(tmp_path / "data_engine.db", tmp_path)
     video_id = uuid4()
@@ -230,7 +230,7 @@ def test_video_recording_persistence(tmp_path):
 
 
 def test_record_step_suppresses_identical_post_screenshot(tmp_path):
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = mock_execution_setup
@@ -256,7 +256,7 @@ def test_record_step_suppresses_identical_post_screenshot(tmp_path):
 
 
 def test_update_step_execution_result_suppresses_identical_post_screenshot(tmp_path):
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = mock_execution_setup
@@ -298,7 +298,7 @@ def test_update_step_execution_result_suppresses_identical_post_screenshot(tmp_p
 
 
 def test_resumed_session_monotonic_step_numbering(tmp_path):
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = mock_execution_setup
@@ -328,7 +328,7 @@ def test_resumed_session_monotonic_step_numbering(tmp_path):
 
 
 def test_end_session_normalizes_legacy_success_status(tmp_path):
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = mock_execution_setup
@@ -345,7 +345,7 @@ def test_end_session_normalizes_legacy_success_status(tmp_path):
 
 
 def test_update_step_summary_includes_step_number_in_sse(tmp_path):
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = mock_execution_setup
@@ -381,7 +381,7 @@ def test_update_step_summary_includes_step_number_in_sse(tmp_path):
 
 
 def _foreground_engine(tmp_path):
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = mock_execution_setup
@@ -444,7 +444,7 @@ def test_record_step_without_app_data_stamps_nothing(tmp_path):
 
 
 def _replay_engine(tmp_path):
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = mock_execution_setup
@@ -500,7 +500,7 @@ def test_friendly_step_range_expands_tool_traces_and_matches_full_listing(tmp_pa
 
 
 def test_friendly_step_lookups_without_session_are_empty(tmp_path):
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = mock_execution_setup
@@ -519,7 +519,7 @@ def test_tool_result_images_are_described_as_step_screenshots(tmp_path):
 
     from PIL import Image
 
-    from artemis.data_engine.engine import GENERIC_IMAGE_LABEL
+    from apollo.data_engine.engine import GENERIC_IMAGE_LABEL
 
     buf = io.BytesIO()
     Image.new("RGB", (32, 64), "red").save(buf, format="JPEG")
@@ -571,7 +571,7 @@ def test_tool_result_images_are_described_as_step_screenshots(tmp_path):
 def test_flash_normalized_record_survives_agent_friendly_steps_unchanged(tmp_path):
     """Flash records the model's 0–1000 target with an explicit space marker;
     the agent-friendly view must not normalize it a second time."""
-    from artemis.utils.coordinates import COORDINATE_SPACE_KEY, COORDINATE_SPACE_NORMALIZED
+    from apollo.utils.coordinates import COORDINATE_SPACE_KEY, COORDINATE_SPACE_NORMALIZED
 
     engine = _replay_engine(tmp_path)
     engine.record_step(
@@ -596,7 +596,7 @@ def test_pro_pixel_record_is_normalized_exactly_once(tmp_path):
     """Pro records physical pixels (with the frame size in extra_metadata);
     the friendly view converts them once, and the result is stamped so a
     downstream pass (MCP inspector, replay) leaves it alone."""
-    from artemis.utils.coordinates import (
+    from apollo.utils.coordinates import (
         COORDINATE_SPACE_KEY,
         COORDINATE_SPACE_NORMALIZED,
         COORDINATE_SPACE_PIXEL,

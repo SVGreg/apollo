@@ -14,9 +14,9 @@
 
 from unittest.mock import MagicMock, patch
 
-from artemis.context import ArtemisContext
-from artemis.tools.base import ArtemisTool
-from artemis.tools.mobile.read_logs import (
+from apollo.context import ApolloContext
+from apollo.tools.base import ApolloTool
+from apollo.tools.mobile.read_logs import (
     ReadLogs,
     ReadLogsArgs,
     ReadLogsTool,
@@ -29,16 +29,16 @@ import pytest
 
 @pytest.fixture
 def mock_ctx():
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     return ctx
 
 
 def test_read_logs_tool_subclass():
-    """Verify ReadLogsTool is a subclass of ArtemisTool."""
-    assert issubclass(ReadLogsTool, ArtemisTool)
-    assert issubclass(ReadLogs, ArtemisTool)
-    assert issubclass(ReadLogsToolAlias, ArtemisTool)
-    assert isinstance(read_logs, ArtemisTool)
+    """Verify ReadLogsTool is a subclass of ApolloTool."""
+    assert issubclass(ReadLogsTool, ApolloTool)
+    assert issubclass(ReadLogs, ApolloTool)
+    assert issubclass(ReadLogsToolAlias, ApolloTool)
+    assert isinstance(read_logs, ApolloTool)
     assert isinstance(read_logs, ReadLogsTool)
 
     assert read_logs.name == "read_logs"
@@ -58,7 +58,7 @@ async def test_read_logs_direct_execution(mock_ctx):
     """Verify direct execution of ReadLogsTool."""
     mock_log_output = "08-12 10:00:00.000 1000 1000 I Test: Hello Logs\n"
     with patch(
-        "artemis.tools.mobile.read_logs.fetch_and_filter_logs",
+        "apollo.tools.mobile.read_logs.fetch_and_filter_logs",
         return_value=mock_log_output,
     ) as mock_fetch:
         result = await read_logs.execute(
@@ -80,7 +80,7 @@ async def test_read_logs_direct_execution(mock_ctx):
 async def test_read_logs_default_lines(mock_ctx):
     """Verify read_logs defaults lines to 200 when None."""
     with patch(
-        "artemis.tools.mobile.read_logs.fetch_and_filter_logs",
+        "apollo.tools.mobile.read_logs.fetch_and_filter_logs",
         return_value="logs",
     ) as mock_fetch:
         result = await read_logs.execute(ctx=mock_ctx, lines=None)
@@ -97,7 +97,7 @@ async def test_read_logs_default_lines(mock_ctx):
 async def test_read_logs_exception_handling(mock_ctx):
     """Verify error handling when fetching logs raises an exception."""
     with patch(
-        "artemis.tools.mobile.read_logs.fetch_and_filter_logs",
+        "apollo.tools.mobile.read_logs.fetch_and_filter_logs",
         side_effect=RuntimeError("Device disconnected"),
     ):
         result = await read_logs.execute(ctx=mock_ctx)
@@ -108,7 +108,7 @@ async def test_read_logs_exception_handling(mock_ctx):
 async def test_read_logs_callable_execution(mock_ctx):
     """Verify invoking read_logs directly as a callable."""
     with patch(
-        "artemis.tools.mobile.read_logs.fetch_and_filter_logs",
+        "apollo.tools.mobile.read_logs.fetch_and_filter_logs",
         return_value="sample log stream",
     ):
         result = await read_logs(ctx=mock_ctx, lines=50)
@@ -122,7 +122,7 @@ async def test_get_read_logs_tool_langchain_ainvoke(mock_ctx):
     assert tool.name == "read_logs"
 
     with patch(
-        "artemis.tools.mobile.read_logs.fetch_and_filter_logs",
+        "apollo.tools.mobile.read_logs.fetch_and_filter_logs",
         return_value="langchain log content",
     ) as mock_fetch:
         result = await tool.ainvoke({"lines": 300})

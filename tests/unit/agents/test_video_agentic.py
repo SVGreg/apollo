@@ -18,27 +18,27 @@ import json
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from artemis.agents.video_analyzer import chunk_agentic
-from artemis.agents.video_analyzer.chunk_agentic import (
+from apollo.agents.video_analyzer import chunk_agentic
+from apollo.agents.video_analyzer.chunk_agentic import (
     _drive_agentic_loop,
     build_interactions_submit_tool,
     run_agentic_chunk_conversation,
 )
-from artemis.agents.video_analyzer.chunk_conversation import (
+from apollo.agents.video_analyzer.chunk_conversation import (
     _MISSING_SUMMARY_ERROR,
     _NO_TOOL_CALL_ERROR,
     _WRONG_TOOL_ERROR,
     SubAgentAnswerExhausted,
     _ChunkMedia,
 )
-from artemis.agents.video_analyzer.reliability import (
+from apollo.agents.video_analyzer.reliability import (
     AgenticVideoDegraded,
     VideoFailureCategory,
     classify_video_failure,
     is_agentic_rejection,
 )
-from artemis.agents.video_analyzer.video_analyzer import VideoAnalyzer
-from artemis.context import ArtemisContext
+from apollo.agents.video_analyzer.video_analyzer import VideoAnalyzer
+from apollo.context import ApolloContext
 from pydantic import SecretStr
 import pytest
 
@@ -46,7 +46,7 @@ import pytest
 
 
 def _context(model: str = "gemini-3.8-flash", **video_cfg) -> MagicMock:
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx._video_blackboard = None
     ctx._video_circuit_breaker = None
     ctx._mobile_controller = None
@@ -284,15 +284,15 @@ def test_submit_tool_is_flat_json_schema_with_required_timeline():
 async def test_engine_resolves_video_processing(model, video_cfg, expected_mode, expected_chunk):
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY",
+            "apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY",
             SecretStr("test-key"),
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.genai.Client",
+            "apollo.agents.video_analyzer.video_analyzer.genai.Client",
             return_value=MagicMock(),
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.cleanup_abandoned_gemini_files",
+            "apollo.agents.video_analyzer.video_analyzer.cleanup_abandoned_gemini_files",
             AsyncMock(),
         ),
     ):
@@ -304,7 +304,7 @@ async def test_engine_resolves_video_processing(model, video_cfg, expected_mode,
 
 
 def test_universal_engine_never_uses_agentic_processing():
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(_context("gemini-3.8-flash"))
     assert analyzer.use_native_gemini is False
     assert analyzer.video_processing == "static"
@@ -316,7 +316,7 @@ def test_universal_engine_never_uses_agentic_processing():
 
 @pytest.mark.asyncio
 async def test_agentic_chunk_commits_answer_and_records_usage(tmp_path):
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(_context())
     interaction = _interaction(
         "v1_first",
@@ -355,11 +355,11 @@ async def test_agentic_chunk_commits_answer_and_records_usage(tmp_path):
 
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.get_controller",
+            "apollo.agents.video_analyzer.video_analyzer.get_controller",
             return_value=controller,
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.compress_video_for_api",
+            "apollo.agents.video_analyzer.video_analyzer.compress_video_for_api",
             new=AsyncMock(return_value=raw_video),
         ),
         patch.object(analyzer, "upload_and_poll_file", new=AsyncMock(return_value=_UPLOADED)),
@@ -724,7 +724,7 @@ def test_exhaustion_is_classified_as_retryable_unknown(reason):
 @pytest.mark.asyncio
 async def test_exhausted_chunk_leaves_the_interval_unanswered_for_re_analysis(tmp_path):
     """End to end: exhaustion fails the segment instead of caching an empty success."""
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(_context())
 
     def text_only_turns():
@@ -740,11 +740,11 @@ async def test_exhausted_chunk_leaves_the_interval_unanswered_for_re_analysis(tm
 
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.get_controller",
+            "apollo.agents.video_analyzer.video_analyzer.get_controller",
             return_value=controller,
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.compress_video_for_api",
+            "apollo.agents.video_analyzer.video_analyzer.compress_video_for_api",
             new=AsyncMock(return_value=raw_video),
         ),
         patch.object(analyzer, "upload_and_poll_file", new=AsyncMock(return_value=_UPLOADED)),
@@ -753,8 +753,8 @@ async def test_exhausted_chunk_leaves_the_interval_unanswered_for_re_analysis(tm
             "_exec_single_chunk_universal",
             new=AsyncMock(side_effect=RuntimeError("fallback engine declined")),
         ) as universal,
-        patch("artemis.agents.video_analyzer.video_analyzer._record_llm_event"),
-        patch("artemis.agents.video_analyzer.video_analyzer.asyncio.sleep", new=AsyncMock()),
+        patch("apollo.agents.video_analyzer.video_analyzer._record_llm_event"),
+        patch("apollo.agents.video_analyzer.video_analyzer.asyncio.sleep", new=AsyncMock()),
         pytest.raises(RuntimeError, match="fallback engine declined"),
     ):
         await analyzer._exec_single_chunk(0.0, 5.0, "verify toggle")
@@ -901,7 +901,7 @@ def test_degraded_marker_replans_without_fallback():
 
 
 def _agentic_analyzer(tmp_path, first_turn):
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(_context())
     analyzer.client = _fake_client([first_turn])
     analyzer.use_native_gemini = True
@@ -919,20 +919,20 @@ async def test_rejected_agentic_request_degrades_run_and_hands_chunk_back(tmp_pa
 
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.get_controller",
+            "apollo.agents.video_analyzer.video_analyzer.get_controller",
             return_value=controller,
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.compress_video_for_api",
+            "apollo.agents.video_analyzer.video_analyzer.compress_video_for_api",
             new=AsyncMock(return_value=raw_video),
         ),
         patch.object(analyzer, "upload_and_poll_file", new=AsyncMock(return_value=_UPLOADED)),
         patch(
-            "artemis.agents.video_analyzer.chunk_native._run_native_chunk_conversation",
+            "apollo.agents.video_analyzer.chunk_native._run_native_chunk_conversation",
             new=AsyncMock(),
         ) as static_path,
         patch.object(analyzer, "_exec_single_chunk_universal", new=AsyncMock()) as universal,
-        patch("artemis.agents.video_analyzer.video_analyzer._record_llm_event") as record_event,
+        patch("apollo.agents.video_analyzer.video_analyzer._record_llm_event") as record_event,
         pytest.raises(AgenticVideoDegraded),
     ):
         await analyzer._exec_single_chunk(0.0, 300.0, "verify toggle")
@@ -959,19 +959,19 @@ async def test_degraded_chunk_is_replanned_at_the_static_chunk_size(tmp_path):
 
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.get_controller",
+            "apollo.agents.video_analyzer.video_analyzer.get_controller",
             return_value=controller,
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.compress_video_for_api",
+            "apollo.agents.video_analyzer.video_analyzer.compress_video_for_api",
             new=AsyncMock(return_value=raw_video),
         ),
         patch.object(analyzer, "upload_and_poll_file", new=AsyncMock(return_value=_UPLOADED)),
         patch(
-            "artemis.agents.video_analyzer.chunk_native._run_native_chunk_conversation",
+            "apollo.agents.video_analyzer.chunk_native._run_native_chunk_conversation",
             new=AsyncMock(side_effect=static_answer),
         ) as static_path,
-        patch("artemis.agents.video_analyzer.video_analyzer._record_llm_event"),
+        patch("apollo.agents.video_analyzer.video_analyzer._record_llm_event"),
     ):
         result = await analyzer.exec_spawn_sub_agent(0.0, 150.0, "verify toggle")
 
@@ -993,11 +993,11 @@ async def test_413_in_agentic_mode_splits_without_degrading(tmp_path):
 
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.get_controller",
+            "apollo.agents.video_analyzer.video_analyzer.get_controller",
             return_value=controller,
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.compress_video_for_api",
+            "apollo.agents.video_analyzer.video_analyzer.compress_video_for_api",
             new=AsyncMock(return_value=raw_video),
         ),
         patch.object(analyzer, "upload_and_poll_file", new=AsyncMock(return_value=_UPLOADED)),
@@ -1006,7 +1006,7 @@ async def test_413_in_agentic_mode_splits_without_degrading(tmp_path):
             "_exec_single_chunk_universal",
             new=AsyncMock(side_effect=_PayloadTooLarge("413 still too large")),
         ),
-        patch("artemis.agents.video_analyzer.video_analyzer._record_llm_event") as record_event,
+        patch("apollo.agents.video_analyzer.video_analyzer._record_llm_event") as record_event,
         pytest.raises(_PayloadTooLarge) as raised,
     ):
         await analyzer._exec_single_chunk(0.0, 300.0, "verify toggle")
@@ -1026,11 +1026,11 @@ async def test_unrelated_400_in_agentic_mode_does_not_degrade(tmp_path):
 
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.get_controller",
+            "apollo.agents.video_analyzer.video_analyzer.get_controller",
             return_value=controller,
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.compress_video_for_api",
+            "apollo.agents.video_analyzer.video_analyzer.compress_video_for_api",
             new=AsyncMock(return_value=raw_video),
         ),
         patch.object(analyzer, "upload_and_poll_file", new=AsyncMock(return_value=_UPLOADED)),
@@ -1039,7 +1039,7 @@ async def test_unrelated_400_in_agentic_mode_does_not_degrade(tmp_path):
             "_exec_single_chunk_universal",
             new=AsyncMock(side_effect=_BadRequest("400 unknown field")),
         ),
-        patch("artemis.agents.video_analyzer.video_analyzer._record_llm_event") as record_event,
+        patch("apollo.agents.video_analyzer.video_analyzer._record_llm_event") as record_event,
         pytest.raises(_BadRequest),
     ):
         await analyzer._exec_single_chunk(0.0, 300.0, "verify toggle")
@@ -1051,7 +1051,7 @@ async def test_unrelated_400_in_agentic_mode_does_not_degrade(tmp_path):
 
 @pytest.mark.asyncio
 async def test_transient_agentic_failure_flows_through_shared_retry(tmp_path):
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(_context())
     interaction = _interaction(
         "v1_retry",
@@ -1066,16 +1066,16 @@ async def test_transient_agentic_failure_flows_through_shared_retry(tmp_path):
 
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.get_controller",
+            "apollo.agents.video_analyzer.video_analyzer.get_controller",
             return_value=controller,
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.compress_video_for_api",
+            "apollo.agents.video_analyzer.video_analyzer.compress_video_for_api",
             new=AsyncMock(return_value=raw_video),
         ),
         patch.object(analyzer, "upload_and_poll_file", new=AsyncMock(return_value=_UPLOADED)),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.asyncio.sleep",
+            "apollo.agents.video_analyzer.video_analyzer.asyncio.sleep",
             new=AsyncMock(),
         ),
     ):

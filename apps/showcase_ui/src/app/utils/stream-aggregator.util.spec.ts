@@ -422,7 +422,7 @@ describe('stream aggregator step ownership', () => {
         trace_id: 'trace-backend-initial',
         type: 'log',
         name: 'hierarchy_backend',
-        payload: { backend: 'helper', previous_backend: null, message: 'UI hierarchy source: Artemis accessibility helper v1.1.3' }
+        payload: { backend: 'helper', previous_backend: null, message: 'UI hierarchy source: Apollo accessibility helper v1.1.3' }
       }
     };
     const switched = {
@@ -437,14 +437,14 @@ describe('stream aggregator step ownership', () => {
           backend: 'uiautomator',
           previous_backend: 'helper',
           reason: 'HelperUnavailable: tunnel gone',
-          message: 'UI hierarchy source switched from Artemis accessibility helper to UIAutomator2 because HelperUnavailable: tunnel gone'
+          message: 'UI hierarchy source switched from Apollo accessibility helper to UIAutomator2 because HelperUnavailable: tunnel gone'
         }
       }
     };
     const ordinaryLog = {
       type: 'trace_recorded',
       timestamp: '2026-09-02T03:57:27.000Z',
-      data: { trace_id: 'trace-log', type: 'log', name: 'artemis.runtime', payload: { message: 'noise' } }
+      data: { trace_id: 'trace-log', type: 'log', name: 'apollo.runtime', payload: { message: 'noise' } }
     };
 
     const blocks = consolidateLogsToBlocks([initial, plannerStream, switched, ordinaryLog]);

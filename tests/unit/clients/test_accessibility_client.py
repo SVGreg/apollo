@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, patch
 from PIL import Image
 import pytest
 
-from artemis.clients.accessibility_client import (
+from apollo.clients.accessibility_client import (
     TOKEN_HEADER,
     AccessibilityClient,
     HelperEmptyHierarchy,
@@ -19,8 +19,8 @@ from artemis.clients.accessibility_client import (
     HelperUnavailable,
     normalize_helper_elements,
 )
-from artemis.clients.ui_automator_client import _parse_hierarchy_xml_to_elements
-from artemis.runtime.helper_manager import HelperSession
+from apollo.clients.ui_automator_client import _parse_hierarchy_xml_to_elements
+from apollo.runtime.helper_manager import HelperSession
 
 XML = (
     '<?xml version="1.0" encoding="UTF-8"?>'
@@ -97,13 +97,13 @@ def _http_error(code: int, body: bytes = b'{"success": false, "error": "no"}'):
 
 
 def _urlopen():
-    return patch("artemis.clients.accessibility_client.urllib.request.urlopen")
+    return patch("apollo.clients.accessibility_client.urllib.request.urlopen")
 
 
 @pytest.fixture
 def client():
     manager = FakeManager()
-    with patch("artemis.clients.accessibility_client.ensure_device_awake", return_value=None):
+    with patch("apollo.clients.accessibility_client.ensure_device_awake", return_value=None):
         yield AccessibilityClient("dev", manager=manager), manager
 
 
@@ -122,7 +122,7 @@ def test_connect_provisions_and_lazy_path_does_not(client):
 
     lazy = AccessibilityClient("dev", manager=FakeManager())
     with (
-        patch("artemis.clients.accessibility_client.ensure_device_awake", return_value=None),
+        patch("apollo.clients.accessibility_client.ensure_device_awake", return_value=None),
         _urlopen() as urlopen,
     ):
         urlopen.return_value = _response(XML.encode())
@@ -137,7 +137,7 @@ def test_every_request_carries_the_session_token(client):
         assert c.get_hierarchy() == XML
     request = urlopen.call_args.args[0]
     assert request.full_url == "http://127.0.0.1:41000/dump_xml"
-    # urllib stores header names capitalized: "X-artemis-token".
+    # urllib stores header names capitalized: "X-apollo-token".
     assert request.get_header(TOKEN_HEADER.capitalize()) == TOKEN
 
 

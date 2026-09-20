@@ -14,4 +14,4 @@
 
 
 # The planner agent does not have exposed tools of its own to test here.
-# It uses shared tools from artemis.tools.scratchpad, which are tested in their respective modules.
+# It uses shared tools from apollo.tools.scratchpad, which are tested in their respective modules.

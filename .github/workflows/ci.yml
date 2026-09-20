@@ -69,9 +69,9 @@ jobs:
           uv run pytest
           tests/unit
           tests/tools
-          packages/artemis-client/tests
+          packages/apollo-client/tests
           -q
-          --cov=artemis
+          --cov=apollo
           --cov=mcp_server
           --cov=apps/admin_console
           --cov-fail-under=60
@@ -136,39 +136,39 @@ jobs:
           npm ci --prefix apps/showcase_ui
           npm run build --prefix apps/showcase_ui
 
-      - name: Build client and Artemis distributions
+      - name: Build client and Apollo distributions
         run: |
-          uv build --package artemis-client --wheel --out-dir dist
-          uv build --package artemis --wheel --sdist --out-dir dist
+          uv build --package apollo-client --wheel --out-dir dist
+          uv build --package apollo --wheel --sdist --out-dir dist
 
       - name: Install wheels in a clean environment
         run: |
           uv venv .smoke-venv --python 3.12
-          uv pip install --python .smoke-venv/bin/python dist/artemis_client-*.whl dist/artemis-*.whl
+          uv pip install --python .smoke-venv/bin/python dist/apollo_client-*.whl dist/apollo-*.whl
 
       - name: Smoke-test installed package and CLI
         shell: bash
         run: |
-          smoke_dir="$RUNNER_TEMP/artemis-wheel-smoke"
+          smoke_dir="$RUNNER_TEMP/apollo-wheel-smoke"
           mkdir -p "$smoke_dir"
           cd "$smoke_dir"
           source "$GITHUB_WORKSPACE/.smoke-venv/bin/activate"
           python - <<'PY'
           from importlib.metadata import files, version
 
-          import artemis
-          from artemis.resources import get_bundled_config_path, get_bundled_showcase_dist
+          import apollo
+          from apollo.resources import get_bundled_config_path, get_bundled_showcase_dist
 
-          bundled_config = get_bundled_config_path("artemis.jsonc")
+          bundled_config = get_bundled_config_path("apollo.jsonc")
           bundled_ui = get_bundled_showcase_dist()
-          assert artemis.__version__ == version("artemis")
+          assert apollo.__version__ == version("apollo")
           assert bundled_config is not None and bundled_config.is_file()
           assert bundled_ui is not None and (bundled_ui / "index.html").is_file()
-          assert not any("node_modules" in str(path) for path in (files("artemis") or ()))
-          print(f"Installed Artemis {artemis.__version__} with bundled runtime resources")
+          assert not any("node_modules" in str(path) for path in (files("apollo") or ()))
+          print(f"Installed Apollo {apollo.__version__} with bundled runtime resources")
           PY
-          artemis --version
-          artemis --help
+          apollo --version
+          apollo --help
 
       - name: Upload distributions
         uses: actions/upload-artifact@v4

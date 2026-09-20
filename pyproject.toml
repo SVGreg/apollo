@@ -13,7 +13,7 @@
 # limitations under the License.
 
 [project]
-name = "artemis"
+name = "apollo"
 version = "1.0"
 description = "Autonomous AI Assistant for Mobile Automation"
 
@@ -25,7 +25,7 @@ requires-python = ">=3.12"
 
 dependencies = [
     # Remote Python SDK (kept as a zero-dependency workspace package)
-    "artemis-client>=0.1.0",
+    "apollo-client>=0.1.0",
     # Orchestration & Framework
     "langgraph>=1.0.2,<2.0.0",
     "langchain>=1.0.0",
@@ -88,8 +88,8 @@ dev = [
 ]
 
 [project.scripts]
-artemis = "artemis.interfaces.cli.main:cli"
-artemis-admin = "apps.admin_console.server:main"
+apollo = "apollo.interfaces.cli.main:cli"
+apollo-admin = "apps.admin_console.server:main"
 
 
 [build-system]
@@ -99,10 +99,10 @@ requires = ["setuptools>=61.0", "Cython"]
 build-backend = "setuptools.build_meta"
 
 [tool.uv.workspace]
-members = ["packages/artemis-client"]
+members = ["packages/apollo-client"]
 
 [tool.uv.sources]
-artemis-client = { workspace = true }
+apollo-client = { workspace = true }
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
@@ -195,7 +195,7 @@ pythonpath = [
 testpaths = [
     "tests/unit",
     "tests/tools",
-    "packages/artemis-client/tests",
+    "packages/apollo-client/tests",
 ]
 python_files = [
     "*.test.py",
@@ -219,8 +219,8 @@ addopts = [
 
 markers = [
     "android: tests requiring Android device or emulator",
-    "integration: tests spanning multiple Artemis components",
-    "e2e: end-to-end tests requiring a running Artemis environment",
+    "integration: tests spanning multiple Apollo components",
+    "e2e: end-to-end tests requiring a running Apollo environment",
     "cloud: tests requiring the optional cloud_service package",
     "manual: tests that must only be launched explicitly by an operator",
 ]

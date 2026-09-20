@@ -19,7 +19,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from artemis.utils.video import RECORDING_MANIFEST_VERSION, write_recording_manifest
+from apollo.utils.video import RECORDING_MANIFEST_VERSION, write_recording_manifest
 
 
 def _probe(durations: dict[str, float]):
@@ -41,7 +41,7 @@ async def test_manifest_carries_session_offsets_and_restart_gaps(tmp_path):
     offsets = {seg0: 1.2, seg1: 12.7, seg2: 18.5}
 
     with patch(
-        "artemis.utils.video.probe_video_segment",
+        "apollo.utils.video.probe_video_segment",
         _probe({seg0.name: 10.0, seg1.name: 5.0, seg2.name: 4.0}),
     ):
         manifest_path = await write_recording_manifest(tmp_path, [seg0, seg1, seg2], offsets)
@@ -71,7 +71,7 @@ async def test_manifest_without_offsets_falls_back_to_back_to_back(tmp_path):
     seg1.write_bytes(b"mp4")
 
     with patch(
-        "artemis.utils.video.probe_video_segment",
+        "apollo.utils.video.probe_video_segment",
         _probe({seg0.name: 3.25, seg1.name: 2.0}),
     ):
         manifest_path = await write_recording_manifest(tmp_path, [seg0, seg1])
@@ -91,7 +91,7 @@ async def test_manifest_fills_missing_offset_after_known_segment(tmp_path):
     seg1.write_bytes(b"mp4")
 
     with patch(
-        "artemis.utils.video.probe_video_segment",
+        "apollo.utils.video.probe_video_segment",
         _probe({seg0.name: 10.0, seg1.name: 5.0}),
     ):
         manifest_path = await write_recording_manifest(tmp_path, [seg0, seg1], {seg0: 2.0})
@@ -110,7 +110,7 @@ async def test_manifest_skips_invalid_segments_and_clamps_negative_offsets(tmp_p
     broken.write_bytes(b"mp4")
 
     with patch(
-        "artemis.utils.video.probe_video_segment",
+        "apollo.utils.video.probe_video_segment",
         _probe({good.name: 4.0, broken.name: 0.0}),
     ):
         manifest_path = await write_recording_manifest(
@@ -125,7 +125,7 @@ async def test_manifest_skips_invalid_segments_and_clamps_negative_offsets(tmp_p
 @pytest.mark.asyncio
 async def test_manifest_returns_none_without_valid_segments(tmp_path):
     with patch(
-        "artemis.utils.video.probe_video_segment",
+        "apollo.utils.video.probe_video_segment",
         AsyncMock(return_value={"duration": 0, "width": 0, "height": 0}),
     ):
         assert await write_recording_manifest(tmp_path, [tmp_path / "nope.mp4"]) is None

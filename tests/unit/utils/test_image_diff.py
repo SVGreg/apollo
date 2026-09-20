@@ -15,7 +15,7 @@
 import asyncio
 import base64
 import cv2
-from artemis.utils.image_diff import check_ui_change
+from apollo.utils.image_diff import check_ui_change
 import numpy as np
 
 
@@ -88,7 +88,7 @@ def test_roi_threshold():
 
 
 def test_wait_for_screen_stability():
-    from artemis.utils.image_diff import wait_for_screen_stability
+    from apollo.utils.image_diff import wait_for_screen_stability
 
     img_static = np.zeros((1000, 1000), dtype=np.uint8)
     _, static_bytes = cv2.imencode(".jpg", img_static)
@@ -132,8 +132,8 @@ def test_wait_for_screen_stability():
 
 
 def test_wait_for_screen_data_stability():
-    from artemis.utils.image_diff import wait_for_screen_data_stability
-    from artemis.controllers.device_controller import ScreenDataResponse
+    from apollo.utils.image_diff import wait_for_screen_data_stability
+    from apollo.controllers.device_controller import ScreenDataResponse
 
     img_static = np.zeros((1000, 1000), dtype=np.uint8)
     _, static_bytes = cv2.imencode(".jpg", img_static)

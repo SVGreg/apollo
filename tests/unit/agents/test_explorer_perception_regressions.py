@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from artemis.agents.explorer.perception_tools import PerceptionToolsMixin
-from artemis.agents.explorer.screen_index import ScreenIndex
+from apollo.agents.explorer.perception_tools import PerceptionToolsMixin
+from apollo.agents.explorer.screen_index import ScreenIndex
 
 
 def _perception_host() -> PerceptionToolsMixin:
@@ -37,7 +37,7 @@ def _perception_host() -> PerceptionToolsMixin:
 async def test_get_ocr_list_reads_the_screen_index_without_storage() -> None:
     host = _perception_host()
 
-    with patch("artemis.agents.explorer.run_setup.StorageManager") as storage_cls:
+    with patch("apollo.agents.explorer.run_setup.StorageManager") as storage_cls:
         result = await host.exec_get_ocr_list()
 
     assert result == {
@@ -54,7 +54,7 @@ async def test_image_processor_empty_outputs_returns_stable_error() -> None:
     processor.run = AsyncMock(return_value={"outputs": [], "summary": "nothing found"})
 
     with patch(
-        "artemis.agents.explorer.perception_tools.ImageProcessor",
+        "apollo.agents.explorer.perception_tools.ImageProcessor",
         return_value=processor,
     ):
         result = await host.exec_ask_image_processor("crop", target_image_id="img_0")

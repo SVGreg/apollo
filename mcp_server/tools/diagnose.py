@@ -15,8 +15,8 @@
 """MCP Tool: mobile_diagnose.
 
 Runs the same readiness probes as the web console's device wizard and the
-``artemis doctor`` CLI, adds the MCP-host probe, and renders the outcome as an
-action list an AI coding assistant can execute without reading Artemis source.
+``apollo doctor`` CLI, adds the MCP-host probe, and renders the outcome as an
+action list an AI coding assistant can execute without reading Apollo source.
 On request it also boots an installed emulator in the background, verifies the
 configured API keys against the providers, and drives the attached device end
 to end (screenshot + UI hierarchy) to prove a task could actually start.
@@ -34,19 +34,19 @@ from typing import Any
 
 from mcp_server.base import mcp
 from mcp_server.utils import env_utils
-from artemis.core.diagnostics import readiness_engine
-from artemis.core.diagnostics.device_smoke import smoke_test_device
-from artemis.core.diagnostics.readiness import (
+from apollo.core.diagnostics import readiness_engine
+from apollo.core.diagnostics.device_smoke import smoke_test_device
+from apollo.core.diagnostics.readiness import (
     adb_keys_corrupted,
     base_verdict,
     collect_readiness,
     sort_by_fix_order,
 )
-from artemis.core.diagnostics.schema import ProbeResult, ProbeStatus, SystemReadinessReport
-from artemis.runtime import DeviceExecutionLock, trace_store
-from artemis.runtime.helper_manager import helper_manager
-from artemis.utils.credentials_validator import validate_api_key
-from artemis.utils.logger import get_logger
+from apollo.core.diagnostics.schema import ProbeResult, ProbeStatus, SystemReadinessReport
+from apollo.runtime import DeviceExecutionLock, trace_store
+from apollo.runtime.helper_manager import helper_manager
+from apollo.utils.credentials_validator import validate_api_key
+from apollo.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -206,7 +206,7 @@ def _render_action_lines(action: Any, *, installed_avds: list[str]) -> list[str]
     lines: list[str] = []
     for part in payload.split("&&"):
         command = part.strip()
-        if not command or command == "artemis init":
+        if not command or command == "apollo init":
             continue  # interactive; covered by the credential / config guidance
         match = _EMULATOR_LAUNCH_RE.search(command)
         if match is None:
@@ -230,7 +230,7 @@ def _credential_steps(env_file: str | None) -> list[str]:
         "  Ask the user to add a provider key (for example GEMINI_API_KEY=...) to "
         f"{location}, or to the MCP server's env block in the IDE's MCP config. "
         "Never ask them to paste the key into the chat.",
-        "  `artemis init` is interactive and cannot run from a tool call; edit the env file instead.",
+        "  `apollo init` is interactive and cannot run from a tool call; edit the env file instead.",
         "  Keys are read when the server starts: restart the MCP server (reload MCP servers in "
         "the IDE) after adding one.",
     ]
@@ -509,7 +509,7 @@ def _device_probe_steps(device_probe: dict[str, Any] | None) -> list[str]:
 
 def _hierarchy_backend() -> str:
     try:
-        from artemis.clients.screen_client_factory import resolve_backend
+        from apollo.clients.screen_client_factory import resolve_backend
 
         return resolve_backend().value
     except (ImportError, ValueError):
@@ -556,7 +556,7 @@ def _helper_fix(
             "fix": "install_accessibility_helper",
             "success": False,
             "skipped": True,
-            "message": "Skipped: the bundled ArtemisAccessibilityHelper.apk is missing from the checkout.",
+            "message": "Skipped: the bundled ApolloAccessibilityHelper.apk is missing from the checkout.",
         }
     wanted = _normalize_serial(serial)
     if any(_normalize_serial(entry.get("device")) == wanted for entry in _task_state()["active"]):
@@ -626,7 +626,7 @@ def _helper_steps(status: dict[str, Any] | None, *, attempt_fix: bool) -> list[s
     if not status.get("bundled_apk_present"):
         steps.append(
             "  Guidance: the bundled APK is missing; build it with "
-            "packages/artemis-accessibility-helper/build_apk.sh."
+            "packages/apollo-accessibility-helper/build_apk.sh."
         )
         return steps
     if problem.startswith("is installed and enabled"):
@@ -634,18 +634,18 @@ def _helper_steps(status: dict[str, Any] | None, *, attempt_fix: bool) -> list[s
             "  Guidance: unlock the phone; if the helper still does not answer, reinstall it with "
             "the command below (add --force)."
         )
-        steps.append(f"  Run: uv run artemis helper install --serial {serial} --force")
+        steps.append(f"  Run: uv run apollo helper install --serial {serial} --force")
         return steps
     if not attempt_fix:
         steps.append(
             "  Guidance: call mobile_diagnose(attempt_fix=true) to install and enable it "
             "without touching the phone, or run the command below."
         )
-    steps.append(f"  Run: uv run artemis helper install --serial {serial}")
+    steps.append(f"  Run: uv run apollo helper install --serial {serial}")
     if problem.startswith("is installed but"):
         # Enabling from adb was already attempted once by whoever installed it;
         # on ROMs that reject it only a person can flip the switch.
-        from artemis.runtime.helper_manager import MANUAL_ENABLE_PATH
+        from apollo.runtime.helper_manager import MANUAL_ENABLE_PATH
 
         steps.append(
             "  Guidance: if the command reports that this device rejected enabling the "
@@ -713,7 +713,7 @@ def _device_steps(
         and (keys.get("is_corrupted") or not ready)
     ):
         steps.append(
-            "Call mobile_diagnose(attempt_fix=true) to let Artemis heal corrupted ADB keys and "
+            "Call mobile_diagnose(attempt_fix=true) to let Apollo heal corrupted ADB keys and "
             "restart the ADB server before asking the user to do anything manually."
         )
     return steps
@@ -940,7 +940,7 @@ async def _apply_safe_fixes(
                 "fix": "restart_adb_server",
                 "success": False,
                 "skipped": True,
-                "message": "Skipped: an Artemis task currently holds a device lock.",
+                "message": "Skipped: an Apollo task currently holds a device lock.",
             }
         )
         return applied
@@ -1097,10 +1097,10 @@ async def mobile_diagnose(
     verify_credentials: bool = False,
     probe_device: bool = False,
 ) -> dict[str, Any]:
-    """Diagnoses why ARTEMIS cannot run tasks from this IDE and returns the fixes.
+    """Diagnoses why APOLLO cannot run tasks from this IDE and returns the fixes.
 
-    Call this FIRST whenever another ARTEMIS tool errors, a task fails to
-    start, no device is found, or the user says ARTEMIS "does not work".
+    Call this FIRST whenever another APOLLO tool errors, a task fails to
+    start, no device is found, or the user says APOLLO "does not work".
     It checks, in fix order: Python runtime, config file, the MCP host
     (interpreter vs project venv, .env location, traces directory, daemon
     port), LLM credentials, ADB + devices (authorization, lock screen, RSA
@@ -1126,7 +1126,7 @@ async def mobile_diagnose(
         port_held_by_other_process, log_path}.
       - `device`: the device a task would use ({serial, state, model,
         android_version, is_locked, is_emulator, accessibility_helper}) or
-        null. `accessibility_helper` describes the Artemis UI-hierarchy
+        null. `accessibility_helper` describes the Apollo UI-hierarchy
         helper APK on that device ({installed, installed_version,
         bundled_version, outdated, enabled, forward_port, reachable,
         backend}); with backend "auto" a missing helper only degrades
@@ -1135,7 +1135,7 @@ async def mobile_diagnose(
         stage_message, error, serial, elapsed_seconds, progress_percent}) or
         null when nothing was launched. `status` is starting /
         waiting_for_adb / booting while it boots, then ready or failed.
-      - `tasks`: {"active": [...], "queued": [...]} ARTEMIS tasks holding or
+      - `tasks`: {"active": [...], "queued": [...]} APOLLO tasks holding or
         waiting for a device (device, session_id, pid, description, ingress,
         started_at/created_at). Stop a stuck one with
         mobile_manage_task(action="stop", trace_id=<session_id>).
@@ -1149,11 +1149,11 @@ async def mobile_diagnose(
         paths and `recent_errors` (tail of its stderr log).
 
     Args:
-        attempt_fix: When true, applies the safe self-heals the ARTEMIS
+        attempt_fix: When true, applies the safe self-heals the APOLLO
           console offers: remove device locks left by dead processes,
           regenerate corrupted ADB RSA keys, restart the ADB server (only
           when no device is ready and no task holds a device), and install,
-          upgrade or enable the Artemis accessibility helper APK on the idle
+          upgrade or enable the Apollo accessibility helper APK on the idle
           target device when it is missing, outdated or disabled. Then
           re-runs the checks. Nothing else is changed.
         device_serial: Optional serial the user wants to use; the report

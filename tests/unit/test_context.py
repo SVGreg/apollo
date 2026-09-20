@@ -14,11 +14,11 @@
 
 import asyncio
 import pytest
-from artemis.context import ArtemisContext, DeviceContext, DevicePlatform
+from apollo.context import ApolloContext, DeviceContext, DevicePlatform
 
 
 @pytest.mark.asyncio
-async def test_artemis_context_waits_for_background_tasks():
+async def test_apollo_context_waits_for_background_tasks():
     device = DeviceContext(
         host_platform="LINUX",
         mobile_platform=DevicePlatform.ANDROID,
@@ -27,7 +27,7 @@ async def test_artemis_context_waits_for_background_tasks():
         device_height=2400,
     )
 
-    context = ArtemisContext(device=device)
+    context = ApolloContext(device=device)
 
     task_run = False
 
@@ -45,7 +45,7 @@ async def test_artemis_context_waits_for_background_tasks():
 
 
 @pytest.mark.asyncio
-async def test_artemis_context_cancels_background_tasks_after_grace_period():
+async def test_apollo_context_cancels_background_tasks_after_grace_period():
     device = DeviceContext(
         host_platform="LINUX",
         mobile_platform=DevicePlatform.ANDROID,
@@ -53,7 +53,7 @@ async def test_artemis_context_cancels_background_tasks_after_grace_period():
         device_width=1080,
         device_height=2400,
     )
-    context = ArtemisContext(
+    context = ApolloContext(
         device=device,
         background_task_grace_period_seconds=0.01,
     )

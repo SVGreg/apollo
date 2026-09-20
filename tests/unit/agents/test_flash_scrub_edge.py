@@ -25,14 +25,14 @@ from unittest.mock import Mock
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
-from artemis.agents.flash.context_compressor import ScrubEdgeCompressor
-from artemis.agents.flash.summarizer import VisualStepSummarizer
-from artemis.context import ArtemisContext
+from apollo.agents.flash.context_compressor import ScrubEdgeCompressor
+from apollo.agents.flash.summarizer import VisualStepSummarizer
+from apollo.context import ApolloContext
 
 
 @pytest.fixture
 def mock_context():
-    ctx = Mock(spec=ArtemisContext)
+    ctx = Mock(spec=ApolloContext)
     ctx.data_engine = None
     return ctx
 
@@ -423,7 +423,7 @@ def test_ephemeral_blocks_vanish_at_the_text_edge_and_not_before(mock_context):
     the message is the live observation; at the text edge (a newer observation
     exists) they are deleted together with the UI list, the screenshot stays
     until depth K; the consumed indices are cleared at the text edge."""
-    from artemis.memory.transcript import EPHEMERAL_BLOCKS_KEY, mark_ephemeral
+    from apollo.memory.transcript import EPHEMERAL_BLOCKS_KEY, mark_ephemeral
 
     summarizer = VisualStepSummarizer(mock_context)
     summarizer._summaries["tc1"] = "Summary 1."
@@ -468,7 +468,7 @@ def test_grace_does_the_text_edits_at_k_once_and_only_the_image_swap_waits(mock_
     """A pending summary keeps the screenshot (and its label) inside the grace
     window, but the strip and the ephemeral deletion happen at K exactly once;
     the later swap puts the summary where the image was and freezes."""
-    from artemis.memory.transcript import mark_ephemeral
+    from apollo.memory.transcript import mark_ephemeral
 
     summarizer = VisualStepSummarizer(mock_context)
     summarizer._step_inputs["tc1"] = {"step_number": 1}  # pending
@@ -573,7 +573,7 @@ def _step_with_notices(i: int) -> ToolMessage:
     """Flash observation shape with one ephemeral notice on each side of the
     screenshot and a body block *after* the notice that follows the image, so
     a stale index would delete the body instead of the notice."""
-    from artemis.memory.transcript import mark_ephemeral
+    from apollo.memory.transcript import mark_ephemeral
 
     msg = ToolMessage(
         tool_call_id=f"tc{i}",
@@ -599,7 +599,7 @@ def test_image_edge_before_text_edge_remaps_ephemeral_indices_to_the_summary_lay
     label block, so the notice after the image moves up by one. The stored
     indices must follow it; the later text pass then deletes both notices and
     leaves the body block intact."""
-    from artemis.memory.transcript import EPHEMERAL_BLOCKS_KEY
+    from apollo.memory.transcript import EPHEMERAL_BLOCKS_KEY
 
     summarizer = VisualStepSummarizer(mock_context)
     for i in range(1, 6):
@@ -633,7 +633,7 @@ def test_image_edge_before_text_edge_remaps_ephemeral_indices_to_the_summary_lay
 def test_image_edge_before_text_edge_remaps_when_the_image_is_dropped(mock_context):
     """Same ordering with no summary job at all: label and image both leave
     (two blocks removed), the notice after the image moves up by two."""
-    from artemis.memory.transcript import EPHEMERAL_BLOCKS_KEY
+    from apollo.memory.transcript import EPHEMERAL_BLOCKS_KEY
 
     messages: list = []
     compressor = ScrubEdgeCompressor(summarizer=None, image_scrub_depth=3, xml_scrub_depth=4)
@@ -661,7 +661,7 @@ def test_grace_swap_before_the_text_edge_remaps_ephemeral_indices(mock_context):
     """Pending summary inside the grace window with the text edge still ahead:
     the keep-image revisit changes nothing (indices untouched); the late swap
     removes the label and remaps; the text pass then deletes the right blocks."""
-    from artemis.memory.transcript import EPHEMERAL_BLOCKS_KEY
+    from apollo.memory.transcript import EPHEMERAL_BLOCKS_KEY
 
     summarizer = VisualStepSummarizer(mock_context)
     summarizer._step_inputs["tc1"] = {"step_number": 1}  # pending

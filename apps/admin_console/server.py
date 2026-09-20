@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Artemis Admin & Trace Console Server
+"""Apollo Admin & Trace Console Server
 
 Modular entrypoint for full trace inspection, step replay, and task execution management.
 """
@@ -30,7 +30,7 @@ from types import FrameType
 # Bootstrap sys.path to allow running from any CWD
 _current_p = Path(__file__).resolve().parent
 while _current_p != _current_p.parent:
-    if (_current_p / "pyproject.toml").exists() or (_current_p / "artemis").is_dir():
+    if (_current_p / "pyproject.toml").exists() or (_current_p / "apollo").is_dir():
         _workspace_root = _current_p
         break
     _current_p = _current_p.parent
@@ -49,7 +49,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse, HTMLResponse
 import uvicorn
 
-from artemis.runtime import (
+from apollo.runtime import (
     DeviceExecutionLock,
     clear_server_info,
     device_pool,
@@ -58,7 +58,7 @@ from artemis.runtime import (
     write_server_info,
 )
 
-from artemis.config import (
+from apollo.config import (
     DB_PATH,
     IMAGES_DIR,
     REPLAY_BASE_DIR,
@@ -68,7 +68,7 @@ from artemis.config import (
     WORKSPACE_ROOT,
     init_ls_address,
 )
-from artemis.resources import get_bundled_showcase_dist
+from apollo.resources import get_bundled_showcase_dist
 
 try:
     from admin_console.core.security import SameOriginBoundaryMiddleware
@@ -108,8 +108,8 @@ async def _lifespan(_app: "FastAPI"):
 
 
 # Initialize FastAPI application
-app = FastAPI(title="Artemis Admin & Trace Console", lifespan=_lifespan)
-LIFECYCLE_TOKEN = os.environ.get("ARTEMIS_LIFECYCLE_TOKEN") or secrets.token_urlsafe(32)
+app = FastAPI(title="Apollo Admin & Trace Console", lifespan=_lifespan)
+LIFECYCLE_TOKEN = os.environ.get("APOLLO_LIFECYCLE_TOKEN") or secrets.token_urlsafe(32)
 app.state.lifecycle_token = LIFECYCLE_TOKEN
 
 # The console UI is served same-origin from this process, so no CORS grants
@@ -333,7 +333,7 @@ async def serve_showcase_spa(full_path: str):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Artemis Showcase UI - Not Built</title>
+    <title>Apollo Showcase UI - Not Built</title>
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -378,11 +378,11 @@ async def serve_showcase_spa(full_path: str):
 </head>
 <body>
     <div class="card">
-        <h1>✨ Artemis Showcase UI</h1>
+        <h1>✨ Apollo Showcase UI</h1>
         <p>The Showcase UI (Angular frontend) has not been built yet.</p>
         <p>To compile the Showcase UI, run:</p>
         <p><code>cd apps/showcase_ui && npm install && npm run build</code></p>
-        <p>Or launch using <code>./start.sh</code> or <code>artemis ui</code> to build automatically.</p>
+        <p>Or launch using <code>./start.sh</code> or <code>apollo ui</code> to build automatically.</p>
         <a class="btn" href="/admin">Go to Admin Debug Console →</a>
     </div>
 </body>
@@ -402,7 +402,7 @@ task_queue = state.task_queue
 queue_goals = state.queue_goals
 
 
-class ArtemisUvicornServer(uvicorn.Server):
+class ApolloUvicornServer(uvicorn.Server):
     """Notify application streams before Uvicorn waits for them to close."""
 
     @staticmethod
@@ -475,7 +475,7 @@ def run_ui_server(host: str, port: int, reload: bool = False) -> None:
             port=port,
             timeout_graceful_shutdown=5,
         )
-        server = ArtemisUvicornServer(config)
+        server = ApolloUvicornServer(config)
         app.state.uvicorn_server = server
         server.run()
     finally:
@@ -485,10 +485,10 @@ def run_ui_server(host: str, port: int, reload: bool = False) -> None:
 
 def main(argv: list[str] | None = None) -> None:
     """Parse the daemon/standalone server bind address and run Uvicorn."""
-    parser = argparse.ArgumentParser(description="Run the Artemis Admin Console server")
+    parser = argparse.ArgumentParser(description="Run the Apollo Admin Console server")
     parser.add_argument(
         "--host",
-        default=os.environ.get("ARTEMIS_SERVER_HOST", "127.0.0.1"),
+        default=os.environ.get("APOLLO_SERVER_HOST", "127.0.0.1"),
         help=(
             "Address to bind the HTTP server to. Defaults to loopback; expose "
             "remotely via a Tailscale/SSH tunnel rather than a wide bind."

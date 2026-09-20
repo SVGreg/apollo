@@ -18,16 +18,16 @@ import base64
 import os
 
 from mcp_server.base import mcp
-from artemis.mcp.adb_server import _get_controller
+from apollo.mcp.adb_server import _get_controller
 from mcp_server.utils import env_utils
-from artemis.utils.ocr_xml_fusion import (
+from apollo.utils.ocr_xml_fusion import (
     fuse_ocr_with_xml,
     _detect_status_bar_height,
     _crop_image_remove_status_bar,
     _map_coordinates_back,
 )
-from artemis.utils.ocr_api import is_ocr_configured, perform_ocr
-from artemis.utils.visualization import format_minimal_list_with_elements
+from apollo.utils.ocr_api import is_ocr_configured, perform_ocr
+from apollo.utils.visualization import format_minimal_list_with_elements
 
 
 @mcp.tool()

@@ -17,7 +17,7 @@ import logging
 from pathlib import Path
 import sqlite3
 
-from artemis.config import DB_PATH
+from apollo.config import DB_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def get_db(db_path: Path | None = None) -> sqlite3.Connection:
     if path_key not in _initialized_dbs:
         path.parent.mkdir(parents=True, exist_ok=True)
         try:
-            from artemis.data_engine.storage import StorageManager
+            from apollo.data_engine.storage import StorageManager
 
             StorageManager(db_path=path, base_trace_dir=path.parent)
             _initialized_dbs.add(path_key)

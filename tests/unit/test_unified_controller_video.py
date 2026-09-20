@@ -24,10 +24,10 @@ from uuid import uuid4
 import pytest
 import cv2
 
-from artemis.context import ArtemisContext
-from artemis.controllers.unified_controller import UnifiedMobileController
-from artemis.drivers.mock.mock_driver import MockDeviceDriver
-from artemis.utils.video import (
+from apollo.context import ApolloContext
+from apollo.controllers.unified_controller import UnifiedMobileController
+from apollo.drivers.mock.mock_driver import MockDeviceDriver
+from apollo.utils.video import (
     RecordingSession,
     build_scrcpy_record_command,
     extract_audio_from_video,
@@ -291,7 +291,7 @@ async def test_analyzer_clip_keeps_timeline_time_across_restart_gap(tmp_path):
 
 @pytest.fixture
 def mock_ctx(tmp_path):
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.device = MagicMock()
     ctx.device.device_id = "emulator-5554"
     ctx.device.mobile_platform = "android"
@@ -319,7 +319,7 @@ async def test_unified_controller_start_recording(mock_ctx, tmp_path):
 
     with patch("asyncio.create_subprocess_exec", AsyncMock(return_value=mock_proc)):
         with patch(
-            "artemis.controllers.unified_controller.get_android_display_state",
+            "apollo.controllers.unified_controller.get_android_display_state",
             AsyncMock(return_value=(0, 1080, 2424)),
         ):
             with patch("asyncio.sleep", AsyncMock()):
@@ -363,11 +363,11 @@ async def test_unified_controller_stop_recording(mock_ctx, tmp_path):
 
     with (
         patch(
-            "artemis.controllers.unified_controller.remux_recording_to_mp4",
+            "apollo.controllers.unified_controller.remux_recording_to_mp4",
             AsyncMock(side_effect=lambda src, dst: (dst.write_bytes(b"mp4 content"), True)[1]),
         ),
         patch(
-            "artemis.controllers.unified_controller.write_recording_manifest",
+            "apollo.controllers.unified_controller.write_recording_manifest",
             AsyncMock(return_value=tmp_path / "recording.json"),
         ),
     ):
@@ -402,7 +402,7 @@ async def test_unified_controller_extract_segment_metadata(mock_ctx, tmp_path):
     set_active_session("emulator-5554", session)
 
     with patch(
-        "artemis.controllers.unified_controller.render_timeline_clip",
+        "apollo.controllers.unified_controller.render_timeline_clip",
         AsyncMock(side_effect=lambda src, s, e, dst: dst.write_bytes(b"segment mp4") or True),
     ):
         res = await controller.extract_segment_metadata(start_time=2.0, end_time=8.0)
@@ -434,7 +434,7 @@ async def test_segment_cache_is_scoped_to_recording_generation(mock_ctx, tmp_pat
     render = AsyncMock(
         side_effect=lambda source, start, end, output: output.write_bytes(b"clip") or True
     )
-    with patch("artemis.controllers.unified_controller.render_timeline_clip", render):
+    with patch("apollo.controllers.unified_controller.render_timeline_clip", render):
         first = await controller.extract_segment_metadata(2.0, 8.0)
         cached = await controller.extract_segment_metadata(2.0, 8.0)
         session.generation = 1
@@ -448,10 +448,10 @@ async def test_segment_cache_is_scoped_to_recording_generation(mock_ctx, tmp_pat
 
 
 def test_data_engine_video_lifecycle(tmp_path):
-    from artemis.data_engine.engine import DataEngine
-    from artemis.context import ArtemisContext
+    from apollo.data_engine.engine import DataEngine
+    from apollo.context import ApolloContext
 
-    mock_c = MagicMock(spec=ArtemisContext)
+    mock_c = MagicMock(spec=ApolloContext)
     mock_c.execution_setup = MagicMock(traces_path=str(tmp_path / "traces"))
     mock_c.device = None
     engine = DataEngine(mock_c)
@@ -518,11 +518,11 @@ async def test_unified_controller_crash_recovery_and_multi_segment(mock_ctx, tmp
 
     with (
         patch(
-            "artemis.controllers.unified_controller.remux_recording_to_mp4",
+            "apollo.controllers.unified_controller.remux_recording_to_mp4",
             AsyncMock(side_effect=lambda src, dst: (dst.write_bytes(b"final mp4"), True)[1]),
         ),
         patch(
-            "artemis.controllers.unified_controller.write_recording_manifest",
+            "apollo.controllers.unified_controller.write_recording_manifest",
             AsyncMock(return_value=tmp_path / "recording.json"),
         ),
     ):
@@ -567,7 +567,7 @@ async def test_unified_controller_timeline_alignment(mock_ctx, tmp_path):
         return True
 
     with patch(
-        "artemis.controllers.unified_controller.render_timeline_clip",
+        "apollo.controllers.unified_controller.render_timeline_clip",
         AsyncMock(side_effect=mock_trim),
     ):
         # Agent asks for system time range [5.0s, 10.0s]
@@ -608,7 +608,7 @@ class _FakeScrcpyProcess:
 
 @pytest.mark.asyncio
 async def test_await_scrcpy_first_frame_uses_recording_started_marker():
-    from artemis.utils.video import await_scrcpy_first_frame
+    from apollo.utils.video import await_scrcpy_first_frame
 
     proc = _FakeScrcpyProcess(
         [
@@ -628,7 +628,7 @@ async def test_await_scrcpy_first_frame_uses_recording_started_marker():
 
 @pytest.mark.asyncio
 async def test_await_scrcpy_first_frame_never_precedes_spawn():
-    from artemis.utils.video import await_scrcpy_first_frame
+    from apollo.utils.video import await_scrcpy_first_frame
 
     proc = _FakeScrcpyProcess([b"INFO: Recording started to matroska file: x.mkv\n"])
     spawned_at = time.time()
@@ -638,7 +638,7 @@ async def test_await_scrcpy_first_frame_never_precedes_spawn():
 
 @pytest.mark.asyncio
 async def test_await_scrcpy_first_frame_falls_back_when_stdout_closes():
-    from artemis.utils.video import SCRCPY_STARTUP_FALLBACK_SECONDS, await_scrcpy_first_frame
+    from apollo.utils.video import SCRCPY_STARTUP_FALLBACK_SECONDS, await_scrcpy_first_frame
 
     proc = _FakeScrcpyProcess([b"scrcpy 4.1\n"], close=True)
     spawned_at = time.time()
@@ -651,7 +651,7 @@ async def test_await_scrcpy_first_frame_falls_back_when_stdout_closes():
 
 @pytest.mark.asyncio
 async def test_await_scrcpy_first_frame_falls_back_on_timeout():
-    from artemis.utils.video import SCRCPY_STARTUP_FALLBACK_SECONDS, await_scrcpy_first_frame
+    from apollo.utils.video import SCRCPY_STARTUP_FALLBACK_SECONDS, await_scrcpy_first_frame
 
     proc = _FakeScrcpyProcess([b"scrcpy 4.1\n"])  # marker never arrives, stdout stays open
     spawned_at = time.time()
@@ -669,7 +669,7 @@ async def test_start_recording_anchors_timeline_to_first_frame(mock_ctx, tmp_pat
     with (
         patch("asyncio.create_subprocess_exec", AsyncMock(return_value=proc)),
         patch(
-            "artemis.controllers.unified_controller.get_android_display_state",
+            "apollo.controllers.unified_controller.get_android_display_state",
             AsyncMock(return_value=(0, 1080, 2424)),
         ),
     ):
@@ -752,10 +752,10 @@ async def test_stop_recording_passes_session_offsets_to_manifest(mock_ctx, tmp_p
     manifest = AsyncMock(return_value=tmp_path / "recording.json")
     with (
         patch(
-            "artemis.controllers.unified_controller.remux_recording_to_mp4",
+            "apollo.controllers.unified_controller.remux_recording_to_mp4",
             AsyncMock(side_effect=lambda src, dst: (dst.write_bytes(b"mp4"), True)[1]),
         ),
-        patch("artemis.controllers.unified_controller.write_recording_manifest", manifest),
+        patch("apollo.controllers.unified_controller.write_recording_manifest", manifest),
     ):
         res = await controller.stop_video_recording()
 

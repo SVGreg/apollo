@@ -14,16 +14,16 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from artemis.context import ArtemisContext
-from artemis.graph.state import State
-from artemis.tools.image_processor_tool import get_ask_image_processor_tool
+from apollo.context import ApolloContext
+from apollo.graph.state import State
+from apollo.tools.image_processor_tool import get_ask_image_processor_tool
 import pytest
 
 
 @pytest.mark.asyncio
 async def test_ask_vision_coder_success():
     # Mock Context and State
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = None
 
     mock_state = MagicMock(spec=State)
@@ -40,7 +40,7 @@ async def test_ask_vision_coder_success():
     mock_coder_instance.run = AsyncMock(return_value=vision_coder_outcome)
 
     with patch(
-        "artemis.agents.image_processor.image_processor.ImageProcessor",
+        "apollo.agents.image_processor.image_processor.ImageProcessor",
         return_value=mock_coder_instance,
     ):
         # Retrieve the tool
@@ -65,9 +65,9 @@ async def test_ask_vision_coder_success():
 
 
 def test_ask_image_processor_tool_subclass():
-    """Verify AskImageProcessorTool is an ArtemisTool subclass."""
-    from artemis.tools.base import ArtemisTool
-    from artemis.tools.image_processor_tool import (
+    """Verify AskImageProcessorTool is an ApolloTool subclass."""
+    from apollo.tools.base import ApolloTool
+    from apollo.tools.image_processor_tool import (
         AskImageProcessor,
         AskImageProcessorTool,
         AskVisionCoderArgs,
@@ -76,11 +76,11 @@ def test_ask_image_processor_tool_subclass():
         ask_image_processor,
     )
 
-    assert issubclass(AskImageProcessorTool, ArtemisTool)
-    assert issubclass(AskImageProcessor, ArtemisTool)
-    assert issubclass(AskVisionCoderTool, ArtemisTool)
-    assert issubclass(ImageProcessorTool, ArtemisTool)
-    assert isinstance(ask_image_processor, ArtemisTool)
+    assert issubclass(AskImageProcessorTool, ApolloTool)
+    assert issubclass(AskImageProcessor, ApolloTool)
+    assert issubclass(AskVisionCoderTool, ApolloTool)
+    assert issubclass(ImageProcessorTool, ApolloTool)
+    assert isinstance(ask_image_processor, ApolloTool)
     assert isinstance(ask_image_processor, AskImageProcessorTool)
 
     assert ask_image_processor.name == "ask_image_processor"

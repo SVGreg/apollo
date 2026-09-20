@@ -21,7 +21,7 @@ from types import SimpleNamespace
 import pytest
 from langchain_core.messages import HumanMessage, ToolMessage
 
-from artemis.tools.tool_wrapper import (
+from apollo.tools.tool_wrapper import (
     resolve_image_carrier,
     split_multimodal_result,
     tool_result_messages,

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for the unified artemis.config package."""
+"""Unit tests for the unified apollo.config package."""
 
 from pathlib import Path
 import tempfile
@@ -20,7 +20,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pydantic import SecretStr
 
-from artemis.config import (
+from apollo.config import (
     CONFIG_DIR,
     ROOT_DIR,
     AgentGlobalConfig,
@@ -50,9 +50,9 @@ from artemis.config import (
 def test_paths_and_directories():
     """Verify central path resolution."""
     assert ROOT_DIR.exists()
-    assert (ROOT_DIR / "artemis").exists()
+    assert (ROOT_DIR / "apollo").exists()
     assert CONFIG_DIR.exists()
-    assert (CONFIG_DIR / "artemis.jsonc").exists()
+    assert (CONFIG_DIR / "apollo.jsonc").exists()
 
     app_dir = get_app_dir()
     assert isinstance(app_dir, Path)
@@ -70,9 +70,9 @@ def test_paths_and_directories():
 
 
 def test_config_file_resolver():
-    """Test get_config_path for unified artemis.jsonc."""
-    artemis_path = get_config_path("artemis.jsonc")
-    assert artemis_path.exists()
+    """Test get_config_path for unified apollo.jsonc."""
+    apollo_path = get_config_path("apollo.jsonc")
+    assert apollo_path.exists()
 
     with pytest.raises(FileNotFoundError):
         get_config_path("non_existent_config_12345.json")
@@ -109,7 +109,7 @@ def test_settings_and_api_key_fallbacks(monkeypatch):
 
 def test_placeholder_api_key_filtering(monkeypatch):
     """Test that default template placeholders are filtered out and treated as unconfigured."""
-    from artemis.config.settings import is_placeholder_key
+    from apollo.config.settings import is_placeholder_key
 
     assert is_placeholder_key("your_gemini_api_key_here") is True
     assert is_placeholder_key("your_google_cloud_vision_api_key_here") is True
@@ -169,7 +169,7 @@ def test_llm_config_parsing_and_merging():
 
 
 def test_agent_config_loading():
-    """Test AgentGlobalConfig parsing from agent_config.json / artemis.jsonc."""
+    """Test AgentGlobalConfig parsing from agent_config.json / apollo.jsonc."""
     agent_cfg = load_agent_config()
     assert isinstance(agent_cfg, AgentGlobalConfig)
     # The per-agent override ships empty so the profile knobs decide; caching
@@ -225,10 +225,10 @@ def test_runtime_state_and_ipc(tmp_path, monkeypatch):
     import urllib.request
 
     monkeypatch.setattr(urllib.request, "urlopen", MagicMock(side_effect=Exception("offline")))
-    ipc_state_file = tmp_path / ".artemis_ipc_port"
-    monkeypatch.setattr("artemis.config.runtime.get_ipc_port_file", lambda: ipc_state_file)
-    monkeypatch.setattr("artemis.config.runtime.ROOT_DIR", tmp_path)
-    monkeypatch.setattr("artemis.config.runtime.get_app_dir", lambda: tmp_path)
+    ipc_state_file = tmp_path / ".apollo_ipc_port"
+    monkeypatch.setattr("apollo.config.runtime.get_ipc_port_file", lambda: ipc_state_file)
+    monkeypatch.setattr("apollo.config.runtime.ROOT_DIR", tmp_path)
+    monkeypatch.setattr("apollo.config.runtime.get_app_dir", lambda: tmp_path)
     # Test IPC port
     write_ipc_port(49152)
     assert read_ipc_port() == 49152
@@ -253,10 +253,10 @@ def test_runtime_state_and_ipc(tmp_path, monkeypatch):
 
 def test_planner_validation_builder_and_milestones():
     """Test AgentConfigBuilder methods for planner validation and milestone drift detection."""
-    from artemis.sdk.builders.agent_config_builder import AgentConfigBuilder
-    from artemis.utils.plan_grammar import milestones_changed, parse_plan
+    from apollo.sdk.builders.agent_config_builder import AgentConfigBuilder
+    from apollo.utils.plan_grammar import milestones_changed, parse_plan
 
-    # Default builder inherits from artemis.jsonc (enabled=True)
+    # Default builder inherits from apollo.jsonc (enabled=True)
     builder = AgentConfigBuilder()
     cfg = builder.build()
     assert cfg.disable_planner_validation is False
@@ -273,7 +273,7 @@ def test_planner_validation_builder_and_milestones():
     assert cfg_disabled.disable_planner_validation is True
 
     # Milestone drift detection is threshold-free: any text change counts,
-    # status-only flips never do (see artemis.utils.plan_grammar)
+    # status-only flips never do (see apollo.utils.plan_grammar)
     before = parse_plan("- [ ] Tap Login button\n- [ ] Enter password")
     after_minor = parse_plan("- [ ] Tap the Login button\n- [ ] Enter password")
     after_status = parse_plan("- [x] Tap Login button\n- [/] Enter password")
@@ -284,9 +284,9 @@ def test_planner_validation_builder_and_milestones():
 @pytest.mark.asyncio
 async def test_committee_builder_and_graph_mounting():
     """Test AgentConfigBuilder committee methods and graph mounting."""
-    from artemis.context import ArtemisContext, DeviceContext, DevicePlatform, ExecutionSetup
-    from artemis.graph.graph import get_graph
-    from artemis.sdk.builders.agent_config_builder import AgentConfigBuilder
+    from apollo.context import ApolloContext, DeviceContext, DevicePlatform, ExecutionSetup
+    from apollo.graph.graph import get_graph
+    from apollo.sdk.builders.agent_config_builder import AgentConfigBuilder
 
     # Default: disabled
     cfg_default = AgentConfigBuilder().build()
@@ -306,7 +306,7 @@ async def test_committee_builder_and_graph_mounting():
         device_width=1080,
         device_height=2400,
     )
-    ctx_disabled = ArtemisContext(
+    ctx_disabled = ApolloContext(
         device=device,
         execution_setup=ExecutionSetup(enable_committee=False),
     )
@@ -317,7 +317,7 @@ async def test_committee_builder_and_graph_mounting():
     op_tools_disabled = [t.name for t in op_node_disabled.bound.afunc.tools]
     assert "ask_committee" not in op_tools_disabled
 
-    ctx_enabled = ArtemisContext(
+    ctx_enabled = ApolloContext(
         device=device,
         execution_setup=ExecutionSetup(enable_committee=True, committee_debate_rounds=3),
     )
@@ -333,11 +333,11 @@ async def test_committee_builder_and_graph_mounting():
 def test_checker_builder_and_context_propagation():
     """Test AgentConfigBuilder methods and context propagation for checker."""
     from unittest.mock import MagicMock
-    from artemis.context import ArtemisContext, DeviceContext, DevicePlatform
-    from artemis.sdk.agent import Agent
-    from artemis.sdk.builders.agent_config_builder import AgentConfigBuilder
+    from apollo.context import ApolloContext, DeviceContext, DevicePlatform
+    from apollo.sdk.agent import Agent
+    from apollo.sdk.builders.agent_config_builder import AgentConfigBuilder
 
-    # Default builder inherits from artemis.jsonc (enabled=True, midway off, final on)
+    # Default builder inherits from apollo.jsonc (enabled=True, midway off, final on)
     builder = AgentConfigBuilder()
     cfg = builder.build()
     assert cfg.disable_checker is False
@@ -380,13 +380,13 @@ def test_checker_builder_and_context_propagation():
         device_width=1080,
         device_height=2400,
     )
-    ctx = ArtemisContext(device=device)
+    ctx = ApolloContext(device=device)
     mock_task = MagicMock()
     mock_task.get_name.return_value = "test_task"
     mock_task.request.record_trace = False
     mock_task.request.name = "test_task"
     mock_task.request.profile = None
-    with patch("artemis.sdk.agent.DataEngine"):
+    with patch("apollo.sdk.agent.DataEngine"):
         agent._prepare_tracing(mock_task, ctx)
 
     assert ctx.execution_setup is not None
@@ -404,9 +404,9 @@ def test_checker_builder_and_context_propagation():
 def test_factory_default_verification_layering():
     """Contract: out of the box, the verification stack is layered as
     final check ON / planner validation (ratchet) ON / midway checks OFF."""
-    from artemis.config.agent import AgentGlobalConfig, CheckerConfig, PlannerValidationConfig
-    from artemis.context import ExecutionSetup
-    from artemis.sdk.builders.agent_config_builder import AgentConfigBuilder
+    from apollo.config.agent import AgentGlobalConfig, CheckerConfig, PlannerValidationConfig
+    from apollo.context import ExecutionSetup
+    from apollo.sdk.builders.agent_config_builder import AgentConfigBuilder
 
     # Config-model factory defaults
     assert CheckerConfig().enabled is True
@@ -426,14 +426,14 @@ def test_factory_default_verification_layering():
     assert setup.midway_checks_enabled is False
     assert setup.checks_enabled is True
 
-    # Builder default (fed by config/artemis.jsonc) agrees
+    # Builder default (fed by config/apollo.jsonc) agrees
     cfg = AgentConfigBuilder().build()
     assert cfg.disable_checker is False
     assert cfg.disable_midway_checks is True
     assert cfg.disable_final_check is False
     assert cfg.disable_planner_validation is False
 
-    # Shipped artemis.jsonc agrees with the model factory defaults
+    # Shipped apollo.jsonc agrees with the model factory defaults
     agent_cfg = load_agent_config()
     assert agent_cfg.checker.enabled is True
     assert agent_cfg.checker.midway_checks is False
@@ -444,14 +444,14 @@ def test_factory_default_verification_layering():
 
 def test_explorer_builder_and_resolution(monkeypatch):
     """Test AgentConfigBuilder explorer methods and multi-tier resolution logic."""
-    from artemis.context import ArtemisContext, DeviceContext, DevicePlatform
-    from artemis.sdk.agent import Agent
-    from artemis.sdk.builders.agent_config_builder import AgentConfigBuilder
-    from artemis.tools.explorer_tool import resolve_explorer_version
+    from apollo.context import ApolloContext, DeviceContext, DevicePlatform
+    from apollo.sdk.agent import Agent
+    from apollo.sdk.builders.agent_config_builder import AgentConfigBuilder
+    from apollo.tools.explorer_tool import resolve_explorer_version
 
-    monkeypatch.delenv("ARTEMIS_EXPLORER_VERSION", raising=False)
+    monkeypatch.delenv("APOLLO_EXPLORER_VERSION", raising=False)
 
-    # Default builder inherits from artemis.jsonc (default="flash", flash_mode="flash",
+    # Default builder inherits from apollo.jsonc (default="flash", flash_mode="flash",
     # pro_mode="flash", caching unset, no per-agent override).
     builder = AgentConfigBuilder()
     cfg = builder.build()
@@ -502,7 +502,7 @@ def test_explorer_builder_and_resolution(monkeypatch):
         device_width=1080,
         device_height=2400,
     )
-    ctx = ArtemisContext(device=device, agent_config=cfg_custom)
+    ctx = ApolloContext(device=device, agent_config=cfg_custom)
 
     # 1. Explicit override takes highest priority
     assert resolve_explorer_version(ctx, explicit_version="flash") == "flash"
@@ -510,9 +510,9 @@ def test_explorer_builder_and_resolution(monkeypatch):
     assert resolve_explorer_version(ctx, explicit_version="ultra") == "ultra"
 
     # 2. Environment variable override
-    monkeypatch.setenv("ARTEMIS_EXPLORER_VERSION", "ultra")
+    monkeypatch.setenv("APOLLO_EXPLORER_VERSION", "ultra")
     assert resolve_explorer_version(ctx) == "ultra"
-    monkeypatch.delenv("ARTEMIS_EXPLORER_VERSION", raising=False)
+    monkeypatch.delenv("APOLLO_EXPLORER_VERSION", raising=False)
 
     # 3. Per-agent mapping in explorer_versions
     assert resolve_explorer_version(ctx, agent_or_profile_name="operator") == "ultra"
@@ -524,7 +524,7 @@ def test_explorer_builder_and_resolution(monkeypatch):
         .with_explorer(flash_mode="flash", pro_mode="pro", default_version="flash", versions={})
         .build()
     )
-    ctx_profiled = ArtemisContext(device=device, agent_config=cfg_profiled)
+    ctx_profiled = ApolloContext(device=device, agent_config=cfg_profiled)
     assert resolve_explorer_version(ctx_profiled, agent_or_profile_name="flash") == "flash"
     assert resolve_explorer_version(ctx_profiled, agent_or_profile_name="flash_runner") == "flash"
     assert resolve_explorer_version(ctx_profiled, agent_or_profile_name="pro") == "pro"
@@ -537,7 +537,7 @@ def test_explorer_builder_and_resolution(monkeypatch):
     mock_task.request.record_trace = False
     mock_task.request.name = "explorer_test_task"
     mock_task.request.profile = None
-    with patch("artemis.sdk.agent.DataEngine"):
+    with patch("apollo.sdk.agent.DataEngine"):
         agent._prepare_tracing(mock_task, ctx)
 
     assert ctx.execution_setup is not None
@@ -549,11 +549,11 @@ def test_explorer_builder_and_resolution(monkeypatch):
 
 def test_outputter_builder_and_context_propagation():
     """Test AgentConfigBuilder outputter methods and propagation to ExecutionSetup."""
-    from artemis.context import ArtemisContext, DeviceContext, DevicePlatform
-    from artemis.sdk.agent import Agent
-    from artemis.sdk.builders.agent_config_builder import AgentConfigBuilder
+    from apollo.context import ApolloContext, DeviceContext, DevicePlatform
+    from apollo.sdk.agent import Agent
+    from apollo.sdk.builders.agent_config_builder import AgentConfigBuilder
 
-    # Default builder inherits from artemis.jsonc (enabled=True, force_synthesis=False)
+    # Default builder inherits from apollo.jsonc (enabled=True, force_synthesis=False)
     builder = AgentConfigBuilder()
     cfg = builder.build()
     assert cfg.disable_outputter is False
@@ -579,7 +579,7 @@ def test_outputter_builder_and_context_propagation():
         device_width=1080,
         device_height=2400,
     )
-    ctx = ArtemisContext(device=device)
+    ctx = ApolloContext(device=device)
     agent = Agent(config=cfg_custom)
     mock_task = MagicMock()
     mock_task.get_name.return_value = "outputter_test_task"
@@ -587,7 +587,7 @@ def test_outputter_builder_and_context_propagation():
     mock_task.request.name = "outputter_test_task"
     mock_task.request.profile = None
     mock_task.request.goal = "Test outputter propagation"
-    with patch("artemis.sdk.agent.DataEngine"):
+    with patch("apollo.sdk.agent.DataEngine"):
         agent._prepare_tracing(mock_task, ctx)
 
     assert ctx.execution_setup is not None
@@ -598,8 +598,8 @@ def test_outputter_builder_and_context_propagation():
 
 def test_categorized_flash_and_pro_profile_builders():
     """Test with_flash_config and with_pro_config fluent builders and bidirectional sync."""
-    from artemis.config.agent import AgentGlobalConfig
-    from artemis.sdk.builders.agent_config_builder import AgentConfigBuilder
+    from apollo.config.agent import AgentGlobalConfig
+    from apollo.sdk.builders.agent_config_builder import AgentConfigBuilder
 
     # 1. Test with_flash_config
     cfg_flash = AgentConfigBuilder().with_flash_config(max_turns=15, explorer_mode="flash").build()
@@ -648,13 +648,13 @@ def test_categorized_flash_and_pro_profile_builders():
 
 def test_agent_config_environment_variable_overrides(monkeypatch):
     """Test environment variable overrides for AgentGlobalConfig switches."""
-    from artemis.config.agent import load_agent_config
+    from apollo.config.agent import load_agent_config
 
-    monkeypatch.setenv("ARTEMIS_CHECKER_ENABLED", "true")
-    monkeypatch.setenv("ARTEMIS_COMMITTEE_ENABLED", "1")
-    monkeypatch.setenv("ARTEMIS_PLANNER_VALIDATION_ENABLED", "yes")
-    monkeypatch.setenv("ARTEMIS_OUTPUTTER_ENABLED", "false")
-    monkeypatch.setenv("ARTEMIS_VIDEO_LEDGER_ENABLED", "0")
+    monkeypatch.setenv("APOLLO_CHECKER_ENABLED", "true")
+    monkeypatch.setenv("APOLLO_COMMITTEE_ENABLED", "1")
+    monkeypatch.setenv("APOLLO_PLANNER_VALIDATION_ENABLED", "yes")
+    monkeypatch.setenv("APOLLO_OUTPUTTER_ENABLED", "false")
+    monkeypatch.setenv("APOLLO_VIDEO_LEDGER_ENABLED", "0")
 
     cfg = load_agent_config()
     assert cfg.checker.enabled is True
@@ -669,8 +669,8 @@ def test_agent_config_environment_variable_overrides(monkeypatch):
 
 
 def test_consolidated_workspace_and_admin_paths():
-    """Verify consolidated workspace and admin paths exported from artemis.config."""
-    from artemis.config import (
+    """Verify consolidated workspace and admin paths exported from apollo.config."""
+    from apollo.config import (
         DB_PATH,
         IMAGES_DIR,
         PAUSE_FILE,
@@ -689,7 +689,7 @@ def test_consolidated_workspace_and_admin_paths():
 
     assert WORKSPACE_ROOT == ROOT_DIR
     assert PAUSE_FILE == get_pause_file()
-    assert PAUSE_FILE.name == ".artemis_paused"
+    assert PAUSE_FILE.name == ".apollo_paused"
     assert REPLAY_BASE_DIR == get_replay_dir()
     assert TEST_DATA_DIR == get_test_data_dir()
     assert TEST_OUTPUTS_DIR == get_test_outputs_dir()
@@ -711,7 +711,7 @@ def test_admin_console_config_facade_backward_compatibility():
         WORKSPACE_ROOT,
         init_ls_address,
     )
-    import artemis.config as ac
+    import apollo.config as ac
 
     assert WORKSPACE_ROOT == ac.WORKSPACE_ROOT
     assert PAUSE_FILE == ac.PAUSE_FILE
@@ -728,7 +728,7 @@ class TestVerificationLevelPresets:
     """The coarse Checker presets behind ``--verification-level``."""
 
     def test_every_preset_is_a_valid_checker_override(self):
-        from artemis.config import (
+        from apollo.config import (
             DEFAULT_VERIFICATION_LEVEL,
             VERIFICATION_LEVEL_PRESETS,
             CheckerConfig,
@@ -741,7 +741,7 @@ class TestVerificationLevelPresets:
             assert isinstance(cfg, CheckerConfig)
 
     def test_presets_form_a_monotonic_ladder(self):
-        from artemis.config import CheckerConfig, checker_overrides_for_level
+        from apollo.config import CheckerConfig, checker_overrides_for_level
 
         off = CheckerConfig(**checker_overrides_for_level("off"))
         final = CheckerConfig(**checker_overrides_for_level("final"))
@@ -761,7 +761,7 @@ class TestVerificationLevelPresets:
         assert strict.max_iterations > checkpoints.max_iterations
 
     def test_level_lookup_is_case_and_whitespace_insensitive(self):
-        from artemis.config import checker_overrides_for_level
+        from apollo.config import checker_overrides_for_level
 
         assert checker_overrides_for_level(" STRICT ") == checker_overrides_for_level("strict")
         # A copy is returned so callers cannot mutate the shared preset table.
@@ -771,15 +771,15 @@ class TestVerificationLevelPresets:
 
     @pytest.mark.parametrize("bad", [None, "", "maximum", "ultra"])
     def test_unknown_level_raises(self, bad):
-        from artemis.config import checker_overrides_for_level
+        from apollo.config import checker_overrides_for_level
 
         with pytest.raises(ValueError, match="Unknown verification level"):
             checker_overrides_for_level(bad)
 
     def test_level_preset_survives_explicit_master_switch(self):
         """``--verification-level strict --disable-checker`` keeps the master switch off."""
-        from artemis.config import checker_overrides_for_level
-        from artemis.sdk.builders.agent_config_builder import AgentConfigBuilder
+        from apollo.config import checker_overrides_for_level
+        from apollo.sdk.builders.agent_config_builder import AgentConfigBuilder
 
         builder = AgentConfigBuilder()
         builder.with_checker(**checker_overrides_for_level("strict"))
@@ -793,7 +793,7 @@ class TestVerificationLevelPresets:
 
     @pytest.mark.parametrize("level", ["off", "final", "checkpoints", "strict"])
     def test_effective_config_classifies_back_onto_the_ladder(self, level):
-        from artemis.config import (
+        from apollo.config import (
             CheckerConfig,
             checker_overrides_for_level,
             verification_level_for_checker,
@@ -814,14 +814,14 @@ class TestRunTuningSummary:
     """``run_tuning_for_profile``: the per-run tuning persisted with a session."""
 
     def test_flash_has_no_tuning(self):
-        from artemis.config import CheckerConfig, ExplorerConfig, run_tuning_for_profile
+        from apollo.config import CheckerConfig, ExplorerConfig, run_tuning_for_profile
 
         kwargs = {"checker": CheckerConfig(), "explorer": ExplorerConfig()}
         assert run_tuning_for_profile("flash", **kwargs) is None
         assert run_tuning_for_profile(None, **kwargs) is None
 
     def test_pro_reports_both_sliders(self):
-        from artemis.config import (
+        from apollo.config import (
             CheckerConfig,
             ExplorerConfig,
             checker_overrides_for_level,
@@ -836,7 +836,7 @@ class TestRunTuningSummary:
         assert summary == {"verification_level": "strict", "explorer_mode": "ultra"}
 
     def test_pro_defaults_match_launcher_defaults(self):
-        from artemis.config import (
+        from apollo.config import (
             CheckerConfig,
             ExplorerConfig,
             run_tuning_for_profile,

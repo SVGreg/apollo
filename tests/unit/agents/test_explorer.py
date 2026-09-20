@@ -14,15 +14,15 @@
 
 import os
 
-os.environ["ARTEMIS_USE_FILE_API"] = "false"
+os.environ["APOLLO_USE_FILE_API"] = "false"
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 import json
 from google.genai import types
 
-from artemis.agents.explorer.explorer import Explorer
-from artemis.context import ArtemisContext
-from artemis.graph.state import State
+from apollo.agents.explorer.explorer import Explorer
+from apollo.context import ApolloContext
+from apollo.graph.state import State
 
 MOCK_PROMPT_JSON = """{
   "IDENTITY": "You are the agentic UI Explorer designed to identify objects, scan text, and extract UI attributes on a phone screen.",
@@ -36,13 +36,13 @@ MOCK_PROMPT_JSON = """{
 
 @pytest.fixture(autouse=True)
 def disable_file_api(monkeypatch):
-    monkeypatch.setenv("ARTEMIS_USE_FILE_API", "false")
+    monkeypatch.setenv("APOLLO_USE_FILE_API", "false")
 
 
 @pytest.mark.asyncio
 async def test_explorer_run():
     # Mock context and state
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.device = MagicMock()
     mock_ctx.device.device_width = 1080
     mock_ctx.device.device_height = 2400
@@ -102,11 +102,11 @@ async def test_explorer_run():
 
     with (
         patch(
-            "artemis.agents.explorer.explorer.genai.Client",
+            "apollo.agents.explorer.explorer.genai.Client",
             return_value=mock_client,
         ),
         patch(
-            "artemis.agents.explorer.run_setup.StorageManager",
+            "apollo.agents.explorer.run_setup.StorageManager",
             return_value=mock_storage,
         ),
         patch("pathlib.Path.exists", return_value=True),
@@ -130,7 +130,7 @@ async def test_explorer_run():
 @pytest.mark.asyncio
 async def test_explorer_submit_answer():
     # Mock context and state
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.device = MagicMock()
     mock_ctx.device.device_width = 1080
     mock_ctx.device.device_height = 2400
@@ -189,11 +189,11 @@ async def test_explorer_submit_answer():
 
     with (
         patch(
-            "artemis.agents.explorer.explorer.genai.Client",
+            "apollo.agents.explorer.explorer.genai.Client",
             return_value=mock_client,
         ),
         patch(
-            "artemis.agents.explorer.run_setup.StorageManager",
+            "apollo.agents.explorer.run_setup.StorageManager",
             return_value=mock_storage,
         ),
         patch("pathlib.Path.exists", return_value=True),
@@ -218,7 +218,7 @@ async def test_explorer_submit_answer():
 @pytest.mark.asyncio
 async def test_explorer_submit_answer_self_correction():
     # Mock context and state
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.device = MagicMock()
     mock_ctx.device.device_width = 1080
     mock_ctx.device.device_height = 2400
@@ -335,11 +335,11 @@ async def test_explorer_submit_answer_self_correction():
 
     with (
         patch(
-            "artemis.agents.explorer.explorer.genai.Client",
+            "apollo.agents.explorer.explorer.genai.Client",
             return_value=mock_client,
         ),
         patch(
-            "artemis.agents.explorer.run_setup.StorageManager",
+            "apollo.agents.explorer.run_setup.StorageManager",
             return_value=mock_storage,
         ),
         patch("pathlib.Path.exists", return_value=True),
@@ -372,7 +372,7 @@ async def test_explorer_submit_answer_self_correction():
 @pytest.mark.asyncio
 async def test_explorer_initial_visual_marking():
     # Mock context and state with latest_ui_hierarchy
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.device = MagicMock()
     mock_ctx.device.device_width = 1080
     mock_ctx.device.device_height = 2400
@@ -423,14 +423,14 @@ async def test_explorer_initial_visual_marking():
 
     with (
         patch(
-            "artemis.agents.explorer.explorer.genai.Client",
+            "apollo.agents.explorer.explorer.genai.Client",
             return_value=mock_client,
         ),
         patch(
-            "artemis.agents.explorer.run_setup.StorageManager",
+            "apollo.agents.explorer.run_setup.StorageManager",
             return_value=mock_storage,
         ),
-        patch("artemis.agents.explorer.run_setup.draw_dots") as mock_draw_dots,
+        patch("apollo.agents.explorer.run_setup.draw_dots") as mock_draw_dots,
         patch("pathlib.Path.exists", return_value=True),
         patch("pathlib.Path.read_text", return_value=mock_prompt),
         patch("builtins.open", custom_open),
@@ -455,10 +455,10 @@ async def test_explorer_initial_visual_marking():
 
 @pytest.mark.asyncio
 async def test_explorer_initial_visual_marking_previous_screenshot():
-    from artemis.data_engine.models import ImageRecord
+    from apollo.data_engine.models import ImageRecord
 
     # Mock context and state
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.device = MagicMock()
     mock_ctx.device.device_width = 1080
     mock_ctx.device.device_height = 2400
@@ -514,14 +514,14 @@ async def test_explorer_initial_visual_marking_previous_screenshot():
 
     with (
         patch(
-            "artemis.agents.explorer.explorer.genai.Client",
+            "apollo.agents.explorer.explorer.genai.Client",
             return_value=mock_client,
         ),
         patch(
-            "artemis.agents.explorer.run_setup.StorageManager",
+            "apollo.agents.explorer.run_setup.StorageManager",
             return_value=mock_storage,
         ),
-        patch("artemis.agents.explorer.run_setup.draw_dots") as mock_draw_dots,
+        patch("apollo.agents.explorer.run_setup.draw_dots") as mock_draw_dots,
         patch("pathlib.Path.exists", return_value=True),
         patch("pathlib.Path.read_text", return_value=mock_prompt),
         patch("builtins.open", custom_open),
@@ -551,7 +551,7 @@ async def test_explorer_initial_visual_marking_previous_screenshot():
 async def test_explorer_initial_visual_marking_previous_screenshot_no_ui_tree():
 
     # Mock context and state
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.device = MagicMock()
     mock_ctx.device.device_width = 1080
     mock_ctx.device.device_height = 2400
@@ -602,14 +602,14 @@ async def test_explorer_initial_visual_marking_previous_screenshot_no_ui_tree():
 
     with (
         patch(
-            "artemis.agents.explorer.explorer.genai.Client",
+            "apollo.agents.explorer.explorer.genai.Client",
             return_value=mock_client,
         ),
         patch(
-            "artemis.agents.explorer.run_setup.StorageManager",
+            "apollo.agents.explorer.run_setup.StorageManager",
             return_value=mock_storage,
         ),
-        patch("artemis.agents.explorer.run_setup.draw_dots") as mock_draw_dots,
+        patch("apollo.agents.explorer.run_setup.draw_dots") as mock_draw_dots,
         patch("pathlib.Path.exists", return_value=True),
         patch("pathlib.Path.read_text", return_value=mock_prompt),
         patch("builtins.open", custom_open),
@@ -630,10 +630,10 @@ async def test_explorer_initial_visual_marking_previous_screenshot_no_ui_tree():
 
 @pytest.mark.asyncio
 async def test_explorer_initial_visual_marking_previous_screenshot_ocr_fusion():
-    from artemis.data_engine.models import ImageRecord
+    from apollo.data_engine.models import ImageRecord
 
     # Mock context and state
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.device = MagicMock()
     mock_ctx.device.device_width = 1080
     mock_ctx.device.device_height = 2400
@@ -700,14 +700,14 @@ async def test_explorer_initial_visual_marking_previous_screenshot_ocr_fusion():
 
     with (
         patch(
-            "artemis.agents.explorer.explorer.genai.Client",
+            "apollo.agents.explorer.explorer.genai.Client",
             return_value=mock_client,
         ),
         patch(
-            "artemis.agents.explorer.run_setup.StorageManager",
+            "apollo.agents.explorer.run_setup.StorageManager",
             return_value=mock_storage,
         ),
-        patch("artemis.agents.explorer.run_setup.draw_dots") as mock_draw_dots,
+        patch("apollo.agents.explorer.run_setup.draw_dots") as mock_draw_dots,
         patch("pathlib.Path.exists", return_value=True),
         patch("pathlib.Path.read_text", return_value=mock_prompt),
         patch("builtins.open", custom_open),
@@ -732,10 +732,10 @@ async def test_explorer_initial_visual_marking_previous_screenshot_ocr_fusion():
 
 @pytest.mark.asyncio
 async def test_explorer_initial_visual_marking_previous_screenshot_on_the_fly_ocr():
-    from artemis.data_engine.models import ImageRecord
+    from apollo.data_engine.models import ImageRecord
 
     # Mock context and state
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.device = MagicMock()
     mock_ctx.device.device_width = 1080
     mock_ctx.device.device_height = 2400
@@ -804,23 +804,23 @@ async def test_explorer_initial_visual_marking_previous_screenshot_on_the_fly_oc
 
     with (
         patch(
-            "artemis.agents.explorer.explorer.genai.Client",
+            "apollo.agents.explorer.explorer.genai.Client",
             return_value=mock_client,
         ),
         patch(
-            "artemis.agents.explorer.run_setup.StorageManager",
+            "apollo.agents.explorer.run_setup.StorageManager",
             return_value=mock_storage,
         ),
         patch(
-            "artemis.agents.explorer.run_setup.perform_ocr",
+            "apollo.agents.explorer.run_setup.perform_ocr",
             new_callable=AsyncMock,
             return_value=mock_ocr_result,
         ) as mock_perform_ocr,
         patch(
-            "artemis.agents.explorer.run_setup.is_ocr_configured",
+            "apollo.agents.explorer.run_setup.is_ocr_configured",
             return_value=True,
         ),
-        patch("artemis.agents.explorer.run_setup.draw_dots") as mock_draw_dots,
+        patch("apollo.agents.explorer.run_setup.draw_dots") as mock_draw_dots,
         patch("pathlib.Path.exists", return_value=True),
         patch("pathlib.Path.read_text", return_value=mock_prompt),
         patch("builtins.open", custom_open),
@@ -849,7 +849,7 @@ async def test_explorer_initial_visual_marking_previous_screenshot_on_the_fly_oc
 @pytest.mark.asyncio
 async def test_explorer_denylisted_tool():
     # Mock context and state
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.device = MagicMock()
     mock_ctx.device.device_width = 1080
     mock_ctx.device.device_height = 2400
@@ -929,11 +929,11 @@ async def test_explorer_denylisted_tool():
 
     with (
         patch(
-            "artemis.agents.explorer.explorer.genai.Client",
+            "apollo.agents.explorer.explorer.genai.Client",
             return_value=mock_client,
         ),
         patch(
-            "artemis.agents.explorer.run_setup.StorageManager",
+            "apollo.agents.explorer.run_setup.StorageManager",
             return_value=mock_storage,
         ),
         patch("pathlib.Path.exists", return_value=True),
@@ -994,7 +994,7 @@ async def test_explorer_inspect_region():
     import numpy as np
 
     # Mock context
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.device = MagicMock()
     mock_ctx.device.device_width = 1080
     mock_ctx.device.device_height = 2400
@@ -1014,7 +1014,7 @@ async def test_explorer_inspect_region():
         patch("cv2.imwrite", return_value=True) as mock_imwrite,
         patch("pathlib.Path.mkdir") as mock_mkdir,
         patch("glob.glob", return_value=[]),
-        patch("artemis.agents.explorer.perception_tools.settings") as mock_settings,
+        patch("apollo.agents.explorer.perception_tools.settings") as mock_settings,
     ):
         mock_settings.TRACES_PATH = pathlib.Path("/tmp/traces")
         res = await explorer.exec_inspect_region(
@@ -1042,7 +1042,7 @@ async def test_explorer_inspect_region():
 @pytest.mark.asyncio
 async def test_explorer_final_turn_tool_stripping():
     """On the final turn the Explorer strips other tools and injects the warning."""
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.device = MagicMock()
     mock_ctx.device.device_width = 1080
     mock_ctx.device.device_height = 2400
@@ -1129,9 +1129,9 @@ async def test_explorer_ask_perception_tool():
     import numpy as np
     from unittest.mock import mock_open
 
-    from artemis.agents.explorer.screen_index import ScreenIndex
+    from apollo.agents.explorer.screen_index import ScreenIndex
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = MagicMock()
     mock_ctx.data_engine.base_dir = "/tmp/test_session"
     explorer = Explorer(mock_ctx)
@@ -1181,13 +1181,13 @@ async def test_explorer_ask_perception_tool():
     mock_draw_dots = MagicMock()
 
     with (
-        patch("artemis.agents.explorer.run_setup.StorageManager") as storage_cls,
+        patch("apollo.agents.explorer.run_setup.StorageManager") as storage_cls,
         patch(
-            "artemis.agents.explorer.perception_tools._run_object_detection",
+            "apollo.agents.explorer.perception_tools._run_object_detection",
             return_value=mock_detector_res,
         ),
-        patch("artemis.agents.explorer.perception_tools.draw_dots", mock_draw_dots),
-        patch("artemis.utils.visualization.draw_dots", mock_draw_dots),
+        patch("apollo.agents.explorer.perception_tools.draw_dots", mock_draw_dots),
+        patch("apollo.utils.visualization.draw_dots", mock_draw_dots),
         patch("pathlib.Path.mkdir"),
         patch("glob.glob", return_value=[]),
         patch("builtins.open", mock_open(read_data=b'{"templates": []}')),
@@ -1243,7 +1243,7 @@ async def test_explorer_ask_perception_tool():
 
 
 def test_explorer_prune_historical_images():
-    from artemis.agents.explorer.explorer import Explorer
+    from apollo.agents.explorer.explorer import Explorer
     from google.genai import types
 
     mock_ctx = MagicMock()
@@ -1277,8 +1277,8 @@ class _FakeGenaiError(Exception):
 
 @pytest.mark.asyncio
 async def test_generate_content_reliability_permanent_error_is_not_retried():
-    from artemis.agents.explorer.native_runner import _generate_content_with_reliability
-    from artemis.llm.reliability import LLMPermanentError
+    from apollo.agents.explorer.native_runner import _generate_content_with_reliability
+    from apollo.llm.reliability import LLMPermanentError
 
     calls = 0
 
@@ -1296,8 +1296,8 @@ async def test_generate_content_reliability_permanent_error_is_not_retried():
 
 @pytest.mark.asyncio
 async def test_generate_content_reliability_bad_request_is_not_retried():
-    from artemis.agents.explorer.native_runner import _generate_content_with_reliability
-    from artemis.llm.reliability import LLMPermanentError
+    from apollo.agents.explorer.native_runner import _generate_content_with_reliability
+    from apollo.llm.reliability import LLMPermanentError
 
     calls = 0
 
@@ -1314,7 +1314,7 @@ async def test_generate_content_reliability_bad_request_is_not_retried():
 
 @pytest.mark.asyncio
 async def test_generate_content_reliability_retries_transient_then_succeeds():
-    from artemis.agents.explorer import native_runner as native_runner_module
+    from apollo.agents.explorer import native_runner as native_runner_module
 
     calls = 0
     sentinel = object()
@@ -1335,8 +1335,8 @@ async def test_generate_content_reliability_retries_transient_then_succeeds():
 
 @pytest.mark.asyncio
 async def test_generate_content_reliability_exhausts_to_typed_error():
-    from artemis.agents.explorer import native_runner as native_runner_module
-    from artemis.llm.reliability import (
+    from apollo.agents.explorer import native_runner as native_runner_module
+    from apollo.llm.reliability import (
         FailureCategory,
         LLMExhaustedError,
         retry_policy_for,

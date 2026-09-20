@@ -20,9 +20,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from artemis.drivers.base import KeyCode, ScreenData, SwipeDirection
-from artemis.drivers.mock.mock_driver import MockDeviceDriver
-from artemis.drivers.android.adb_driver import AndroidAdbDriver
+from apollo.drivers.base import KeyCode, ScreenData, SwipeDirection
+from apollo.drivers.mock.mock_driver import MockDeviceDriver
+from apollo.drivers.android.adb_driver import AndroidAdbDriver
 
 
 _ONE_PIXEL_PNG = base64.b64encode(
@@ -60,8 +60,8 @@ async def test_mock_driver_actions():
     assert driver.action_history[-1]["direction"] == "up"
 
     # 5. Input text
-    assert await driver.input_text("Hello Artemis") is True
-    assert driver.action_history[-1]["text"] == "Hello Artemis"
+    assert await driver.input_text("Hello Apollo") is True
+    assert driver.action_history[-1]["text"] == "Hello Apollo"
 
     # 6. Press key
     assert await driver.press_key(KeyCode.HOME) is True

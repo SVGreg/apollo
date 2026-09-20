@@ -3,13 +3,13 @@
 ``AgentConfigBuilder.with_verification_level`` mirrors ``--verification-level``
 and ``with_pro_config(verification_level=..., explorer_mode=...)`` carries both
 knobs in one call; both resolve through the single preset table in
-``artemis.config``.
+``apollo.config``.
 """
 
 import pytest
 
-from artemis.config import VERIFICATION_LEVEL_PRESETS, checker_overrides_for_level
-from artemis.sdk.builders.agent_config_builder import AgentConfigBuilder
+from apollo.config import VERIFICATION_LEVEL_PRESETS, checker_overrides_for_level
+from apollo.sdk.builders.agent_config_builder import AgentConfigBuilder
 
 
 def test_with_verification_level_off_disables_the_checker():
@@ -29,7 +29,7 @@ def test_with_verification_level_checkpoints_enables_midway_checks():
     assert cfg.disable_checker is False
     assert cfg.disable_midway_checks is False
     assert cfg.disable_final_check is False
-    # Unspecified fields keep the artemis.jsonc values.
+    # Unspecified fields keep the apollo.jsonc values.
     assert cfg.assert_failure_policy == "continue"
 
 
@@ -93,7 +93,7 @@ def test_with_pro_config_checker_switch_wins_over_verification_level():
 
 
 def test_with_explorer_pro_mode_is_the_explorer_mode_knob(monkeypatch):
-    monkeypatch.delenv("ARTEMIS_EXPLORER_VERSION", raising=False)
+    monkeypatch.delenv("APOLLO_EXPLORER_VERSION", raising=False)
     cfg = AgentConfigBuilder().with_explorer(pro_mode="pro").build()
     assert cfg.explorer.pro_mode == "pro"
     assert cfg.get_explorer_version(agent_name=None, profile="pro") == "pro"
@@ -103,7 +103,7 @@ def test_with_explorer_pro_mode_is_the_explorer_mode_knob(monkeypatch):
 
 
 def test_with_flash_config_explorer_mode_is_the_flash_profile_knob(monkeypatch):
-    monkeypatch.delenv("ARTEMIS_EXPLORER_VERSION", raising=False)
+    monkeypatch.delenv("APOLLO_EXPLORER_VERSION", raising=False)
     cfg = AgentConfigBuilder().with_flash_config(explorer_mode="pro").build()
     assert cfg.flash.explorer_mode == "pro"
     assert cfg.explorer.flash_mode == "pro"
@@ -113,7 +113,7 @@ def test_with_flash_config_explorer_mode_is_the_flash_profile_knob(monkeypatch):
 
 
 def test_with_explorer_versions_is_an_advanced_per_agent_override(monkeypatch):
-    monkeypatch.delenv("ARTEMIS_EXPLORER_VERSION", raising=False)
+    monkeypatch.delenv("APOLLO_EXPLORER_VERSION", raising=False)
     cfg = (
         AgentConfigBuilder()
         .with_explorer(pro_mode="flash", versions={"validator": "ultra"})

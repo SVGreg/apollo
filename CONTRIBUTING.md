@@ -1,12 +1,12 @@
-# Contributing to ARTEMIS
+# Contributing to APOLLO
 
-Thank you for your interest in contributing to **ARTEMIS**! We welcome and appreciate all forms of contributions—whether it's reporting bugs, proposing new features, improving documentation, or submitting code.
+Thank you for your interest in contributing to **APOLLO**! We welcome and appreciate all forms of contributions—whether it's reporting bugs, proposing new features, improving documentation, or submitting code.
 
 ---
 
 ## 🤝 Ways to Contribute
 
-- **🐛 Report Bugs & Suggest Features**: If you find an issue or have an idea to improve ARTEMIS, please open an [Issue](https://github.com/google/artemis/issues).
+- **🐛 Report Bugs & Suggest Features**: If you find an issue or have an idea to improve APOLLO, please open an [Issue](https://github.com/google/artemis/issues).
 - **💡 Submit Pull Requests**:
   1. Fork the repository and create your feature/fix branch (`git checkout -b feat/my-feature`).
   2. Make your changes and verify with `make test`, `make lint`, and `make typecheck`.
@@ -15,7 +15,7 @@ Thank you for your interest in contributing to **ARTEMIS**! We welcome and appre
 
 ---
 
-Every contribution—big or small—helps make ARTEMIS better. Thank you for building with us!
+Every contribution—big or small—helps make APOLLO better. Thank you for building with us!
 
 ## Test layers
 

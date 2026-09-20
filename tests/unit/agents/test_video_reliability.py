@@ -10,18 +10,18 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from langchain_core.messages import AIMessage, HumanMessage
 import pytest
 
-from artemis.agents.video_analyzer.reliability import (
+from apollo.agents.video_analyzer.reliability import (
     AgenticVideoDegraded,
     VideoCircuitBreaker,
     VideoFailureCategory,
     classify_video_failure,
 )
-from artemis.agents.video_analyzer.video_analyzer import VideoAnalyzer
-from artemis.context import ArtemisContext
+from apollo.agents.video_analyzer.video_analyzer import VideoAnalyzer
+from apollo.context import ApolloContext
 
 
 def _context() -> MagicMock:
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx._video_blackboard = None
     ctx._video_circuit_breaker = None
     ctx._mobile_controller = None
@@ -80,7 +80,7 @@ def test_circuit_breaker_opens_and_half_opens():
 
 @pytest.mark.asyncio
 async def test_timeout_chunk_is_bisected_and_successful_leaves_survive():
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(_context())
 
     async def analyze(start: float, end: float, query: str) -> str:
@@ -98,7 +98,7 @@ async def test_timeout_chunk_is_bisected_and_successful_leaves_survive():
 
 @pytest.mark.asyncio
 async def test_universal_primary_failure_uses_configured_fallback():
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(_context())
 
     primary = MagicMock()
@@ -111,7 +111,7 @@ async def test_universal_primary_failure_uses_configured_fallback():
     fallback.bind_tools.return_value = fallback_bound
 
     with patch(
-        "artemis.agents.video_analyzer.video_analyzer.get_llm",
+        "apollo.agents.video_analyzer.video_analyzer.get_llm",
         side_effect=[primary, fallback],
     ) as get_model:
         response = await analyzer._invoke_universal_model(
@@ -128,7 +128,7 @@ async def test_universal_primary_failure_uses_configured_fallback():
 
 @pytest.mark.asyncio
 async def test_native_chunk_exhaustion_commits_universal_fallback(tmp_path):
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(_context())
     analyzer.use_native_gemini = True
     raw_video = tmp_path / "segment.mp4"
@@ -145,11 +145,11 @@ async def test_native_chunk_exhaustion_commits_universal_fallback(tmp_path):
 
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.get_controller",
+            "apollo.agents.video_analyzer.video_analyzer.get_controller",
             return_value=controller,
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.compress_video_for_api",
+            "apollo.agents.video_analyzer.video_analyzer.compress_video_for_api",
             new=AsyncMock(return_value=raw_video),
         ),
         patch.object(
@@ -163,7 +163,7 @@ async def test_native_chunk_exhaustion_commits_universal_fallback(tmp_path):
             new=AsyncMock(return_value=fallback_text),
         ) as fallback,
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.asyncio.sleep",
+            "apollo.agents.video_analyzer.video_analyzer.asyncio.sleep",
             new=AsyncMock(),
         ),
     ):
@@ -176,7 +176,7 @@ async def test_native_chunk_exhaustion_commits_universal_fallback(tmp_path):
 
 
 def test_action_timestamps_drive_dense_sampling():
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(_context())
     step = SimpleNamespace(timestamp=104.0, action_taken={"name": "tap"})
     storage = SimpleNamespace(get_steps=lambda _session: [step])
@@ -203,7 +203,7 @@ class _FakeGenaiError(Exception):
 
 @pytest.mark.asyncio
 async def test_invoke_with_retry_raises_non_retryable_immediately():
-    from artemis.agents.video_analyzer.video_analyzer import _invoke_with_retry
+    from apollo.agents.video_analyzer.video_analyzer import _invoke_with_retry
 
     calls = 0
 
@@ -219,7 +219,7 @@ async def test_invoke_with_retry_raises_non_retryable_immediately():
 
 @pytest.mark.asyncio
 async def test_invoke_with_retry_bad_request_never_retried():
-    from artemis.agents.video_analyzer.video_analyzer import _invoke_with_retry
+    from apollo.agents.video_analyzer.video_analyzer import _invoke_with_retry
 
     calls = 0
 
@@ -235,7 +235,7 @@ async def test_invoke_with_retry_bad_request_never_retried():
 
 @pytest.mark.asyncio
 async def test_invoke_with_retry_restarts_from_scratch_on_transient_failure():
-    from artemis.agents.video_analyzer import video_analyzer as va
+    from apollo.agents.video_analyzer import video_analyzer as va
 
     calls = 0
 
@@ -259,7 +259,7 @@ async def test_invoke_with_retry_restarts_from_scratch_on_transient_failure():
 
 @pytest.mark.asyncio
 async def test_invoke_with_retry_exhaustion_reraises_original_error():
-    from artemis.agents.video_analyzer import video_analyzer as va
+    from apollo.agents.video_analyzer import video_analyzer as va
 
     calls = 0
 
@@ -276,9 +276,9 @@ async def test_invoke_with_retry_exhaustion_reraises_original_error():
 
 @pytest.mark.asyncio
 async def test_invoke_with_retry_caps_unknown_failures_by_policy():
-    from artemis.llm.reliability import FailureCategory, retry_policy_for
+    from apollo.llm.reliability import FailureCategory, retry_policy_for
 
-    from artemis.agents.video_analyzer import video_analyzer as va
+    from apollo.agents.video_analyzer import video_analyzer as va
 
     calls = 0
 
@@ -304,7 +304,7 @@ class _AgenticRejected(Exception):
 @pytest.mark.asyncio
 async def test_pending_chunk_sized_for_agentic_ceiling_is_not_run_statically(tmp_path):
     """A chunk planned at 600s whose run degraded before it started is handed back."""
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(_context())
     analyzer.use_native_gemini = True
     # A sibling chunk already flipped the run to static (60s ceiling).
@@ -314,11 +314,11 @@ async def test_pending_chunk_sized_for_agentic_ceiling_is_not_run_statically(tmp
 
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.get_controller",
+            "apollo.agents.video_analyzer.video_analyzer.get_controller",
             return_value=controller,
         ),
         patch(
-            "artemis.agents.video_analyzer.chunk_native._run_native_chunk_conversation",
+            "apollo.agents.video_analyzer.chunk_native._run_native_chunk_conversation",
             new=AsyncMock(),
         ) as static_path,
         patch.object(analyzer, "_exec_single_chunk_universal", new=AsyncMock()) as universal,
@@ -338,7 +338,7 @@ async def test_pending_chunk_sized_for_agentic_ceiling_is_not_run_statically(tmp
 @pytest.mark.asyncio
 async def test_sibling_chunk_degraded_mid_run_is_replanned_into_static_pieces(tmp_path):
     """Two 600s chunks: the first is rejected while the second is still in media prep."""
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(_context())
     analyzer.use_native_gemini = True
     analyzer.video_processing = "agentic"
@@ -374,23 +374,23 @@ async def test_sibling_chunk_degraded_mid_run_is_replanned_into_static_pieces(tm
 
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.get_controller",
+            "apollo.agents.video_analyzer.video_analyzer.get_controller",
             return_value=controller,
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.compress_video_for_api",
+            "apollo.agents.video_analyzer.video_analyzer.compress_video_for_api",
             new=AsyncMock(return_value=raw_video),
         ),
         patch(
-            "artemis.agents.video_analyzer.chunk_native.run_agentic_chunk_conversation",
+            "apollo.agents.video_analyzer.chunk_native.run_agentic_chunk_conversation",
             new=AsyncMock(side_effect=agentic),
         ),
         patch(
-            "artemis.agents.video_analyzer.chunk_native._run_native_chunk_conversation",
+            "apollo.agents.video_analyzer.chunk_native._run_native_chunk_conversation",
             new=AsyncMock(side_effect=static_answer),
         ) as static_path,
         patch.object(analyzer, "_exec_single_chunk_universal", new=AsyncMock()) as universal,
-        patch("artemis.agents.video_analyzer.video_analyzer._record_llm_event"),
+        patch("apollo.agents.video_analyzer.video_analyzer._record_llm_event"),
     ):
         result = await analyzer.exec_spawn_sub_agent(0.0, 1200.0, "verify toggle")
 
@@ -411,7 +411,7 @@ async def test_sibling_chunk_degraded_mid_run_is_replanned_into_static_pieces(tm
 @pytest.mark.asyncio
 async def test_short_degraded_chunk_is_retried_statically_once():
     """A 5s chunk (below min_chunk*2) is re-run as-is instead of failing."""
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(_context())
     calls: list[tuple[float, float]] = []
 
@@ -436,7 +436,7 @@ async def test_short_degraded_chunk_is_retried_statically_once():
 @pytest.mark.asyncio
 async def test_static_retry_of_degraded_chunk_is_bounded():
     """A second degrade on the same interval is terminal: no loop, no bisect."""
-    with patch("artemis.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
+    with patch("apollo.agents.video_analyzer.video_analyzer.settings.GOOGLE_API_KEY", None):
         analyzer = VideoAnalyzer(_context())
     calls: list[tuple[float, float]] = []
 

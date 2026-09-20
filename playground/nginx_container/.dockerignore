@@ -1,5 +1,0 @@
-.git
-.gitignore
-certs/*.crt
-certs/*.key
-*.md

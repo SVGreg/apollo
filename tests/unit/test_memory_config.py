@@ -16,7 +16,7 @@
 
 import pytest
 
-from artemis.config import AgentGlobalConfig
+from apollo.config import AgentGlobalConfig
 
 
 def test_memory_defaults():
@@ -46,7 +46,7 @@ def test_transcript_ratio_ladder_is_validated():
     crossed pair is rejected with a clear message."""
     import pydantic
 
-    from artemis.config.agent import MemoryTranscriptConfig
+    from apollo.config.agent import MemoryTranscriptConfig
 
     MemoryTranscriptConfig()
     MemoryTranscriptConfig(start_ratio=0.0, soft_ratio=0.5, hard_ratio=0.5)
@@ -96,7 +96,7 @@ def test_xml_scrub_depth_positions_the_text_edge():
     list while it still carries its screenshot."""
     from langchain_core.messages import HumanMessage
 
-    from artemis.memory.transcript import PRO_UI_LIST_MARKER, TranscriptLedger
+    from apollo.memory.transcript import PRO_UI_LIST_MARKER, TranscriptLedger
 
     cfg = AgentGlobalConfig.model_validate({"memory": {"transcript": {"xml_scrub_depth": 1}}})
     ledger = TranscriptLedger(

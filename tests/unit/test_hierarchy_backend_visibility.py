@@ -2,8 +2,8 @@
 
 Covers the agent's announcement fan-out (startup progress, log trace, session
 device_info, status.json), the provisioning progress stage, the run_outcome
-environment block, the `mobile_manage_task` field, the `artemis helper` CLI
-(`--all`, status rendering) and the `artemis doctor` helper row.
+environment block, the `mobile_manage_task` field, the `apollo helper` CLI
+(`--all`, status rendering) and the `apollo doctor` helper row.
 """
 
 from __future__ import annotations
@@ -15,10 +15,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 from typer.testing import CliRunner
 
-from artemis.clients.screen_client_factory import FallbackScreenClient
-from artemis.runtime import trace_store
-from artemis.runtime.helper_manager import HelperSession, ProvisionResult
-from artemis.sdk.agent import Agent
+from apollo.clients.screen_client_factory import FallbackScreenClient
+from apollo.runtime import trace_store
+from apollo.runtime.helper_manager import HelperSession, ProvisionResult
+from apollo.sdk.agent import Agent
 
 
 # --------------------------------------------------------------------------- #
@@ -70,12 +70,12 @@ def test_announce_first_backend_reaches_every_sink(tmp_path, monkeypatch):
     engine = _engine()
     context = SimpleNamespace(data_engine=engine)
 
-    with patch("artemis.sdk.agent.publish_startup_progress") as progress:
+    with patch("apollo.sdk.agent.publish_startup_progress") as progress:
         agent._announce_hierarchy_backend(context, "sess-1", None, "helper", None)
 
     stage, message = progress.call_args.args[:2]
     assert stage == "hierarchy_backend"
-    assert message == "UI hierarchy source: Artemis accessibility helper v1.1.2"
+    assert message == "UI hierarchy source: Apollo accessibility helper v1.1.2"
     assert progress.call_args.kwargs["backend"] == "helper"
 
     trace_call = engine.record_trace.call_args.kwargs
@@ -85,7 +85,7 @@ def test_announce_first_backend_reaches_every_sink(tmp_path, monkeypatch):
 
     info = engine.update_session_device_info.call_args.kwargs
     assert info["hierarchy_backend"] == "helper"
-    assert info["hierarchy_backend_note"].startswith("UI hierarchy source: the Artemis")
+    assert info["hierarchy_backend_note"].startswith("UI hierarchy source: the Apollo")
 
     status = trace_store.read_status("sess-1")
     assert status["hierarchy_backend"] == "helper"
@@ -99,7 +99,7 @@ def test_announce_switch_is_a_warning_with_the_reason(tmp_path, monkeypatch):
     engine = _engine()
     context = SimpleNamespace(data_engine=engine)
 
-    with patch("artemis.sdk.agent.publish_startup_progress") as progress:
+    with patch("apollo.sdk.agent.publish_startup_progress") as progress:
         agent._announce_hierarchy_backend(
             context, "sess-1", "helper", "uiautomator", "HelperUnavailable: tunnel gone"
         )
@@ -107,7 +107,7 @@ def test_announce_switch_is_a_warning_with_the_reason(tmp_path, monkeypatch):
     stage, message = progress.call_args.args[:2]
     assert stage == "hierarchy_backend_changed"
     assert message == (
-        "UI hierarchy source switched from Artemis accessibility helper to UIAutomator2 "
+        "UI hierarchy source switched from Apollo accessibility helper to UIAutomator2 "
         "because HelperUnavailable: tunnel gone"
     )
     assert engine.record_trace.call_args.kwargs["payload"]["level"] == "WARNING"
@@ -121,7 +121,7 @@ def test_announce_survives_sink_failures(monkeypatch, tmp_path):
     agent = _agent_with(client)
     engine = _engine()
     engine.record_trace.side_effect = RuntimeError("db closed")
-    with patch("artemis.sdk.agent.publish_startup_progress", side_effect=OSError("no ipc")):
+    with patch("apollo.sdk.agent.publish_startup_progress", side_effect=OSError("no ipc")):
         agent._announce_hierarchy_backend(
             SimpleNamespace(data_engine=engine), "sess-1", None, "uiautomator", None
         )
@@ -141,7 +141,7 @@ async def test_connect_publishes_install_stage_and_registers_listener():
     context = SimpleNamespace(data_engine=engine)
 
     with (
-        patch("artemis.sdk.agent.publish_startup_progress") as progress,
+        patch("apollo.sdk.agent.publish_startup_progress") as progress,
         patch.object(trace_store, "update_trace_fields"),
     ):
         await agent._connect_screen_client(context, "sess-1")
@@ -164,7 +164,7 @@ async def test_connect_without_provisioning_client_takes_no_callback():
     plain.connect = MagicMock()  # signature without on_event
     agent = _agent_with(plain)
     with (
-        patch("artemis.sdk.agent.publish_startup_progress"),
+        patch("apollo.sdk.agent.publish_startup_progress"),
         patch.object(trace_store, "update_trace_fields"),
     ):
         await agent._connect_screen_client(SimpleNamespace(data_engine=None), "sess-1")
@@ -177,7 +177,7 @@ async def test_reused_agent_records_backend_changes_only_for_current_session():
     agent = _agent_with(client)
     context = SimpleNamespace(data_engine=None)
     with (
-        patch("artemis.sdk.agent.publish_startup_progress") as progress,
+        patch("apollo.sdk.agent.publish_startup_progress") as progress,
         patch.object(trace_store, "update_trace_fields"),
     ):
         await agent._connect_screen_client(context, "sess-1")
@@ -206,7 +206,7 @@ def test_update_trace_fields_merges_and_ignores_missing(tmp_path, monkeypatch):
 
 
 def test_update_session_device_info_merges_fields():
-    from artemis.data_engine.engine import DataEngine
+    from apollo.data_engine.engine import DataEngine
 
     engine = object.__new__(DataEngine)
     engine.current_session_id = "s"
@@ -242,8 +242,8 @@ def test_manage_task_status_exposes_hierarchy_backend(tmp_path, monkeypatch):
 
 
 def test_run_outcome_extra_carries_environment(tmp_path):
-    from artemis.graph.checkpoints import read_run_outcome, write_run_outcome
-    from artemis.clients.screen_client_factory import hierarchy_backend_summary
+    from apollo.graph.checkpoints import read_run_outcome, write_run_outcome
+    from apollo.clients.screen_client_factory import hierarchy_backend_summary
 
     client = _composite()
     client.get_hierarchy()
@@ -258,13 +258,13 @@ def test_run_outcome_extra_carries_environment(tmp_path):
 
 
 # --------------------------------------------------------------------------- #
-# CLI: artemis helper
+# CLI: apollo helper
 # --------------------------------------------------------------------------- #
 
 
 def _status(**overrides):
     base = {
-        "package": "com.artemis.helper",
+        "package": "com.apollo.helper",
         "installed": True,
         "installed_version": 4,
         "bundled_version": 4,
@@ -284,7 +284,7 @@ def _status(**overrides):
 
 
 def test_helper_status_explains_probe_tunnel_and_newer_build(monkeypatch):
-    from artemis.interfaces.cli.commands import helper as helper_cli
+    from apollo.interfaces.cli.commands import helper as helper_cli
 
     monkeypatch.setattr(
         helper_cli.helper_manager,
@@ -298,7 +298,7 @@ def test_helper_status_explains_probe_tunnel_and_newer_build(monkeypatch):
 
 
 def test_helper_install_all_targets_idle_devices_only(monkeypatch):
-    from artemis.interfaces.cli.commands import helper as helper_cli
+    from apollo.interfaces.cli.commands import helper as helper_cli
 
     devices = [
         SimpleNamespace(serial="a", is_busy=False),
@@ -323,8 +323,8 @@ def test_helper_install_all_targets_idle_devices_only(monkeypatch):
 
 
 def test_helper_install_prints_manual_path_on_enable_failure(monkeypatch):
-    from artemis.interfaces.cli.commands import helper as helper_cli
-    from artemis.runtime.helper_manager import MANUAL_ENABLE_PATH
+    from apollo.interfaces.cli.commands import helper as helper_cli
+    from apollo.runtime.helper_manager import MANUAL_ENABLE_PATH
 
     monkeypatch.setattr(
         helper_cli.helper_manager,
@@ -344,7 +344,7 @@ def test_helper_install_prints_manual_path_on_enable_failure(monkeypatch):
 
 
 # --------------------------------------------------------------------------- #
-# CLI: artemis doctor row
+# CLI: apollo doctor row
 # --------------------------------------------------------------------------- #
 
 
@@ -356,30 +356,30 @@ def _adb_probe(serials):
 
 
 def test_doctor_row_suggests_preinstall_when_missing(monkeypatch):
-    from artemis.interfaces.cli.commands import doctor
+    from apollo.interfaces.cli.commands import doctor
 
     with patch(
-        "artemis.runtime.helper_manager.helper_manager.status",
+        "apollo.runtime.helper_manager.helper_manager.status",
         return_value=_status(installed=False, reachable=False),
     ):
         row = doctor._helper_row([_adb_probe(["dev"])])
     assert row.status == "missing" and row.summary == "Not installed"
-    assert "artemis helper install --serial dev" in row.detail
+    assert "apollo helper install --serial dev" in row.detail
     assert "about 3 s" in row.detail
 
 
 def test_doctor_row_ready_mentions_uninstall(monkeypatch):
-    from artemis.interfaces.cli.commands import doctor
+    from apollo.interfaces.cli.commands import doctor
 
-    with patch("artemis.runtime.helper_manager.helper_manager.status", return_value=_status()):
+    with patch("apollo.runtime.helper_manager.helper_manager.status", return_value=_status()):
         row = doctor._helper_row([_adb_probe(["dev"])])
     assert row.status == "pass" and "v4 on dev" in row.summary
-    assert "artemis helper uninstall --serial dev" in row.detail
+    assert "apollo helper uninstall --serial dev" in row.detail
 
 
 def test_doctor_row_absent_for_multiple_devices_or_uiautomator_backend(monkeypatch):
-    from artemis.interfaces.cli.commands import doctor
+    from apollo.interfaces.cli.commands import doctor
 
     assert doctor._helper_row([_adb_probe(["a", "b"])]) is None
-    monkeypatch.setenv("ARTEMIS_HIERARCHY_BACKEND", "uiautomator")
+    monkeypatch.setenv("APOLLO_HIERARCHY_BACKEND", "uiautomator")
     assert doctor._helper_row([_adb_probe(["a"])]) is None

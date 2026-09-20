@@ -12,24 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for Artemis System Diagnostics & Readiness Engine."""
+"""Unit tests for Apollo System Diagnostics & Readiness Engine."""
 
 import asyncio
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-from artemis.core.diagnostics.engine import ReadinessEngine
-from artemis.core.diagnostics.probes.adb_probe import AdbDeviceProbe
-from artemis.core.diagnostics.probes.credentials_probe import (
+from apollo.core.diagnostics.engine import ReadinessEngine
+from apollo.core.diagnostics.probes.adb_probe import AdbDeviceProbe
+from apollo.core.diagnostics.probes.credentials_probe import (
     LLMCredentialsProbe,
     VisionOCRProbe,
 )
-from artemis.core.diagnostics.probes.runtime_probe import (
+from apollo.core.diagnostics.probes.runtime_probe import (
     PythonRuntimeProbe,
     SystemConfigProbe,
 )
-from artemis.core.diagnostics.probes.toolchain_probe import ToolchainProbe
-from artemis.core.diagnostics.schema import (
+from apollo.core.diagnostics.probes.toolchain_probe import ToolchainProbe
+from apollo.core.diagnostics.schema import (
     ProbeCategory,
     ProbeResult,
     ProbeStatus,
@@ -265,7 +265,7 @@ async def test_submission_probe_skips_full_device_enrichment(monkeypatch):
     get_lock_state = AsyncMock(return_value=False)
     full_probe = AsyncMock()
     monkeypatch.setattr(
-        "artemis.core.diagnostics.probes.adb_probe.toolchain.resolve",
+        "apollo.core.diagnostics.probes.adb_probe.toolchain.resolve",
         lambda name: "adb",
     )
     monkeypatch.setattr(probe, "_get_device_states", get_states)
@@ -285,7 +285,7 @@ async def test_submission_probe_skips_full_device_enrichment(monkeypatch):
 async def test_submission_probe_fails_closed_when_lock_state_is_unknown(monkeypatch):
     probe = AdbDeviceProbe()
     monkeypatch.setattr(
-        "artemis.core.diagnostics.probes.adb_probe.toolchain.resolve",
+        "apollo.core.diagnostics.probes.adb_probe.toolchain.resolve",
         lambda name: "adb",
     )
     monkeypatch.setattr(
@@ -331,7 +331,7 @@ async def test_submission_probe_falls_back_to_unlocked_device(monkeypatch):
 @pytest.mark.asyncio
 async def test_adb_probe_prefers_unlocked_device_when_one_is_locked(monkeypatch):
     """When multiple ready devices exist, probe() should pick the unlocked one as active."""
-    from artemis.core.diagnostics.schema import DeviceInfo
+    from apollo.core.diagnostics.schema import DeviceInfo
 
     probe = AdbDeviceProbe()
     monkeypatch.setattr(probe, "_locate_adb", lambda: "/usr/bin/adb")
@@ -395,7 +395,7 @@ async def test_probe_target_serial_forwards_to_adb_probe():
 @pytest.mark.asyncio
 async def test_credentials_probe_and_dynamic_update():
     """Verify dynamic API key updates and metadata reflection."""
-    from artemis.config import settings
+    from apollo.config import settings
 
     settings.set_api_key("google", "test_gemini_key_1234567890", persist_to_env=False)
 
@@ -411,7 +411,7 @@ async def test_credentials_probe_and_dynamic_update():
 @pytest.mark.asyncio
 async def test_emulator_manager_lifecycle():
     """Verify EmulatorManager status querying, validation, and dismissal."""
-    from artemis.core.diagnostics.emulator_manager import (
+    from apollo.core.diagnostics.emulator_manager import (
         EmulatorLaunchStage,
         EmulatorManager,
     )

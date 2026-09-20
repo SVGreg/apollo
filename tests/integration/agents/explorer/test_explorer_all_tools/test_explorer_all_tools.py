@@ -19,7 +19,7 @@ from pathlib import Path
 import shutil
 import sys
 from unittest.mock import AsyncMock, MagicMock, patch
-from artemis.agents.explorer.explorer import Explorer
+from apollo.agents.explorer.explorer import Explorer
 from tests.integration.agents.explorer.test_explorer_all_tools.helpers import (
     create_mock_context,
     create_mock_state,
@@ -87,7 +87,7 @@ async def test_explorer_all_tools_sequential_mocked():
     logger.addHandler(handler)
 
     # Attach the main agent logger to capture internal step logs
-    agent_logger = logging.getLogger("artemis.agents.explorer")
+    agent_logger = logging.getLogger("apollo.agents.explorer")
     agent_logger.setLevel(logging.INFO)
     agent_logger.addHandler(handler)
 
@@ -99,7 +99,7 @@ async def test_explorer_all_tools_sequential_mocked():
         shutil.rmtree(outputs_dir)
     outputs_dir.mkdir(parents=True, exist_ok=True)
 
-    from artemis.config import settings
+    from apollo.config import settings
 
     settings.TRACES_PATH = outputs_dir
 
@@ -234,17 +234,17 @@ async def test_explorer_all_tools_sequential_mocked():
 
     with (
         patch(
-            "artemis.agents.explorer.explorer.genai.Client",
+            "apollo.agents.explorer.explorer.genai.Client",
             return_value=mock_client,
         ),
         patch(
-            "artemis.agents.explorer.run_setup.StorageManager",
+            "apollo.agents.explorer.run_setup.StorageManager",
             return_value=mock_storage,
         ),
         # get_ocr_list is only exposed when an OCR backend is configured.
-        patch("artemis.agents.explorer.explorer.is_ocr_configured", return_value=True),
-        patch("artemis.agents.explorer.run_setup.is_ocr_configured", return_value=True),
-        patch("artemis.agents.explorer.perception_tools._run_object_detection", mock_detect),
+        patch("apollo.agents.explorer.explorer.is_ocr_configured", return_value=True),
+        patch("apollo.agents.explorer.run_setup.is_ocr_configured", return_value=True),
+        patch("apollo.agents.explorer.perception_tools._run_object_detection", mock_detect),
     ):
         explorer = Explorer(mock_ctx)
         result = await explorer.run(

@@ -20,7 +20,7 @@ import os
 import time
 from typing import Any
 
-from artemis.runtime import trace_store
+from apollo.runtime import trace_store
 from mcp_server.notifiers.base import BaseNotifier
 
 logger = logging.getLogger("mcp_server.notifiers.file")

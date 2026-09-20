@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import hashlib
-from artemis.utils.task_tree import (
+from apollo.utils.task_tree import (
     format_step_action_result,
     build_plan_and_history,
     get_active_subgoal_hashes,
@@ -592,7 +592,7 @@ def test_get_recent_subgoal_hashes_robust_milestone_exclusion(tmp_path):
     ]
 
     # Test raw transitive alias resolver
-    from artemis.utils.task_tree import get_all_subgoal_aliases
+    from apollo.utils.task_tree import get_all_subgoal_aliases
 
     aliases = get_all_subgoal_aliases(hash_active_c, base_dir)
     assert aliases == {hash_active_c, hash_failed_b, hash_failed_a}
@@ -645,7 +645,7 @@ def _replay_step(tool_result, **overrides):
 
 
 def test_render_step_replay_shows_summary_thoughts_and_full_tool_results():
-    from artemis.utils.task_tree import render_step_replay
+    from apollo.utils.task_tree import render_step_replay
 
     long_result = "The Wi-Fi toggle is ON and the SSID row reads 'HomeNet'. " * 60  # ~3.5k chars
     out = render_step_replay(_replay_step(long_result))
@@ -662,7 +662,7 @@ def test_render_step_replay_shows_summary_thoughts_and_full_tool_results():
 
 
 def test_render_step_replay_clamps_only_pathological_results():
-    from artemis.utils.task_tree import REPLAY_RESULT_CHARS, render_step_replay
+    from apollo.utils.task_tree import REPLAY_RESULT_CHARS, render_step_replay
 
     huge = "y" * (REPLAY_RESULT_CHARS + 500)
     out = render_step_replay(_replay_step(huge))
@@ -673,7 +673,7 @@ def test_render_step_replay_clamps_only_pathological_results():
 def test_live_window_keeps_the_tight_tool_result_clamp():
     """The Operator's live context window still clamps tool results tightly;
     only the replay renderer is loose."""
-    from artemis.utils.task_tree import LIVE_RESULT_CHARS
+    from apollo.utils.task_tree import LIVE_RESULT_CHARS
 
     long_result = "z" * 3000
     out = build_plan_and_history(
@@ -686,7 +686,7 @@ def test_live_window_keeps_the_tight_tool_result_clamp():
 
 
 def test_render_step_replay_reports_missing_screen_description_status():
-    from artemis.utils.task_tree import render_step_replay
+    from apollo.utils.task_tree import render_step_replay
 
     pending = render_step_replay(
         _replay_step("ok", summary=None, extra_metadata={"summary_status": "pending"})
@@ -700,7 +700,7 @@ def test_render_step_replay_reports_missing_screen_description_status():
 
 
 def test_render_step_replay_shows_described_images_in_tool_results():
-    from artemis.utils.task_tree import render_step_replay
+    from apollo.utils.task_tree import render_step_replay
 
     result = [
         {"type": "text", "text": "--- pre-action screenshot of Step 1 ---"},
@@ -714,7 +714,7 @@ def test_render_step_replay_header_uses_the_session_clock():
     """The replay header carries the same ``T+mm:ss`` offset the prompts and
     ``search_history`` use; the legacy ``Start:`` text only remains when no
     session clock / step timestamp exists."""
-    from artemis.utils.task_tree import render_step_replay, replay_time_label
+    from apollo.utils.task_tree import render_step_replay, replay_time_label
 
     step = _replay_step("ok", timestamp=1000.0 + 61.0)
     out = render_step_replay(step, session_start=1000.0)
@@ -730,7 +730,7 @@ def test_render_step_replay_header_uses_the_session_clock():
 
 def test_render_step_replay_labels_are_role_neutral():
     """Flash has no Operator, so the block labels name what they hold."""
-    from artemis.utils.task_tree import render_step_replay
+    from apollo.utils.task_tree import render_step_replay
 
     out = render_step_replay(_replay_step("ok"))
     assert "  * [Reasoning & tool calls]:" in out
@@ -742,7 +742,7 @@ def test_render_step_replay_labels_are_role_neutral():
 def test_render_step_replay_prints_a_failure_once():
     """A failed step shows its error on the [Result] line only, not appended
     to the action line as well."""
-    from artemis.utils.task_tree import render_step_replay
+    from apollo.utils.task_tree import render_step_replay
 
     out = render_step_replay(
         _replay_step(
@@ -760,7 +760,7 @@ def test_render_step_replay_prints_a_failure_once():
 
 
 def test_render_step_replay_indents_multiline_reasoning():
-    from artemis.utils.task_tree import render_step_replay
+    from apollo.utils.task_tree import render_step_replay
 
     step = _replay_step(
         "ok",
@@ -775,7 +775,7 @@ def test_render_step_replay_indents_multiline_reasoning():
 def test_format_action_clean_directional_swipe_shows_direction_first():
     """``swipe(direction="up")`` replays as the direction the agent issued; the
     recorded path is a parenthesised detail (Flash records both)."""
-    from artemis.utils.task_tree import format_action_clean
+    from apollo.utils.task_tree import format_action_clean
 
     flash_record = {
         "action": "swipe",
@@ -809,7 +809,7 @@ def test_format_action_clean_directional_swipe_shows_direction_first():
 
 def test_action_intent_phrase_and_incident_line_use_intent_form():
     """Failure contexts describe what the agent tried to do, not an outcome."""
-    from artemis.utils.task_tree import (
+    from apollo.utils.task_tree import (
         action_intent_phrase,
         format_action_intent,
         format_incident_clean,
@@ -880,7 +880,7 @@ def test_action_intent_phrase_and_incident_line_use_intent_form():
 
 def test_format_action_clean_reads_flash_arguments_and_maps_manage_app():
     """Read Flash action arguments from ``args`` when formatting app launches."""
-    from artemis.utils.task_tree import format_action_clean
+    from apollo.utils.task_tree import format_action_clean
 
     assert (
         format_action_clean(
@@ -920,7 +920,7 @@ def test_format_action_clean_marks_self_described_coordinate_targets():
     """A coordinate target's label is the model's own description, and every
     later reader sees it marked as such; an index target's observed element
     text carries no marker."""
-    from artemis.utils.task_tree import SELF_DESCRIBED_MARKER, format_action_clean
+    from apollo.utils.task_tree import SELF_DESCRIBED_MARKER, format_action_clean
 
     assert SELF_DESCRIBED_MARKER == "(self-described)"
     assert (

@@ -47,7 +47,7 @@ class StepRepository:
         if isinstance(val, str):
             if (
                 "object at 0x" in val
-                or val.startswith("<artemis.")
+                or val.startswith("<apollo.")
                 or val.startswith("<controller")
             ):
                 return None
@@ -385,7 +385,7 @@ class StepRepository:
                     step_dict["total_tokens"] = 0
 
                 try:
-                    from artemis.utils.coordinates import normalize_step_actions
+                    from apollo.utils.coordinates import normalize_step_actions
 
                     step_dict = normalize_step_actions(step_dict)
                 except ImportError:

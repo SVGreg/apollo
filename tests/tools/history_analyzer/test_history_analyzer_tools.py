@@ -12,23 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from artemis.agents.history_analyzer.history_analyzer import HistoryAnalyzer
-from artemis.config import parse_llm_config
+from apollo.agents.history_analyzer.history_analyzer import HistoryAnalyzer
+from apollo.config import parse_llm_config
 import pytest
 
 
 @pytest.mark.asyncio
-async def test_replay_steps_tool_with_fixture(artemis_context):
+async def test_replay_steps_tool_with_fixture(apollo_context):
     """The analyzer's replay_steps tool against real steps loaded from the
     inputs/data_engine.db fixture."""
-    if not artemis_context.data_engine:
+    if not apollo_context.data_engine:
         pytest.skip("DataEngine fixture not initialized")
 
-    artemis_context.data_engine.current_session_id = "1a7fc344-ea69-4b1a-b066-d8a667502b8c"
-    steps = artemis_context.data_engine.get_agent_friendly_steps()
+    apollo_context.data_engine.current_session_id = "1a7fc344-ea69-4b1a-b066-d8a667502b8c"
+    steps = apollo_context.data_engine.get_agent_friendly_steps()
     assert len(steps) > 0
 
-    analyzer = HistoryAnalyzer(artemis_context)
+    analyzer = HistoryAnalyzer(apollo_context)
     tools = {t.name: t for t in analyzer._build_tools()}
     assert {
         "search_history",
@@ -48,15 +48,15 @@ async def test_replay_steps_tool_with_fixture(artemis_context):
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_history_analyzer_blackbox_run(artemis_context):
+async def test_history_analyzer_blackbox_run(apollo_context):
     """End-to-end blackbox test of HistoryAnalyzer.run(query) using real steps from inputs/data_engine.db and real LLM calls."""
-    if not artemis_context.data_engine:
+    if not apollo_context.data_engine:
         pytest.skip("DataEngine fixture not initialized")
 
-    artemis_context.llm_config = parse_llm_config()
-    artemis_context.data_engine.current_session_id = "1a7fc344-ea69-4b1a-b066-d8a667502b8c"
+    apollo_context.llm_config = parse_llm_config()
+    apollo_context.data_engine.current_session_id = "1a7fc344-ea69-4b1a-b066-d8a667502b8c"
 
-    analyzer = HistoryAnalyzer(artemis_context)
+    analyzer = HistoryAnalyzer(apollo_context)
     query = (
         "What application did the operator open and what query did they search"
         " for? Briefly summarize the session steps."

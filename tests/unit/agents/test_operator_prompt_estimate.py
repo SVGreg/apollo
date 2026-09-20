@@ -26,17 +26,17 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from artemis.agents.operator.operator import OperatorNode
-from artemis.config.agent import MemoryTranscriptConfig
-from artemis.context import ArtemisContext
-from artemis.memory.step_memory import StepMemoryService
-from artemis.memory.transcript import TranscriptLedger, estimate_prompt_tokens
+from apollo.agents.operator.operator import OperatorNode
+from apollo.config.agent import MemoryTranscriptConfig
+from apollo.context import ApolloContext
+from apollo.memory.step_memory import StepMemoryService
+from apollo.memory.transcript import TranscriptLedger, estimate_prompt_tokens
 
 SCREENSHOT_B64 = base64.b64encode(b"fake-jpeg-bytes").decode("utf-8")
 
 
 def _ctx():
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.execution_setup = None
     ctx.actuator = None
     ctx.data_engine = None
@@ -89,7 +89,7 @@ def _llm(captured: list, usage_metadata=None):
 async def test_operator_records_an_estimate_when_the_provider_reports_no_usage():
     ctx = _ctx()
     captured: list = []
-    with patch("artemis.agents.operator.operator.get_llm", return_value=_llm(captured)):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=_llm(captured)):
         node = OperatorNode(ctx, transcript_config=MemoryTranscriptConfig(enabled=True))
         await node(_state())
 
@@ -110,7 +110,7 @@ async def test_operator_measured_usage_calibrates_the_ledger_ratio():
         captured,
         usage_metadata={"input_tokens": 50_000, "output_tokens": 10, "total_tokens": 50_010},
     )
-    with patch("artemis.agents.operator.operator.get_llm", return_value=llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=llm):
         node = OperatorNode(ctx, transcript_config=MemoryTranscriptConfig(enabled=True))
         await node(_state())
 

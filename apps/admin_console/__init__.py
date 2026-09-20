@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Artemis Admin & Trace Console Package."""
+"""Apollo Admin & Trace Console Package."""
 
 from apps.admin_console.server import app
 

@@ -14,10 +14,10 @@
 
 from unittest.mock import AsyncMock, MagicMock
 
-from artemis.context import ArtemisContext
-from artemis.drivers.base import BaseDeviceDriver
-from artemis.tools.base import ArtemisTool
-from artemis.tools.mobile.read_hierarchy import (
+from apollo.context import ApolloContext
+from apollo.drivers.base import BaseDeviceDriver
+from apollo.tools.base import ApolloTool
+from apollo.tools.mobile.read_hierarchy import (
     GetUIHierarchy,
     GetUiHierarchy,
     GetUiHierarchyArgs,
@@ -31,7 +31,7 @@ import pytest
 
 @pytest.fixture
 def mock_ctx():
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.ui_adb_client = MagicMock()
     ctx.ui_adb_client.get_hierarchy.return_value = "<hierarchy><node text='Home'/></hierarchy>"
     return ctx
@@ -47,11 +47,11 @@ def mock_driver():
 
 
 def test_get_ui_hierarchy_tool_subclass():
-    """Verify GetUiHierarchyTool is a subclass of ArtemisTool."""
-    assert issubclass(GetUiHierarchyTool, ArtemisTool)
-    assert issubclass(GetUiHierarchy, ArtemisTool)
-    assert issubclass(GetUIHierarchy, ArtemisTool)
-    assert isinstance(get_ui_hierarchy, ArtemisTool)
+    """Verify GetUiHierarchyTool is a subclass of ApolloTool."""
+    assert issubclass(GetUiHierarchyTool, ApolloTool)
+    assert issubclass(GetUiHierarchy, ApolloTool)
+    assert issubclass(GetUIHierarchy, ApolloTool)
+    assert isinstance(get_ui_hierarchy, ApolloTool)
     assert isinstance(get_ui_hierarchy, GetUiHierarchyTool)
 
     assert get_ui_hierarchy.name == "get_ui_hierarchy"
@@ -69,7 +69,7 @@ def test_get_ui_hierarchy_tool_subclass():
 
 @pytest.mark.asyncio
 async def test_get_ui_hierarchy_direct_execution_with_ctx(mock_ctx):
-    """Verify direct execution with ArtemisContext."""
+    """Verify direct execution with ApolloContext."""
     result = await get_ui_hierarchy.execute(ctx=mock_ctx)
     mock_ctx.ui_adb_client.get_hierarchy.assert_called_once()
     assert "<hierarchy><node text='Home'/></hierarchy>" in result

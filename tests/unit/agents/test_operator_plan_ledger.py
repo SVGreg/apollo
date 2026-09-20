@@ -19,16 +19,16 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from artemis.agents.operator.operator import OperatorNode
-from artemis.agents.operator.prompts import (
+from apollo.agents.operator.operator import OperatorNode
+from apollo.agents.operator.prompts import (
     apply_operator_prompt_contract,
     load_operator_prompts,
     render_plan_ledger_bounce,
     unwritten_action_streak,
 )
-from artemis.config.agent import MemoryTranscriptConfig
-from artemis.context import ArtemisContext
-from artemis.utils.plan_grammar import parse_plan, render_plan_grammar_spec
+from apollo.config.agent import MemoryTranscriptConfig
+from apollo.context import ApolloContext
+from apollo.utils.plan_grammar import parse_plan, render_plan_grammar_spec
 
 LEGACY_TRANSCRIPT = MemoryTranscriptConfig(enabled=False)
 
@@ -139,7 +139,7 @@ def _make_node(tmp_path, plan_text, steps=None):
     notes.mkdir(parents=True)
     (notes / "task_plan.md").write_text(plan_text, encoding="utf-8")
 
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.execution_setup = None
     ctx.data_engine = MagicMock()
     ctx.data_engine.base_dir = str(tmp_path)
@@ -184,7 +184,7 @@ async def test_gate_bounces_broken_ledger_once_then_executes(tmp_path):
         seen.append(list(messages))
         return _click_response()
 
-    with patch("artemis.agents.operator.operator.get_llm", return_value=_llm(ainvoke)):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=_llm(ainvoke)):
         update = await node(state)
 
     assert len(seen) == 2, "first submission bounced, second executed"
@@ -202,7 +202,7 @@ async def test_gate_bounces_broken_ledger_once_then_executes(tmp_path):
 async def test_gate_lets_healthy_ledger_through_without_a_write(tmp_path):
     node, state, _ = _make_node(tmp_path, PLAN_WITH_LEAF, steps=[_action_step(1)])
     llm = _llm(return_value=_click_response())
-    with patch("artemis.agents.operator.operator.get_llm", return_value=llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=llm):
         update = await node(state)
     assert llm.ainvoke.await_count == 1
     assert update["structured_decisions"] is not None
@@ -219,7 +219,7 @@ async def test_gate_bounces_stale_ledger(tmp_path):
         return _click_response()
 
     with (
-        patch("artemis.agents.operator.operator.get_llm", return_value=_llm(ainvoke)),
+        patch("apollo.agents.operator.operator.get_llm", return_value=_llm(ainvoke)),
         patch.object(OperatorNode, "_plan_ledger_stale_turns", return_value=4),
     ):
         await node(state)
@@ -240,7 +240,7 @@ async def test_gate_passes_when_plan_changed_in_turn(tmp_path):
         return _click_response()
 
     llm = _llm(ainvoke)
-    with patch("artemis.agents.operator.operator.get_llm", return_value=llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=llm):
         update = await node(state)
     assert llm.ainvoke.await_count == 1
     assert update["structured_decisions"] is not None
@@ -250,7 +250,7 @@ async def test_gate_passes_when_plan_changed_in_turn(tmp_path):
 async def test_gate_exempts_bursts_and_open_incidents(tmp_path):
     node, state, _ = _make_node(tmp_path / "burst", PLAN_NO_LEAF)
     llm = _llm(return_value=_click_response(n_actions=2))
-    with patch("artemis.agents.operator.operator.get_llm", return_value=llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=llm):
         update = await node(state)
     assert llm.ainvoke.await_count == 1
     assert len(json.loads(update["structured_decisions"])) == 2
@@ -258,7 +258,7 @@ async def test_gate_exempts_bursts_and_open_incidents(tmp_path):
     node, state, _ = _make_node(tmp_path / "incident", PLAN_NO_LEAF)
     state.open_incident = {"category": "intercepted"}
     llm = _llm(return_value=_click_response())
-    with patch("artemis.agents.operator.operator.get_llm", return_value=llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=llm):
         await node(state)
     assert llm.ainvoke.await_count == 1
 
@@ -268,14 +268,14 @@ async def test_gate_inactive_without_plan_or_when_disabled(tmp_path):
     llm = _llm(return_value=_click_response())
 
     node, state, _ = _make_node(tmp_path / "a", "No task plan yet.")
-    with patch("artemis.agents.operator.operator.get_llm", return_value=llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=llm):
         await node(state)
     assert llm.ainvoke.await_count == 1
 
     llm.ainvoke.reset_mock()
     node, state, _ = _make_node(tmp_path / "b", PLAN_NO_LEAF)
     with (
-        patch("artemis.agents.operator.operator.get_llm", return_value=llm),
+        patch("apollo.agents.operator.operator.get_llm", return_value=llm),
         patch.object(OperatorNode, "_plan_ledger_gate_enabled", return_value=False),
     ):
         await node(state)

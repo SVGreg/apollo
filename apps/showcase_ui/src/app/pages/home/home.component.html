@@ -231,9 +231,9 @@
           <div class="item-action-box">
             <div class="code-box small-box">
               <span class="terminal-prefix">$</span>
-              <code class="code-text">artemis init</code>
+              <code class="code-text">apollo init</code>
               <button type="button" class="btn-copy-code" [class.copied]="copiedId() === 'cfg_init'"
-                (click)="copyToClipboard('artemis init', 'cfg_init')">
+                (click)="copyToClipboard('apollo init', 'cfg_init')">
                 <span class="material-symbols-outlined">{{ copiedId() === 'cfg_init' ? 'check' : 'content_copy'
                   }}</span>
                 <span>{{ copiedId() === 'cfg_init' ? 'Copied!' : 'Copy' }}</span>
@@ -348,7 +348,7 @@
             <div class="choice-title-row">
               <span class="choice-title">Custom Configuration</span>
             </div>
-            <p class="choice-desc">Define models in <code>config/artemis.jsonc</code> & keys in <code>.env</code>
+            <p class="choice-desc">Define models in <code>config/apollo.jsonc</code> & keys in <code>.env</code>
               (OpenAI, Claude, Ollama).</p>
           </div>
         </div>
@@ -543,7 +543,7 @@
           <!-- CUSTOM CONFIGURATION & .ENV INSPECTOR (NO OCR HERE) -->
           <div class="custom-config-inspector">
 
-      <!-- Section 1: Active Model Config (artemis.jsonc) -->
+      <!-- Section 1: Active Model Config (apollo.jsonc) -->
       <div class="inspector-card">
         <div class="inspector-card-header">
           <div class="inspector-header-left">
@@ -551,12 +551,12 @@
             <div class="inspector-header-titles">
               <span class="inspector-title">Active Model Configuration</span>
               <span class="inspector-subtitle">Defined in
-                <code>{{ modelConfigEnv()?.config_path || 'config/artemis.jsonc' }}</code></span>
+                <code>{{ modelConfigEnv()?.config_path || 'config/apollo.jsonc' }}</code></span>
             </div>
           </div>
           <div class="inspector-header-actions">
             <button type="button" class="btn-file-action" title="Copy file path"
-              (click)="copyToClipboard(modelConfigEnv()?.config_path || 'config/artemis.jsonc', 'config_path_btn')"
+              (click)="copyToClipboard(modelConfigEnv()?.config_path || 'config/apollo.jsonc', 'config_path_btn')"
             >
               <span class="material-symbols-outlined" [class.text-emerald]="copiedId() === 'config_path_btn'">
                 {{ copiedId() === 'config_path_btn' ? 'check' : 'content_copy' }}
@@ -1056,7 +1056,7 @@
                     <div class="active-remote-copy">
                       <span class="material-symbols-outlined">hub</span>
                       <span>
-                        Artemis is currently using
+                        Apollo is currently using
                         <strong>{{ adbServerStatus()?.endpoint?.host }}:{{ adbServerStatus()?.endpoint?.port }}</strong>.
                         Switch to local ADB before using a local emulator, USB cable, or Wireless ADB.
                       </span>
@@ -1212,7 +1212,7 @@
                               </div>
                               <div class="step-card-title">Launch Emulator</div>
                               <div class="step-card-desc">
-                                Click ▶ <strong>Play</strong> in Device Manager. Artemis will detect and connect to it automatically!
+                                Click ▶ <strong>Play</strong> in Device Manager. Apollo will detect and connect to it automatically!
                               </div>
                             </div>
                           </div>
@@ -1417,7 +1417,7 @@
                   <div class="method-details-panel remote-adb-panel">
                     <div class="remote-guide-intro">
                       <span class="material-symbols-outlined intro-icon">hub</span>
-                      <span>Enter the host and port of an ADB server endpoint that this computer can access, so Artemis can discover and control a phone physically connected to another computer.</span>
+                      <span>Enter the host and port of an ADB server endpoint that this computer can access, so Apollo can discover and control a phone physically connected to another computer.</span>
                     </div>
 
                     <div class="remote-adb-interactive-box">
@@ -1481,7 +1481,7 @@
                           [ngModel]="rememberRemoteAdb()"
                           (ngModelChange)="rememberRemoteAdb.set($event)"
                         />
-                        <span>Remember this endpoint for future Artemis launches</span>
+                        <span>Remember this endpoint for future Apollo launches</span>
                       </label>
 
                       @if (remoteAdbMessage()) {
@@ -1533,7 +1533,7 @@
                     </div>
 
                     <p class="remote-adb-explanation">
-                      Artemis sends all ADB commands to this server instead of the default local server. Any phone visible to that server becomes available to Artemis.
+                      Apollo sends all ADB commands to this server instead of the default local server. Any phone visible to that server becomes available to Apollo.
                     </p>
                   </div>
                 }
@@ -2071,7 +2071,7 @@
                   </div>
 
                   <span class="mode-badge" [class.mode-pro]="item.profile === 'pro'" [class.mode-flash]="item.profile === 'flash'"
-                    [title]="item.profile === 'pro' ? 'Uses ARTEMIS Pro (Multi-Agent Cognitive State Graph)' : 'Uses ARTEMIS Flash (Reactive Fast Loop)'">
+                    [title]="item.profile === 'pro' ? 'Uses APOLLO Pro (Multi-Agent Cognitive State Graph)' : 'Uses APOLLO Flash (Reactive Fast Loop)'">
                     {{ item.profile === 'pro' ? 'Pro' : 'Flash' }}
                   </span>
                 </div>

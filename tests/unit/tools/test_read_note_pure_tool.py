@@ -14,32 +14,32 @@
 
 from unittest.mock import MagicMock, patch
 
-from artemis.context import ArtemisContext
-from artemis.tools.base import ArtemisTool
-from artemis.tools.scratchpad import (
+from apollo.context import ApolloContext
+from apollo.tools.base import ApolloTool
+from apollo.tools.scratchpad import (
     ReadNoteArgs,
     ReadNotePure,
     ReadNotePureTool,
     get_read_note_tool_pure,
     read_note_pure,
 )
-from artemis.utils.notes import save_note_content
+from apollo.utils.notes import save_note_content
 import pytest
 
 
 @pytest.fixture
 def mock_ctx(tmp_path):
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.data_engine = MagicMock()
     ctx.data_engine.base_dir = str(tmp_path)
     return ctx
 
 
 def test_read_note_pure_tool_subclass():
-    """Verify ReadNotePureTool is a subclass of ArtemisTool."""
-    assert issubclass(ReadNotePureTool, ArtemisTool)
-    assert issubclass(ReadNotePure, ArtemisTool)
-    assert isinstance(read_note_pure, ArtemisTool)
+    """Verify ReadNotePureTool is a subclass of ApolloTool."""
+    assert issubclass(ReadNotePureTool, ApolloTool)
+    assert issubclass(ReadNotePure, ApolloTool)
+    assert isinstance(read_note_pure, ApolloTool)
     assert isinstance(read_note_pure, ReadNotePureTool)
 
     assert read_note_pure.name == "read_note_pure"
@@ -102,7 +102,7 @@ async def test_read_note_pure_not_found(mock_ctx):
 async def test_read_note_pure_other_error(mock_ctx):
     """Verify error handling when read_note_content raises an exception."""
     with patch(
-        "artemis.tools.scratchpad.read_note_content",
+        "apollo.tools.scratchpad.read_note_content",
         side_effect=OSError("Disk error"),
     ):
         result = await read_note_pure.execute(ctx=mock_ctx, key="err_note")

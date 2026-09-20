@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for Artemis MCP Tools."""
+"""Unit tests for Apollo MCP Tools."""
 
 import inspect
 import json
@@ -31,14 +31,14 @@ from mcp_server.tools import (
     mobile_manage_task,
     mobile_run_task,
 )
-from artemis.runtime import trace_store
+from apollo.runtime import trace_store
 
 
 @pytest.fixture
 def temp_trace_env(monkeypatch):
     temp_dir = tempfile.mkdtemp()
     monkeypatch.setattr(trace_store, "TRACES_DIR", temp_dir)
-    monkeypatch.setenv("ARTEMIS_STANDALONE", "1")
+    monkeypatch.setenv("APOLLO_STANDALONE", "1")
     yield temp_dir
     shutil.rmtree(temp_dir, ignore_errors=True)
 
@@ -114,8 +114,8 @@ def test_mobile_run_task_reserves_and_passes_global_queue_ticket(temp_trace_env)
     )
     assert result["trace_id"]
     assert result["device_serial"] == "auto-select"
-    assert popen.call_args.kwargs["env"]["ARTEMIS_DEVICE_QUEUE_TICKET"] == "queue-ticket-1"
-    assert popen.call_args.kwargs["env"]["ARTEMIS_TASK_INGRESS"] == "mcp"
+    assert popen.call_args.kwargs["env"]["APOLLO_DEVICE_QUEUE_TICKET"] == "queue-ticket-1"
+    assert popen.call_args.kwargs["env"]["APOLLO_TASK_INGRESS"] == "mcp"
     status = trace_store.read_status(result["trace_id"])
     assert status["queue_ticket"] == "queue-ticket-1"
     assert status["device_serial"] is None
@@ -133,7 +133,7 @@ def test_mobile_run_task_with_device_serial(temp_trace_env):
         # Hermetic device validation: the requested serial reports as ready
         # regardless of what is attached to the host running the tests.
         patch(
-            "artemis.runtime.device_pool.device_pool.try_list_devices",
+            "apollo.runtime.device_pool.device_pool.try_list_devices",
             return_value=[SimpleNamespace(serial="pixel-11-pro-001", state="device")],
         ),
     ):
@@ -163,14 +163,14 @@ def test_mobile_run_task_with_device_serial(temp_trace_env):
     assert "--device-serial" in cmd
     assert cmd[cmd.index("--device-serial") + 1] == "pixel-11-pro-001"
     assert popen.call_args.kwargs["env"]["ADB_DEVICE_SERIAL"] == "pixel-11-pro-001"
-    assert popen.call_args.kwargs["env"]["ARTEMIS_DEVICE_ID"] == "pixel-11-pro-001"
+    assert popen.call_args.kwargs["env"]["APOLLO_DEVICE_ID"] == "pixel-11-pro-001"
 
     status = trace_store.read_status(result["trace_id"])
     assert status["device_serial"] == "pixel-11-pro-001"
 
 
 def test_mobile_run_task_dispatched_to_daemon(temp_trace_env, monkeypatch):
-    monkeypatch.delenv("ARTEMIS_STANDALONE", raising=False)
+    monkeypatch.delenv("APOLLO_STANDALONE", raising=False)
     with (
         patch(
             "mcp_server.tools.task_runner.ensure_daemon_running",
@@ -191,7 +191,7 @@ def test_mobile_run_task_dispatched_to_daemon(temp_trace_env, monkeypatch):
     popen.assert_not_called()
     assert result["trace_id"] == "daemon-sid-1"
     assert result["status"] == "running"
-    assert "enqueued via unified Artemis Daemon" in result["message"]
+    assert "enqueued via unified Apollo Daemon" in result["message"]
     assert "stdout_log" in result
     assert "stderr_log" in result
 
@@ -227,7 +227,7 @@ def test_mobile_run_task_forwards_pro_tuning_to_background_runner(temp_trace_env
         )
 
     cmd = popen.call_args.args[0]
-    # Same flag spelling as `artemis run` / the admin-console worker, normalised values.
+    # Same flag spelling as `apollo run` / the admin-console worker, normalised values.
     assert cmd[cmd.index("--verification-level") + 1] == "strict"
     assert cmd[cmd.index("--explorer-pro-mode") + 1] == "ultra"
 
@@ -247,7 +247,7 @@ def test_mobile_run_task_omits_pro_tuning_flags_when_unset(temp_trace_env):
 
 
 def test_mobile_run_task_forwards_pro_tuning_to_daemon(temp_trace_env, monkeypatch):
-    monkeypatch.delenv("ARTEMIS_STANDALONE", raising=False)
+    monkeypatch.delenv("APOLLO_STANDALONE", raising=False)
     with (
         patch(
             "mcp_server.tools.task_runner.ensure_daemon_running",
@@ -493,7 +493,7 @@ def test_mobile_manage_task_syncs_terminal_status_from_db(temp_trace_env):
 
 
 def test_mobile_manage_task_stop_via_daemon(temp_trace_env, monkeypatch):
-    monkeypatch.delenv("ARTEMIS_STANDALONE", raising=False)
+    monkeypatch.delenv("APOLLO_STANDALONE", raising=False)
     trace_id = str(uuid.uuid4())
     trace_store.init_trace(trace_id, "Daemon task to stop", "Flash", "conv-stop")
 
@@ -514,13 +514,13 @@ def _seed_trace(temp_dir: str, trace_id: str, *, with_image: bool = True) -> str
 
     from PIL import Image
 
-    from artemis.data_engine.models import (
+    from apollo.data_engine.models import (
         ImageRecord,
         SessionMetadata,
         StepRecord,
         TraceRecord,
     )
-    from artemis.data_engine.storage import StorageManager
+    from apollo.data_engine.storage import StorageManager
 
     storage = StorageManager(os.path.join(temp_dir, "data_engine.db"), temp_dir)
     storage.create_session(

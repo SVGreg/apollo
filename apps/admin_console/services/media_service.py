@@ -26,7 +26,7 @@ from typing import Any
 import urllib.parse
 from fastapi import HTTPException
 
-from artemis.config import IMAGES_DIR, TRACES_PATH, WORKSPACE_ROOT
+from apollo.config import IMAGES_DIR, TRACES_PATH, WORKSPACE_ROOT
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +99,7 @@ class MediaService:
 
     @staticmethod
     def _convert_to_mp4(p: Path, mp4_cand: Path) -> Path:
-        from artemis.utils.video import get_ffmpeg_path
+        from apollo.utils.video import get_ffmpeg_path
 
         ffmpeg = get_ffmpeg_path()
         # 1. Attempt fast copy remux
@@ -271,7 +271,7 @@ class MediaService:
         idx = {}
         dirs = [
             TRACES_PATH,
-            WORKSPACE_ROOT / "artemis-traces",
+            WORKSPACE_ROOT / "apollo-traces",
             WORKSPACE_ROOT / ".benchmarks" / "diagnoser" / "outputs" / "artifacts",
         ]
         for d in dirs:
@@ -566,7 +566,7 @@ class MediaService:
         the Checker's streamed reasoning (``check_streams.jsonl``: one record
         per attempt with timestamped ``segments``) and the machine-readable run
         outcome (``run_outcome.json``), all written by the Checker /
-        ``artemis.graph.checkpoints``. Missing files mean "no checks ran"
+        ``apollo.graph.checkpoints``. Missing files mean "no checks ran"
         (sessions recorded before transcripts existed simply have no streams).
         """
         session_dir = TRACES_PATH / session_id

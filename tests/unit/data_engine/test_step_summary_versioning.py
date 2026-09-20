@@ -16,12 +16,12 @@
 
 from unittest.mock import MagicMock
 
-from artemis.context import ArtemisContext
-from artemis.data_engine.engine import DataEngine
+from apollo.context import ApolloContext
+from apollo.data_engine.engine import DataEngine
 
 
 def _make_engine(tmp_path):
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = mock_execution_setup

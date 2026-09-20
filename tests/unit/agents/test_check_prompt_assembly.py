@@ -22,18 +22,18 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from artemis.agents.operator.prompts import (
+from apollo.agents.operator.prompts import (
     FeedbackPromptComponent,
     PromptBuilder,
     TemplatePromptComponent,
     render_transcript_static_system,
 )
-from artemis.agents.planner.planner import build_planner_system_blocks
-from artemis.context import ArtemisContext, ExecutionSetup
-from artemis.graph.state import State
+from apollo.agents.planner.planner import build_planner_system_blocks
+from apollo.context import ApolloContext, ExecutionSetup
+from apollo.graph.state import State
 
-PLANNER_JSON = Path(__file__).resolve().parents[3] / "artemis/agents/planner/planner.json"
-OPERATOR_JSON = Path(__file__).resolve().parents[3] / "artemis/agents/operator/operator.json"
+PLANNER_JSON = Path(__file__).resolve().parents[3] / "apollo/agents/planner/planner.json"
+OPERATOR_JSON = Path(__file__).resolve().parents[3] / "apollo/agents/operator/operator.json"
 
 
 def _planner_data():
@@ -73,7 +73,7 @@ def test_planner_blocks_with_checks_mount_generation_and_audit():
 
 
 def _mock_ctx(tmp_path=None, plan: str | None = None, **setup_kwargs):
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.execution_setup = ExecutionSetup(**setup_kwargs) if setup_kwargs is not None else None
     if plan is not None and tmp_path is not None:
         notes = tmp_path / "notes"

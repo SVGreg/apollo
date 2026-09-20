@@ -21,9 +21,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from artemis.agents.checker.checker import CheckReport, CheckVerdict
-from artemis.context import ArtemisContext, ExecutionSetup
-from artemis.graph.checkpoints import (
+from apollo.agents.checker.checker import CheckReport, CheckVerdict
+from apollo.context import ApolloContext, ExecutionSetup
+from apollo.graph.checkpoints import (
     CheckpointRun,
     PendingCheckpoint,
     append_ledger_record,
@@ -32,14 +32,14 @@ from artemis.graph.checkpoints import (
     resolve_item_status,
     settle_all_checkpoints,
 )
-from artemis.graph.graph import (
+from apollo.graph.graph import (
     convergence_gate,
     exit_settlement_gate,
     exit_settlement_node,
 )
-from artemis.graph.state import State
-from artemis.sdk.agent import attach_test_summary, resolve_trace_suffix
-from artemis.utils.plan_grammar import CheckItem, parse_plan, subgoal_hash
+from apollo.graph.state import State
+from apollo.sdk.agent import attach_test_summary, resolve_trace_suffix
+from apollo.utils.plan_grammar import CheckItem, parse_plan, subgoal_hash
 
 DONE_PLAN_WITH_CHECKS = (
     "- [x] Create alarm\n"
@@ -53,7 +53,7 @@ DONE_PLAN_NO_CHECKS = "- [x] Create alarm\n"
 
 def _make_ctx(tmp_path, **setup_kwargs):
     setup_kwargs.setdefault("disable_checker", False)
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.execution_setup = ExecutionSetup(**setup_kwargs)
     ctx.data_engine = MagicMock()
     ctx.data_engine.base_dir = tmp_path
@@ -149,7 +149,7 @@ def test_gate_unevaluated_plan_validation_is_not_a_failure(tmp_path):
     plan still routes to the exit, and no "validation failed" log fires."""
     _write_plan(tmp_path, DONE_PLAN_NO_CHECKS)
     ctx = _make_ctx(tmp_path)
-    with patch("artemis.graph.graph.logger") as mock_logger:
+    with patch("apollo.graph.graph.logger") as mock_logger:
         assert convergence_gate(_make_state(checker_success=None), ctx) == "exit_settlement"
     logged = " ".join(str(c.args[0]) for c in mock_logger.info.call_args_list if c.args)
     assert "Plan validation failed" not in logged
@@ -158,7 +158,7 @@ def test_gate_unevaluated_plan_validation_is_not_a_failure(tmp_path):
 def test_gate_explicit_validation_failure_still_continues(tmp_path):
     _write_plan(tmp_path, DONE_PLAN_NO_CHECKS)
     ctx = _make_ctx(tmp_path)
-    with patch("artemis.graph.graph.logger") as mock_logger:
+    with patch("apollo.graph.graph.logger") as mock_logger:
         assert convergence_gate(_make_state(checker_success=False), ctx) == "continue"
     logged = " ".join(str(c.args[0]) for c in mock_logger.info.call_args_list if c.args)
     assert "Plan validation failed" in logged
@@ -187,7 +187,7 @@ async def test_settlement_runs_phase_one_only_when_final_disabled(tmp_path):
         attempt_id=f"{cid}#1", task=fut, checkpoint=_pending_checkpoint()
     )
 
-    with patch("artemis.graph.graph.run_final_check", new=AsyncMock()) as final_mock:
+    with patch("apollo.graph.graph.run_final_check", new=AsyncMock()) as final_mock:
         update = await exit_settlement_node(_make_state(), ctx)
 
     final_mock.assert_not_awaited()
@@ -244,7 +244,7 @@ async def test_final_check_receives_ledger_and_at_end_items(tmp_path):
         captured["items"] = list(check_items)
         return CheckReport(verdicts=[])
 
-    with patch("artemis.graph.graph.run_final_check", side_effect=fake_final):
+    with patch("apollo.graph.graph.run_final_check", side_effect=fake_final):
         await exit_settlement_node(_make_state(), ctx)
 
     # Final review audits the user's original goal, citing the ledger
@@ -283,7 +283,7 @@ async def test_assert_failure_yields_failed_tests_but_completed_status(tmp_path)
         ]
     )
 
-    with patch("artemis.graph.graph.run_final_check", new=AsyncMock(return_value=report)):
+    with patch("apollo.graph.graph.run_final_check", new=AsyncMock(return_value=report)):
         update = await exit_settlement_node(_make_state(), ctx)
 
     # Assert failures never bounce the task back
@@ -324,7 +324,7 @@ async def test_verify_unmet_bounces_back_then_blocks_on_budget_exhaustion(tmp_pa
         unmet_subgoals=["Create alarm"],
     )
 
-    with patch("artemis.graph.graph.run_final_check", new=AsyncMock(return_value=failing)):
+    with patch("apollo.graph.graph.run_final_check", new=AsyncMock(return_value=failing)):
         first = await exit_settlement_node(_make_state(), ctx)
         assert first["exit_settlement_route"] == "continue"
         assert exit_settlement_gate(_make_state(exit_settlement_route="continue")) == "continue"
@@ -369,7 +369,7 @@ async def test_user_stop_final_fail_does_not_reenter_loop(tmp_path):
         ]
     )
 
-    with patch("artemis.graph.graph.run_final_check", new=AsyncMock(return_value=failing)):
+    with patch("apollo.graph.graph.run_final_check", new=AsyncMock(return_value=failing)):
         update = await exit_settlement_node(_make_state(user_stop_requested=True), ctx)
 
     assert update["exit_settlement_route"] == "end"
@@ -391,7 +391,7 @@ def _fresh_final_report():
 async def test_matrix_off_off_reports_all_unchecked(tmp_path):
     _write_plan(tmp_path, DONE_PLAN_WITH_CHECKS)
     ctx = _make_ctx(tmp_path, disable_midway_checks=True, disable_final_check=True)
-    with patch("artemis.graph.graph.run_final_check", new=AsyncMock()) as final_mock:
+    with patch("apollo.graph.graph.run_final_check", new=AsyncMock()) as final_mock:
         update = await exit_settlement_node(_make_state(), ctx)
     final_mock.assert_not_awaited()
     outcome = update["run_outcome"]
@@ -415,7 +415,7 @@ async def test_matrix_off_on_final_judges_from_state_and_history(tmp_path):
             ),
         ]
     )
-    with patch("artemis.graph.graph.run_final_check", new=AsyncMock(return_value=report)):
+    with patch("apollo.graph.graph.run_final_check", new=AsyncMock(return_value=report)):
         update = await exit_settlement_node(_make_state(), ctx)
     outcome = update["run_outcome"]
     assert outcome["tests"]["passed"] == 2
@@ -429,7 +429,7 @@ async def test_matrix_on_off_settles_without_final(tmp_path):
     # here assert the summary is still produced with unchecked leftovers.
     _write_plan(tmp_path, DONE_PLAN_WITH_CHECKS)
     ctx = _make_ctx(tmp_path, disable_final_check=True)
-    with patch("artemis.graph.graph.run_final_check", new=AsyncMock()) as final_mock:
+    with patch("apollo.graph.graph.run_final_check", new=AsyncMock()) as final_mock:
         update = await exit_settlement_node(_make_state(), ctx)
     final_mock.assert_not_awaited()
     assert update["run_outcome"]["tests"]["unchecked"] == 3
@@ -459,7 +459,7 @@ async def test_matrix_on_on_full_pipeline(tmp_path):
             CheckVerdict(item_text="toast appeared", kind="assert", status="failed", evidence="e"),
         ]
     )
-    with patch("artemis.graph.graph.run_final_check", new=AsyncMock(return_value=report)):
+    with patch("apollo.graph.graph.run_final_check", new=AsyncMock(return_value=report)):
         update = await exit_settlement_node(_make_state(), ctx)
     outcome = update["run_outcome"]
     assert outcome["tests"]["passed"] == 2

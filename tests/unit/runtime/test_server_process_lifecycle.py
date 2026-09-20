@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for Artemis Server Lifecycle Management and API Endpoints."""
+"""Unit tests for Apollo Server Lifecycle Management and API Endpoints."""
 
 import asyncio
 import json
@@ -24,7 +24,7 @@ from httpx import ASGITransport, AsyncClient
 
 from apps.admin_console import server as server_module
 from apps.admin_console.server import LIFECYCLE_TOKEN, app
-from artemis.runtime.server_lifecycle import (
+from apollo.runtime.server_lifecycle import (
     clear_server_info,
     find_server_pids,
     get_server_status,
@@ -40,7 +40,7 @@ def test_write_read_clear_server_info(tmp_path, monkeypatch):
     """Verify write, read, and clear round-trip for server metadata file."""
     fake_info_file = tmp_path / "test_server.json"
     monkeypatch.setattr(
-        "artemis.runtime.server_lifecycle.get_server_info_file", lambda: fake_info_file
+        "apollo.runtime.server_lifecycle.get_server_info_file", lambda: fake_info_file
     )
 
     # Initial read should be None
@@ -77,9 +77,9 @@ def test_find_server_pids_from_metadata(tmp_path, monkeypatch):
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        "artemis.runtime.server_lifecycle.get_server_info_file", lambda: fake_info_file
+        "apollo.runtime.server_lifecycle.get_server_info_file", lambda: fake_info_file
     )
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.is_port_in_use", lambda port, **k: True)
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.is_port_in_use", lambda port, **k: True)
 
     pids = find_server_pids(8000)
     assert os.getpid() in pids
@@ -87,9 +87,9 @@ def test_find_server_pids_from_metadata(tmp_path, monkeypatch):
 
 def test_get_server_status_offline(monkeypatch):
     """Verify get_server_status returns correct structure when server is offline."""
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.is_port_in_use", lambda port, **k: False)
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.find_server_pids", lambda port: [])
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.read_server_info", lambda: None)
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.is_port_in_use", lambda port, **k: False)
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.find_server_pids", lambda port: [])
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.read_server_info", lambda: None)
 
     status = get_server_status(8000)
     assert status["running"] is False
@@ -100,10 +100,10 @@ def test_get_server_status_offline(monkeypatch):
 
 def test_get_server_status_online(monkeypatch):
     """Verify get_server_status returns correct structure when server is online."""
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.is_port_in_use", lambda port, **k: True)
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.find_server_pids", lambda port: [12345])
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.is_port_in_use", lambda port, **k: True)
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.find_server_pids", lambda port: [12345])
     monkeypatch.setattr(
-        "artemis.runtime.server_lifecycle.read_server_info",
+        "apollo.runtime.server_lifecycle.read_server_info",
         lambda: {"pid": 12345, "port": 8000, "started_at": 1000.0},
     )
 
@@ -119,8 +119,8 @@ def test_get_server_status_online(monkeypatch):
 
 def test_stop_server_when_not_running(monkeypatch):
     """Verify stop_server returns early when no server is running."""
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.is_port_in_use", lambda port, **k: False)
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.find_server_pids", lambda port: [])
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.is_port_in_use", lambda port, **k: False)
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.find_server_pids", lambda port: [])
 
     success, msg, stopped = stop_server(8000)
     assert success is True
@@ -141,33 +141,33 @@ def test_request_graceful_shutdown_uses_metadata_token(monkeypatch):
     response = MagicMock(status=202)
     response.__enter__.return_value = response
     monkeypatch.setattr(
-        "artemis.runtime.server_lifecycle.read_server_info",
+        "apollo.runtime.server_lifecycle.read_server_info",
         lambda: {"port": 9123, "lifecycle_token": "local-secret"},
     )
     urlopen = MagicMock(return_value=response)
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.urllib.request.urlopen", urlopen)
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.urllib.request.urlopen", urlopen)
 
     assert request_graceful_shutdown(9123) is True
     request = urlopen.call_args.args[0]
     assert request.full_url == "http://127.0.0.1:9123/api/system/shutdown"
-    assert request.get_header("X-artemis-lifecycle-token") == "local-secret"
+    assert request.get_header("X-apollo-lifecycle-token") == "local-secret"
 
 
 def test_stop_server_prefers_graceful_shutdown(monkeypatch):
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.find_server_pids", lambda port: [12345])
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.find_server_pids", lambda port: [12345])
     monkeypatch.setattr(
-        "artemis.runtime.server_lifecycle.request_graceful_shutdown", lambda port, timeout: True
+        "apollo.runtime.server_lifecycle.request_graceful_shutdown", lambda port, timeout: True
     )
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.is_port_in_use", lambda port: False)
-    monkeypatch.setattr("artemis.runtime.server_lifecycle._any_pid_alive", lambda pids: False)
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.is_port_in_use", lambda port: False)
+    monkeypatch.setattr("apollo.runtime.server_lifecycle._any_pid_alive", lambda pids: False)
     terminate = MagicMock()
     monkeypatch.setattr(
-        "artemis.runtime.server_lifecycle.ProcessSupervisor.terminate_tree", terminate
+        "apollo.runtime.server_lifecycle.ProcessSupervisor.terminate_tree", terminate
     )
     monkeypatch.setattr(
-        "artemis.runtime.server_lifecycle.DeviceExecutionLock.cleanup_stale_locks", lambda: 0
+        "apollo.runtime.server_lifecycle.DeviceExecutionLock.cleanup_stale_locks", lambda: 0
     )
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.clear_server_info", lambda **kwargs: None)
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.clear_server_info", lambda **kwargs: None)
 
     success, msg, stopped = stop_server(9123)
 
@@ -181,7 +181,7 @@ def test_stop_server_terminates_tree(monkeypatch):
     """Verify stop_server calls ProcessSupervisor.terminate_tree and returns stopped pids."""
     terminated_pids = []
 
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.find_server_pids", lambda port: [12345])
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.find_server_pids", lambda port: [12345])
     port_in_use = [True, False]
 
     def mock_in_use(port, **kwargs):
@@ -189,20 +189,20 @@ def test_stop_server_terminates_tree(monkeypatch):
             return port_in_use.pop(0)
         return False
 
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.is_port_in_use", mock_in_use)
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.is_port_in_use", mock_in_use)
     monkeypatch.setattr(
-        "artemis.runtime.server_lifecycle.request_graceful_shutdown", lambda port, timeout: False
+        "apollo.runtime.server_lifecycle.request_graceful_shutdown", lambda port, timeout: False
     )
     monkeypatch.setattr(
-        "artemis.runtime.supervisor.ProcessSupervisor.terminate_tree",
+        "apollo.runtime.supervisor.ProcessSupervisor.terminate_tree",
         lambda pid, timeout_seconds=4.0: terminated_pids.append(pid),
     )
     monkeypatch.setattr(
-        "artemis.runtime.device_lock.DeviceExecutionLock.cleanup_stale_locks",
+        "apollo.runtime.device_lock.DeviceExecutionLock.cleanup_stale_locks",
         lambda: 1,
     )
     reconcile = MagicMock(return_value=1)
-    monkeypatch.setattr("artemis.runtime.server_lifecycle._reconcile_orphaned_sessions", reconcile)
+    monkeypatch.setattr("apollo.runtime.server_lifecycle._reconcile_orphaned_sessions", reconcile)
 
     success, msg, stopped = stop_server(8000)
     assert success is True
@@ -258,7 +258,7 @@ async def test_api_shutdown_endpoint():
 
         response = await client.post(
             "/api/system/shutdown",
-            headers={"X-Artemis-Lifecycle-Token": LIFECYCLE_TOKEN},
+            headers={"X-Apollo-Lifecycle-Token": LIFECYCLE_TOKEN},
         )
         assert response.status_code == 202
         assert response.json()["status"] == "shutting_down"

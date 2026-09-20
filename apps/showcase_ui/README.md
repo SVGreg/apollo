@@ -1,6 +1,6 @@
-# ✨ Artemis Showcase & User Workspace UI
+# ✨ Apollo Showcase & User Workspace UI
 
-A modern, highly aesthetic presentation and interaction frontend built with **Angular 19** and **SCSS** for showcasing the Artemis mobile autonomous agent.
+A modern, highly aesthetic presentation and interaction frontend built with **Angular 19** and **SCSS** for showcasing the Apollo mobile autonomous agent.
 
 ## 🎨 Visual Design Highlights
 
@@ -14,7 +14,7 @@ A modern, highly aesthetic presentation and interaction frontend built with **An
 
 ### Prerequisites
 - Node.js (>= 18)
-- Backend API running on `http://localhost:8000` (via `apps/admin_console` or `artemis ui`)
+- Backend API running on `http://localhost:8000` (via `apps/admin_console` or `apollo ui`)
 
 ### Development Server
 ```bash
@@ -28,4 +28,4 @@ This runs `ng serve --proxy-config proxy.conf.json` on **`http://localhost:4200/
 ```bash
 npm run build
 ```
-Build artifacts will be emitted to `dist/`, which can be served statically by `apps.admin_console` or `artemis ui`.
+Build artifacts will be emitted to `dist/`, which can be served statically by `apps.admin_console` or `apollo ui`.

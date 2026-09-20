@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""System Readiness & Diagnostics Router for Artemis Admin Console."""
+"""System Readiness & Diagnostics Router for Apollo Admin Console."""
 
 import ipaddress
 import os
@@ -22,12 +22,12 @@ from urllib.parse import urlsplit
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
-from artemis.core.diagnostics import readiness_engine
-from artemis.core.diagnostics.adb_server_connection import (
+from apollo.core.diagnostics import readiness_engine
+from apollo.core.diagnostics.adb_server_connection import (
     InvalidAdbServerEndpoint,
     adb_server_connection,
 )
-from artemis.core.diagnostics.schema import SystemReadinessReport
+from apollo.core.diagnostics.schema import SystemReadinessReport
 
 router = APIRouter(prefix="/api/system", tags=["system"])
 
@@ -35,7 +35,7 @@ router = APIRouter(prefix="/api/system", tags=["system"])
 def _require_local_admin_request(request: Request) -> None:
     """Keep endpoint probing and mutation on the local administration boundary."""
     client_host = request.client.host if request.client else None
-    allow_remote = os.getenv("ARTEMIS_ALLOW_REMOTE_ADB_CONFIGURATION", "").lower() in {
+    allow_remote = os.getenv("APOLLO_ALLOW_REMOTE_ADB_CONFIGURATION", "").lower() in {
         "1",
         "true",
         "yes",
@@ -50,7 +50,7 @@ def _require_local_admin_request(request: Request) -> None:
                 status_code=403,
                 detail=(
                     "ADB server settings are local-only. Set "
-                    "ARTEMIS_ALLOW_REMOTE_ADB_CONFIGURATION=true to manage them from another "
+                    "APOLLO_ALLOW_REMOTE_ADB_CONFIGURATION=true to manage them from another "
                     "computer."
                 ),
             )
@@ -63,7 +63,7 @@ def _require_local_admin_request(request: Request) -> None:
     if origin_host != host.lower():
         raise HTTPException(
             status_code=403,
-            detail="ADB server settings can only be changed from the Artemis console.",
+            detail="ADB server settings can only be changed from the Apollo console.",
         )
 
 
@@ -83,7 +83,7 @@ def _require_local_lifecycle_request(request: Request) -> None:
     _require_loopback_request(request, "Server lifecycle controls are local-only.")
 
     expected = getattr(request.app.state, "lifecycle_token", None)
-    supplied = request.headers.get("x-artemis-lifecycle-token")
+    supplied = request.headers.get("x-apollo-lifecycle-token")
     if not (
         isinstance(expected, str)
         and isinstance(supplied, str)
@@ -173,7 +173,7 @@ class ConnectAdbServerRequest(BaseModel):
 
 @router.get("/adb/server")
 async def get_adb_server_status():
-    """Return the process-wide ADB server endpoint currently used by Artemis."""
+    """Return the process-wide ADB server endpoint currently used by Apollo."""
     return adb_server_connection.status()
 
 
@@ -292,7 +292,7 @@ async def get_credentials():
     presence booleans only. Keys are written via POST /credentials and used
     server-side.
     """
-    from artemis.config import settings
+    from apollo.config import settings
 
     providers = ("google", "openai", "anthropic", "openrouter", "ocr")
     status = {name: bool(settings.get_api_key(name)) for name in providers}
@@ -307,7 +307,7 @@ async def get_credentials():
 @router.post("/credentials/test")
 async def test_credentials(request: ValidateCredentialsRequest):
     """Test and verify whether an API key is valid and usable with the corresponding provider endpoint."""
-    from artemis.utils.credentials_validator import validate_api_key
+    from apollo.utils.credentials_validator import validate_api_key
 
     provider = request.provider.strip().lower()
     key = request.api_key.strip()
@@ -333,7 +333,7 @@ async def test_credentials(request: ValidateCredentialsRequest):
 @router.post("/credentials")
 async def update_credentials(request: UpdateCredentialsRequest):
     """Dynamically configure and persist LLM or Vision API key, returning updated readiness report."""
-    from artemis.utils.credentials_validator import validate_api_key
+    from apollo.utils.credentials_validator import validate_api_key
 
     provider = request.provider.strip().lower()
     key = request.api_key.strip()
@@ -348,7 +348,7 @@ async def update_credentials(request: UpdateCredentialsRequest):
             )
 
     try:
-        from artemis.config import settings
+        from apollo.config import settings
 
         settings.set_api_key(provider, key, persist_to_env=request.persist_to_env)
 
@@ -372,20 +372,20 @@ async def update_credentials(request: UpdateCredentialsRequest):
 
 @router.get("/model-config-env")
 async def get_model_config_and_env():
-    """Retrieve the current active artemis.jsonc configuration and .env status for custom setup."""
+    """Retrieve the current active apollo.jsonc configuration and .env status for custom setup."""
     import os
-    from artemis.config.paths import get_config_path, get_env_file
-    from artemis.config import settings
-    from artemis.utils.file import load_jsonc
+    from apollo.config.paths import get_config_path, get_env_file
+    from apollo.config import settings
+    from apollo.utils.file import load_jsonc
 
-    from artemis.config.settings import is_placeholder_key
+    from apollo.config.settings import is_placeholder_key
 
     # 1. Config file resolution
     config_path = None
     config_content = ""
     parsed_config = {}
     try:
-        config_path_obj = get_config_path("artemis.jsonc")
+        config_path_obj = get_config_path("apollo.jsonc")
         config_path = str(config_path_obj)
         config_content = config_path_obj.read_text(encoding="utf-8")
         with open(config_path_obj, encoding="utf-8") as f:
@@ -482,8 +482,8 @@ async def get_model_config_and_env():
     ]
 
     return {
-        "config_path": config_path or "config/artemis.jsonc",
-        "config_filename": "artemis.jsonc",
+        "config_path": config_path or "config/apollo.jsonc",
+        "config_filename": "apollo.jsonc",
         "config_content": config_content,
         "default_model": parsed_config.get("default", {}),
         "presets": parsed_config.get("presets", {}),
@@ -495,9 +495,9 @@ async def get_model_config_and_env():
 
 @router.get("/server-status")
 async def get_server_runtime_status():
-    """Retrieve runtime status, PID, port, and uptime of the Artemis server."""
+    """Retrieve runtime status, PID, port, and uptime of the Apollo server."""
     import os
-    from artemis.runtime.server_lifecycle import get_server_status
+    from apollo.runtime.server_lifecycle import get_server_status
 
     try:
         from apps.admin_console.core.state import state
@@ -522,7 +522,7 @@ async def get_server_runtime_status():
 
 @router.post("/restart")
 async def restart_server_endpoint(request: Request):
-    """Request a graceful restart of the Artemis server from thin clients/UI."""
+    """Request a graceful restart of the Apollo server from thin clients/UI."""
     import asyncio
     import os
     import sys
@@ -560,7 +560,7 @@ async def restart_server_endpoint(request: Request):
 
     return {
         "status": "restarting",
-        "message": "Artemis server is restarting. Client reconnection should occur in 2-3 seconds.",
+        "message": "Apollo server is restarting. Client reconnection should occur in 2-3 seconds.",
         "previous_pid": current_pid,
         "port": port,
     }
@@ -568,7 +568,7 @@ async def restart_server_endpoint(request: Request):
 
 @router.post("/shutdown", status_code=202)
 async def shutdown_server_endpoint(request: Request):
-    """Request a graceful shutdown of the Artemis server."""
+    """Request a graceful shutdown of the Apollo server."""
     import asyncio
 
     try:
@@ -593,6 +593,6 @@ async def shutdown_server_endpoint(request: Request):
 
     return {
         "status": "shutting_down",
-        "message": "Artemis server is shutting down.",
+        "message": "Apollo server is shutting down.",
         "pid": os.getpid(),
     }

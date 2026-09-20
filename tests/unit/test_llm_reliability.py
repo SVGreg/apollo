@@ -1,6 +1,6 @@
 """Tests for the generic LLM failure taxonomy and circuit breaker."""
 
-from artemis.llm.reliability import (
+from apollo.llm.reliability import (
     CircuitBreaker,
     FailureCategory,
     classify_failure,

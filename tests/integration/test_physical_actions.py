@@ -22,9 +22,9 @@ if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
 from adbutils import AdbClient
-from artemis.clients.ui_automator_client import UIAutomatorClient
-from artemis.context import DeviceContext, DevicePlatform, ArtemisContext
-from artemis.controllers.unified_controller import UnifiedMobileController
+from apollo.clients.ui_automator_client import UIAutomatorClient
+from apollo.context import DeviceContext, DevicePlatform, ApolloContext
+from apollo.controllers.unified_controller import UnifiedMobileController
 
 
 import pytest
@@ -54,7 +54,7 @@ async def test_actions():
         print(f"❌ Screen properties sync failed: {e}")
         return
 
-    ctx = ArtemisContext(
+    ctx = ApolloContext(
         trace_id="physical-test-bench",
         device=DeviceContext(
             host_platform="LINUX",

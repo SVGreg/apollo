@@ -16,9 +16,9 @@
 
 import pytest
 
-from artemis.mcp.action_manifest import DEVICE_ACTIONS
-from artemis.mcp.action_types import ActionCode
-from artemis.mcp.actuators import Actuator, AdbActuator, MockActuator
+from apollo.mcp.action_manifest import DEVICE_ACTIONS
+from apollo.mcp.action_types import ActionCode
+from apollo.mcp.actuators import Actuator, AdbActuator, MockActuator
 
 
 @pytest.fixture

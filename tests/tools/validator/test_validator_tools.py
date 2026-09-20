@@ -15,15 +15,15 @@
 import base64
 from pathlib import Path
 
-from artemis.agents.validator.categories import ValidationErrorCategory
-from artemis.agents.validator.validator import ValidatorNode
+from apollo.agents.validator.categories import ValidationErrorCategory
+from apollo.agents.validator.validator import ValidatorNode
 import pytest
 
 
 @pytest.mark.asyncio
-async def test_safety_net_validation(artemis_context, mock_state):
+async def test_safety_net_validation(apollo_context, mock_state):
     """Test the safety_net_validation tool."""
-    node = ValidatorNode(artemis_context)
+    node = ValidatorNode(apollo_context)
 
     action_item = {
         "action": "tap",
@@ -46,9 +46,9 @@ async def test_safety_net_validation(artemis_context, mock_state):
 
 
 @pytest.mark.asyncio
-async def test_safety_net_pixel_validation(artemis_context, mock_state):
+async def test_safety_net_pixel_validation(apollo_context, mock_state):
     """Test the safety_net_pixel_validation tool."""
-    node = ValidatorNode(artemis_context)
+    node = ValidatorNode(apollo_context)
 
     action_item = {"action": "tap", "coordinates": [100, 200]}
 

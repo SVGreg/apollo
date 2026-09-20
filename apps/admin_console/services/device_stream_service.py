@@ -24,9 +24,9 @@ import subprocess
 import time
 from collections.abc import AsyncGenerator
 
-from artemis.toolchain import find_adb
+from apollo.toolchain import find_adb
 
-logger = logging.getLogger("artemis.stream_service")
+logger = logging.getLogger("apollo.stream_service")
 
 
 class DeviceStreamService:

@@ -20,27 +20,27 @@ help: ## Show this help message
 	@echo 'Available targets:'
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-start: ## One-click start Artemis Showcase UI and auto-open browser
+start: ## One-click start Apollo Showcase UI and auto-open browser
 	@bash start.sh
 
 ui: ## Launch the unified Showcase UI & Admin Console in browser
-	@uv run artemis ui --open
+	@uv run apollo ui --open
 
-restart: ## Restart running Artemis Web UI & server
-	@uv run artemis restart
+restart: ## Restart running Apollo Web UI & server
+	@uv run apollo restart
 
-stop: ## Stop running Artemis Web UI & server
-	@uv run artemis stop
+stop: ## Stop running Apollo Web UI & server
+	@uv run apollo stop
 
-status: ## Display Artemis Web UI & server status
-	@uv run artemis status
+status: ## Display Apollo Web UI & server status
+	@uv run apollo status
 
 build-ui: ## Build the Showcase UI Angular frontend
 	@echo "🎨 Building Showcase UI..."
 	@cd apps/showcase_ui && npm install && npm run build
 
 doctor: ## Run system, device, and toolchain diagnostics
-	@uv run artemis doctor
+	@uv run apollo doctor
 
 test: ## Run deterministic tests that need no device, credentials, or private services
 	@echo "🧪 Running deterministic tests..."
@@ -56,7 +56,7 @@ test-device: ## Run Android and end-to-end tests explicitly
 
 test-all: ## Run every test tree; external prerequisites must be available
 	@echo "🧪 Running the complete test tree..."
-	@uv run pytest tests packages/artemis-client/tests -m "integration or not integration"
+	@uv run pytest tests packages/apollo-client/tests -m "integration or not integration"
 
 install: ## Install python dependencies via uv
 	@echo "📦 Installing python dependencies..."
@@ -106,9 +106,9 @@ precommit: ## Run pre-commit hooks manually on all files
 
 clean: ## Clean up generated files, caches, and traces
 	@echo "🧹 Cleaning up caches and temporary files..."
-	@rm -rf .pytest_cache .ruff_cache .artemis_paused traces scratch .venv apps/showcase_ui/.angular build dist
+	@rm -rf .pytest_cache .ruff_cache .apollo_paused traces scratch .venv apps/showcase_ui/.angular build dist
 	@find . -type d -name "outputs" -exec rm -rf {} + 2>/dev/null || true
-	@find . -type f -name ".artemis_paused" -delete 2>/dev/null || true
+	@find . -type f -name ".apollo_paused" -delete 2>/dev/null || true
 	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	@find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
 	@find . -type f -name "*.py[cod]" -delete 2>/dev/null || true

@@ -14,15 +14,15 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from artemis.context import ArtemisContext
-from artemis.graph.state import State
-from artemis.tools.object_detection_tool import get_operator_object_detector_tool
+from apollo.context import ApolloContext
+from apollo.graph.state import State
+from apollo.tools.object_detection_tool import get_operator_object_detector_tool
 import pytest
 
 
 @pytest.mark.asyncio
 async def test_object_detection_trace():
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = MagicMock()
 
     mock_state = MagicMock(spec=State)
@@ -37,7 +37,7 @@ async def test_object_detection_trace():
 
     # Mock the internal function called by the tool
     with patch(
-        "artemis.tools.object_detection_tool._run_object_detection",
+        "apollo.tools.object_detection_tool._run_object_detection",
         AsyncMock(return_value="{}"),
     ) as mock_run:
         # We need to handle the fact that ainvoke might fail if LangChain internals are not fully mocked.

@@ -15,9 +15,9 @@
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from artemis.context import ArtemisContext
-from artemis.tools.base import ArtemisTool
-from artemis.tools.scratchpad import (
+from apollo.context import ApolloContext
+from apollo.tools.base import ApolloTool
+from apollo.tools.scratchpad import (
     AppendNoteArgs,
     AppendNotePure,
     AppendNotePureTool,
@@ -29,17 +29,17 @@ import pytest
 
 @pytest.fixture
 def mock_ctx(tmp_path):
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.data_engine = MagicMock()
     ctx.data_engine.base_dir = str(tmp_path)
     return ctx
 
 
 def test_append_note_pure_tool_subclass():
-    """Verify AppendNotePureTool is a subclass of ArtemisTool."""
-    assert issubclass(AppendNotePureTool, ArtemisTool)
-    assert issubclass(AppendNotePure, ArtemisTool)
-    assert isinstance(append_note_pure, ArtemisTool)
+    """Verify AppendNotePureTool is a subclass of ApolloTool."""
+    assert issubclass(AppendNotePureTool, ApolloTool)
+    assert issubclass(AppendNotePure, ApolloTool)
+    assert isinstance(append_note_pure, ApolloTool)
     assert isinstance(append_note_pure, AppendNotePureTool)
 
     assert append_note_pure.name == "append_note_pure"
@@ -97,7 +97,7 @@ async def test_append_note_pure_callable_execution(mock_ctx, tmp_path):
 async def test_append_note_pure_execution_failure(mock_ctx):
     """Verify error handling when append_note_content fails."""
     with patch(
-        "artemis.tools.scratchpad.append_note_content",
+        "apollo.tools.scratchpad.append_note_content",
         side_effect=PermissionError("Permission denied"),
     ):
         result = await append_note_pure.execute(

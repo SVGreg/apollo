@@ -8,7 +8,7 @@ def test_legacy_pause_log_is_normalized_to_failed_llm_trace():
     trace = {
         "trace_id": "pause-log",
         "type": "log",
-        "name": "artemis.services.llm",
+        "name": "apollo.services.llm",
         "status": "success",
         "payload": json.dumps(
             {
@@ -34,7 +34,7 @@ def test_unrelated_log_is_not_presented_as_llm_failure():
     trace = {
         "trace_id": "ordinary-log",
         "type": "log",
-        "name": "artemis.services.llm",
+        "name": "apollo.services.llm",
         "status": "success",
         "payload": json.dumps({"message": "LLM request completed"}),
     }

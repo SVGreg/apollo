@@ -24,9 +24,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from artemis.core.diagnostics.emulator_manager import EmulatorLaunchStage
-from artemis.core.diagnostics.probes.host_probe import IntegrationHostProbe
-from artemis.core.diagnostics.schema import (
+from apollo.core.diagnostics.emulator_manager import EmulatorLaunchStage
+from apollo.core.diagnostics.probes.host_probe import IntegrationHostProbe
+from apollo.core.diagnostics.schema import (
     DeviceInfo,
     ProbeAction,
     ProbeCategory,
@@ -34,8 +34,8 @@ from artemis.core.diagnostics.schema import (
     ProbeStatus,
     SystemReadinessReport,
 )
-from artemis.runtime import trace_store
-from artemis.runtime.device_lock import DeviceLockOwner
+from apollo.runtime import trace_store
+from apollo.runtime.device_lock import DeviceLockOwner
 from mcp_server.tools import diagnose
 from mcp_server.tools.diagnose import mobile_diagnose
 
@@ -361,7 +361,7 @@ def _run(
 
 def _helper_healthy(serial: str = "pixel-1") -> dict:
     return {
-        "package": "com.artemis.helper",
+        "package": "com.apollo.helper",
         "installed": True,
         "installed_version": 2,
         "bundled_version": 2,
@@ -377,7 +377,7 @@ def _helper_healthy(serial: str = "pixel-1") -> dict:
 
 
 def _provision_ok():
-    from artemis.runtime.helper_manager import ProvisionResult
+    from apollo.runtime.helper_manager import ProvisionResult
 
     return ProvisionResult(
         ok=True, action="installed", installed_version=2, bundled_version=2, enabled=True
@@ -640,16 +640,16 @@ def test_missing_credentials_point_to_env_file_not_chat(temp_trace_env):
         category=ProbeCategory.CREDENTIALS,
         summary="Key Missing",
         actions=[
-            ProbeAction(action_type="command", label="Init", payload="artemis init"),
+            ProbeAction(action_type="command", label="Init", payload="apollo init"),
             ProbeAction(action_type="link", label="Key", payload="https://aistudio.google.com"),
         ],
     )
-    result = _run(probes, host=_host(env_file="/home/u/artemis/.env"))
+    result = _run(probes, host=_host(env_file="/home/u/apollo/.env"))
 
     steps = result["next_steps"]
     assert result["verdict"] == "blocked"
-    assert not any(s.strip() == "Run: artemis init" for s in steps)
-    assert any("/home/u/artemis/.env" in s and "Never ask them to paste" in s for s in steps)
+    assert not any(s.strip() == "Run: apollo init" for s in steps)
+    assert any("/home/u/apollo/.env" in s and "Never ask them to paste" in s for s in steps)
     assert any("interactive" in s for s in steps)
     assert steps[-1].startswith("After changing the env file")
 
@@ -661,7 +661,7 @@ def test_host_problems_come_before_credentials_and_request_restart(temp_trace_en
     host = _host(ProbeStatus.WARN, summary="Host Warning")
     host.actions = [
         ProbeAction(
-            action_type="command", label="Regen", payload="uv run artemis mcp --install claude"
+            action_type="command", label="Regen", payload="uv run apollo mcp --install claude"
         )
     ]
     result = _run(_healthy_probes(), host=host)
@@ -669,7 +669,7 @@ def test_host_problems_come_before_credentials_and_request_restart(temp_trace_en
     steps = result["next_steps"]
     assert result["verdict"] == "degraded"
     assert steps[0].startswith("[OPTIONAL] Integration Host")
-    assert "  Run: uv run artemis mcp --install claude" in steps
+    assert "  Run: uv run apollo mcp --install claude" in steps
     assert "restart the MCP server" in steps[-1]
 
 
@@ -1205,7 +1205,7 @@ def test_missing_helper_in_auto_mode_degrades_with_optional_step(temp_trace_env)
     assert helper
     optional = [s for s in result["next_steps"] if s.startswith("[OPTIONAL] Accessibility helper")]
     assert len(optional) == 1 and "is not installed" in optional[0]
-    assert "  Run: uv run artemis helper install --serial pixel-1" in result["next_steps"]
+    assert "  Run: uv run apollo helper install --serial pixel-1" in result["next_steps"]
     assert any("attempt_fix=true" in s for s in result["next_steps"])
     result["_fake_helper"].provision.assert_not_called()
 
@@ -1271,7 +1271,7 @@ def test_attempt_fix_leaves_healthy_helper_alone(temp_trace_env):
 
 
 def test_disabled_helper_step_includes_the_manual_path(temp_trace_env):
-    from artemis.runtime.helper_manager import MANUAL_ENABLE_PATH
+    from apollo.runtime.helper_manager import MANUAL_ENABLE_PATH
 
     status = {**_helper_healthy(), "enabled": False, "reachable": False}
     result = _run(_healthy_probes(), helper_status=status)

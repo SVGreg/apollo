@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./docs/assets/artemis-banner.png?v=7" alt="ARTEMIS Banner" width="100%" />
+  <img src="./docs/assets/apollo-banner.png?v=7" alt="APOLLO Banner" width="100%" />
 </p>
 
 <p align="center">
@@ -26,7 +26,7 @@
 
 <!-- Demo Showcase -->
 <p align="center">
-  <img src="./docs/assets/demo.gif" alt="Artemis in Action" width="100%" />
+  <img src="./docs/assets/demo.gif" alt="Apollo in Action" width="100%" />
   <br>
   <em>Live Demo: Setup driving routes and calculate total durations in Google Maps, then open YouTube to play a Coldplay song.</em>
 </p>
@@ -41,9 +41,9 @@
 * **AndroidWorld Results**: **99%+ task completion** on Google Research's **AndroidWorld** benchmark (100+ multi-step tasks).
 
 <a id="workflow-showcase"></a>
-## Antigravity × ARTEMIS: Autonomous Testing Workflow
+## Antigravity × APOLLO: Autonomous Testing Workflow
 
-**Antigravity** uses **ARTEMIS** through MCP to turn a test request into a plan, device execution, and a diagnostic report:
+**Antigravity** uses **APOLLO** through MCP to turn a test request into a plan, device execution, and a diagnostic report:
 
 <table width="100%">
   <tr>
@@ -77,13 +77,13 @@
 
 Ensure an Android device (with **USB Debugging** enabled) or emulator is connected. The one-click startup script will automatically:
 - **Install System Toolchains**: Detect and auto-install ADB, scrcpy, FFmpeg, and Python (`uv`) dependencies.
-- **Mount Global MCP Server & AI Agent Rules**: Prompt to automatically install global MCP configurations and the **Artemis Mobile Testing Mindset (`rules.md`)** into your AI IDEs (**Antigravity**, **Cursor**, **Claude Code**, **Codex**, **Windsurf**, **VS Code**, **Cline/Roo**, **OpenClaw**).
+- **Mount Global MCP Server & AI Agent Rules**: Prompt to automatically install global MCP configurations and the **Apollo Mobile Testing Mindset (`rules.md`)** into your AI IDEs (**Antigravity**, **Cursor**, **Claude Code**, **Codex**, **Windsurf**, **VS Code**, **Cline/Roo**, **OpenClaw**).
 
 ### macOS and Linux
 
 ```bash
 # 1. Clone repo & navigate to directory
-git clone https://github.com/google/artemis.git && cd artemis
+git clone https://github.com/google/artemis.git && cd apollo
 
 # 2. One-click launch
 ./start.sh
@@ -94,7 +94,7 @@ git clone https://github.com/google/artemis.git && cd artemis
 ```powershell
 # 1. Clone repo & navigate to directory
 git clone https://github.com/google/artemis.git
-cd artemis
+cd apollo
 
 # 2. One-click launch
 .\start.bat
@@ -102,7 +102,7 @@ cd artemis
 
 > PowerShell does not search the current directory for executable scripts by default, so use `.\start.bat` without a trailing `\`. In Command Prompt (CMD), use `start.bat` instead.
 
-> **Tip**: Opens `http://localhost:8000` in your default browser with a device connection wizard, live screen mirroring, prompt sandbox, and execution replays. You can also run directly from CLI: `uv run artemis run "Open Settings, find Battery and tell me current level" --profile flash`.
+> **Tip**: Opens `http://localhost:8000` in your default browser with a device connection wizard, live screen mirroring, prompt sandbox, and execution replays. You can also run directly from CLI: `uv run apollo run "Open Settings, find Battery and tell me current level" --profile flash`.
 
 <a id="mcp-setup"></a>
 <a id="mcp"></a>
@@ -111,7 +111,7 @@ cd artemis
 
 <br>
 
-ARTEMIS includes a native **Model Context Protocol (MCP)** server. Connect your real phone directly into AI IDEs:
+APOLLO includes a native **Model Context Protocol (MCP)** server. Connect your real phone directly into AI IDEs:
 
 ### 1. One-Click Auto Install (Recommended)
 
@@ -119,39 +119,39 @@ Running `./start.sh` (macOS/Linux) or `.\start.bat` (Windows PowerShell) will pr
 
 ```bash
 # Auto-install MCP server & global rules for Antigravity / Jetski:
-uv run artemis mcp --install antigravity
+uv run apollo mcp --install antigravity
 
 # Or install for all supported AI IDEs (including Codex):
-uv run artemis mcp --install all
+uv run apollo mcp --install all
 ```
 
-> **Tip**: You can also configure MCP interactively during first-time setup via `uv run artemis init`.
-> **Pro Tip**: If you want to use the `artemis` command globally without `uv run` in any directory, run `uv tool install -e .` once in the project root.
+> **Tip**: You can also configure MCP interactively during first-time setup via `uv run apollo init`.
+> **Pro Tip**: If you want to use the `apollo` command globally without `uv run` in any directory, run `uv tool install -e .` once in the project root.
 
 ### 2. Manual Configuration (Optional)
 
-If you prefer to configure manually, run `uv run artemis mcp --generate-config <client>` (for example, `codex` or `antigravity`) to output the appropriate TOML or JSON snippet. Replace `/path/to/artemis` with your actual repo path and point `command` to your `.venv` Python executable:
+If you prefer to configure manually, run `uv run apollo mcp --generate-config <client>` (for example, `codex` or `antigravity`) to output the appropriate TOML or JSON snippet. Replace `/path/to/apollo` with your actual repo path and point `command` to your `.venv` Python executable:
 
 * **Codex** (`~/.codex/config.toml`):
 ```toml
-[mcp_servers.artemis]
-command = "/path/to/artemis/.venv/bin/python"
+[mcp_servers.apollo]
+command = "/path/to/apollo/.venv/bin/python"
 args = ["-m", "mcp_server"]
-cwd = "/path/to/artemis"
+cwd = "/path/to/apollo"
 
-[mcp_servers.artemis.env]
+[mcp_servers.apollo.env]
 PYTHONUNBUFFERED = "1"
-PYTHONPATH = "/path/to/artemis"
+PYTHONPATH = "/path/to/apollo"
 ```
 
 * **Antigravity** (`~/.gemini/jetski/mcp_config.json`):
 ```json
 {
   "mcpServers": {
-    "artemis": {
-      "command": "/path/to/artemis/.venv/bin/python",
+    "apollo": {
+      "command": "/path/to/apollo/.venv/bin/python",
       "args": ["-m", "mcp_server"],
-      "cwd": "/path/to/artemis",
+      "cwd": "/path/to/apollo",
       "env": {
         "PYTHONUNBUFFERED": "1"
       },
@@ -171,10 +171,10 @@ PYTHONPATH = "/path/to/artemis"
 ```json
 {
   "mcpServers": {
-    "artemis": {
-      "command": "/path/to/artemis/.venv/bin/python",
+    "apollo": {
+      "command": "/path/to/apollo/.venv/bin/python",
       "args": ["-m", "mcp_server"],
-      "cwd": "/path/to/artemis"
+      "cwd": "/path/to/apollo"
     }
   }
 }
@@ -186,8 +186,8 @@ To ensure your AI coding assistant acts with the rigor of a senior mobile test e
 
 You can mount or copy [`mcp_server/rules.md`](./mcp_server/rules.md) into your AI IDE's rule configuration:
 * **Antigravity**: Add the contents of `rules.md` to your Workspace Rules, Global Rules settings, or agent instructions.
-* **Claude Code**: Run `artemis mcp --install claude` to install the rules to `~/.claude/rules/artemis.md` (install to exactly one location — Claude Code loads both `~/.claude/CLAUDE.md` and `~/.claude/rules/*.md`, so duplicating the rules wastes context).
-* **Cursor**: Copy the contents into `.cursorrules` or create a rule file at `.cursor/rules/artemis.mdc`.
+* **Claude Code**: Run `apollo mcp --install claude` to install the rules to `~/.claude/rules/apollo.md` (install to exactly one location — Claude Code loads both `~/.claude/CLAUDE.md` and `~/.claude/rules/*.md`, so duplicating the rules wastes context).
+* **Cursor**: Copy the contents into `.cursorrules` or create a rule file at `.cursor/rules/apollo.mdc`.
 * **Codex**: Add the contents to `~/.codex/AGENTS.md` (or the active `AGENTS.override.md`).
 * **Windsurf / OpenClaw**: Add the rules to your workspace rules or global system prompts.
 
@@ -209,17 +209,17 @@ Install the zero-runtime-dependency client on the development machine. ADB,
 agents, models, and image processing remain on the device host:
 
 ```powershell
-uv add "artemis-client @ git+https://github.com/google/artemis.git#subdirectory=packages/artemis-client"
+uv add "apollo-client @ git+https://github.com/google/artemis.git#subdirectory=packages/apollo-client"
 ```
 
 ```python
 import asyncio
-from artemis_client import ArtemisClient
+from apollo_client import ApolloClient
 
 
 async def main():
-    client = ArtemisClient(
-        "http://artemis-host:8000",
+    client = ApolloClient(
+        "http://apollo-host:8000",
         device_serial="emulator-5554",  # optional: target specific device serial
         default_profile="flash",  # "flash" (fast reactive) or "pro" (deep reasoning)
     )
@@ -241,61 +241,61 @@ if __name__ == "__main__":
 ## Usage Modes
 
 <p align="center">
-  <img src="./docs/assets/artemis-ui-showcase-en.png" alt="Artemis Web Console" width="100%" />
+  <img src="./docs/assets/apollo-ui-showcase-en.png" alt="Apollo Web Console" width="100%" />
   <br />
   <sub><b>Console Overview</b>: <b>① View Switcher</b> (Home / Workspace) · <b>② Model & Replay</b> (Flash/Pro status & video replay) · <b>③ Live Agent Stream</b> (Action perception, target coordinates & structured results) · <b>④ Prompt Dock</b> (Natural language dispatch) · <b>⑤ Task Queue & Dashboard</b> (Lifecycle & history)</sub>
 </p>
 
-* **Web Visual Test Console (`uv run artemis ui`)**: Real-time screen projection and interactive panel, supporting natural language test dispatch, live reasoning telemetry, action trajectories, and execution replay; manage server lifecycle anytime from any terminal using `uv run artemis restart`, `uv run artemis stop`, and `uv run artemis status`;
+* **Web Visual Test Console (`uv run apollo ui`)**: Real-time screen projection and interactive panel, supporting natural language test dispatch, live reasoning telemetry, action trajectories, and execution replay; manage server lifecycle anytime from any terminal using `uv run apollo restart`, `uv run apollo stop`, and `uv run apollo status`;
 * **MCP Server**: Connects **Antigravity, Claude Code, Windsurf**, and other MCP clients to real devices for bug reproduction and test execution;
-* **Developer CLI (`uv run artemis run`)**: Direct terminal execution for automated test cases, exploratory stability inspection, or AndroidWorld benchmarks with high-fidelity structured terminal output;
+* **Developer CLI (`uv run apollo run`)**: Direct terminal execution for automated test cases, exploratory stability inspection, or AndroidWorld benchmarks with high-fidelity structured terminal output;
 * **Python SDK**: Integrates as a standard Python library into existing automated testing frameworks (e.g., pytest) or CI/CD pipelines with strongly typed Pydantic structured outputs and assertion support.
 
 <a id="on-device-helper"></a>
-## What ARTEMIS Installs on Your Phone
+## What APOLLO Installs on Your Phone
 
-The first task on a device installs the **Artemis Accessibility Helper**, a small
+The first task on a device installs the **Apollo Accessibility Helper**, a small
 accessibility service that reads the screen layout without taking the
 UiAutomation connection. Tools using UiAutomation can suppress the helper unless
 they enable `FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES`. You will see
-a collapsed "Artemis test helper is running" notification and a new entry under
+a collapsed "Apollo test helper is running" notification and a new entry under
 Settings > Accessibility; both are that helper. It listens only on the phone
 itself and sends nothing elsewhere.
 
-* Pre-install it (avoids the ~3 s delay on the first task): `uv run artemis helper install`
-* Inspect it: `uv run artemis helper status` / `uv run artemis doctor`
-* Remove it any time: `uv run artemis helper uninstall`
-* Use UIAutomator2 instead: `ARTEMIS_HIERARCHY_BACKEND=uiautomator` in `.env`
-* Prevent automatic installation: `ARTEMIS_HELPER_AUTO_INSTALL=false` in `.env`
+* Pre-install it (avoids the ~3 s delay on the first task): `uv run apollo helper install`
+* Inspect it: `uv run apollo helper status` / `uv run apollo doctor`
+* Remove it any time: `uv run apollo helper uninstall`
+* Use UIAutomator2 instead: `APOLLO_HIERARCHY_BACKEND=uiautomator` in `.env`
+* Prevent automatic installation: `APOLLO_HELPER_AUTO_INSTALL=false` in `.env`
 
-If the helper ever fails mid-task, ARTEMIS falls back to UIAutomator2 and says
+If the helper ever fails mid-task, APOLLO falls back to UIAutomator2 and says
 so in the task timeline, in `mobile_manage_task` status, and in the final report.
 
 <a id="benchmarks"></a>
 ## Benchmarks: AndroidWorld (SOTA 99%+)
 
-Artemis achieved a **99%+ completion rate** on [AndroidWorld](https://github.com/google-research/android_world), Google Research's benchmark spanning 20+ apps and 100+ multi-step tasks.
+Apollo achieved a **99%+ completion rate** on [AndroidWorld](https://github.com/google-research/android_world), Google Research's benchmark spanning 20+ apps and 100+ multi-step tasks.
 
 <p align="center">
   <img src="./docs/assets/androidworld_leaderboard.png?v=2" alt="AndroidWorld Benchmark Comparison" width="100%" />
 </p>
 
-## How ARTEMIS is Architected
+## How APOLLO is Architected
 
 * **Pre-Execution Checks and Action Bursts**: Pro checks the target against the live UI tree and pixels before dispatching an individual action. Action bursts handle transient controls without waiting for another model turn.
 * **Element Locating**: Combines accessibility hierarchies and OCR with visual models for custom Canvas, Compose, and Flutter interfaces.
 * **Shared History Compression**: Flash and Pro replace older screenshots with visual summaries and compress completed steps into searchable history chunks. Context thresholds control when raw turns are replaced.
 
 <p align="center">
-  <img src="./docs/assets/artemis_architecture_diagram.png" alt="ARTEMIS System Architecture Diagram" width="100%" />
+  <img src="./docs/assets/artemis_architecture_diagram.png" alt="APOLLO System Architecture Diagram" width="100%" />
 </p>
 
 ## Execution Profiles: Flash vs. Pro
 
-ARTEMIS supports two execution profiles tailored for different automation requirements:
+APOLLO supports two execution profiles tailored for different automation requirements:
 
 * **Flash Profile (`--profile flash`)**: Fast and token-efficient reactive loop (~3–5s per step): one model observes the live screen, thinks, and acts, with no graph orchestration. Ideal for routine, deterministic UI tasks. The loop is unbounded by default (`agent.flash.max_turns`, 0 = unlimited) because history is compressed rather than capped: Flash shares the Pro session transcript ledger (session-relative `T+mm:ss` clock, screenshots folded into visual summaries, older steps chunked into eras and recallable on demand via `search_history` / `replay_steps`) and can query the session recording through `video_analyzer`. Transient UI (auto-fading control bars, toasts) is handled by chaining taps into one `click_sequence`. *Limitations*: No task plan or notes, no pre-execution safety net, no checkpoint verification or final report, and no ADB shell.
-* **Pro Profile (`--profile pro`)**: A planning and verification workflow (~15–40s per step), built as a multi-agent graph. A **Planner** maintains a living Markdown task plan with milestones and `verify` / `assert` check items; the **Operator** executes it with the full toolset (Explorer grounding whose `flash` / `pro` / `ultra` tier is a user setting per profile — `pro.explorer.mode` / `flash.explorer_mode` in `config/artemis.jsonc` or `--explorer-pro-mode` — never chosen by the agent; notes, history recall, video analysis, ADB diagnostics). Every single action passes a pre-execution **Safety Net** (XML-first, pixel fallback), while multi-action **fast-action bursts** fire back to back to beat turn latency on transient UI. A blocked or failed action opens an **execution incident** that stays in the Operator's context until a later action succeeds, so recovery is handled by the Operator itself with no separate repair agent. A read-only **Checker** verifies plan checkpoints and runs an exit final review against the original goal (`--verification-level`: `off` / `final` (default) / `checkpoints` / `strict`), and plan milestone edits get an advisory review. Handles 100+ step long-horizon workflows, `[Loop:continuous]` monitoring, and an optional written report.
+* **Pro Profile (`--profile pro`)**: A planning and verification workflow (~15–40s per step), built as a multi-agent graph. A **Planner** maintains a living Markdown task plan with milestones and `verify` / `assert` check items; the **Operator** executes it with the full toolset (Explorer grounding whose `flash` / `pro` / `ultra` tier is a user setting per profile — `pro.explorer.mode` / `flash.explorer_mode` in `config/apollo.jsonc` or `--explorer-pro-mode` — never chosen by the agent; notes, history recall, video analysis, ADB diagnostics). Every single action passes a pre-execution **Safety Net** (XML-first, pixel fallback), while multi-action **fast-action bursts** fire back to back to beat turn latency on transient UI. A blocked or failed action opens an **execution incident** that stays in the Operator's context until a later action succeeds, so recovery is handled by the Operator itself with no separate repair agent. A read-only **Checker** verifies plan checkpoints and runs an exit final review against the original goal (`--verification-level`: `off` / `final` (default) / `checkpoints` / `strict`), and plan milestone edits get an advisory review. Handles 100+ step long-horizon workflows, `[Loop:continuous]` monitoring, and an optional written report.
 
 ## Roadmap
 

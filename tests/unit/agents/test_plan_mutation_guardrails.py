@@ -16,13 +16,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from artemis.context import ArtemisContext, ExecutionSetup
-from artemis.graph.graph import (
+from apollo.context import ApolloContext, ExecutionSetup
+from apollo.graph.graph import (
     check_plan_mutation_rejections,
     check_unintended_rewrite,
     wrap_note_tool,
 )
-from artemis.graph.state import State
+from apollo.graph.state import State
 
 CONTINUOUS_PLAN = (
     "- [x] Open app\n"
@@ -134,7 +134,7 @@ def _guard_ctx(tmp_path, **setup_kwargs):
     # Planner validation OFF by default: the guard must hold on its own.
     setup_kwargs.setdefault("disable_planner_validation", True)
     setup_kwargs.setdefault("disable_checker", False)
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.execution_setup = ExecutionSetup(**setup_kwargs)
     ctx.data_engine = MagicMock()
     ctx.data_engine.base_dir = str(tmp_path)
@@ -176,7 +176,7 @@ async def test_operator_deleting_check_line_is_restored(tmp_path):
 
     rewritten = "- [/] Create the alarm\n  - assert: a toast appeared\n- [ ] Next milestone\n"
     with patch(
-        "artemis.graph.graph.invoke_tool_with_injection",
+        "apollo.graph.graph.invoke_tool_with_injection",
         side_effect=_save_invoke(path),
     ):
         wrapped = wrap_note_tool(ctx, _save_tool())
@@ -199,7 +199,7 @@ async def test_operator_rewording_check_line_restores_original_keeps_new(tmp_pat
         "  - verify: alarm roughly configured\n",
     )
     with patch(
-        "artemis.graph.graph.invoke_tool_with_injection",
+        "apollo.graph.graph.invoke_tool_with_injection",
         side_effect=_save_invoke(path),
     ):
         wrapped = wrap_note_tool(ctx, _save_tool())
@@ -219,7 +219,7 @@ async def test_deleted_parent_turns_check_into_task_level_at_end(tmp_path):
     # Whole parent subgoal removed
     rewritten = "- [ ] Next milestone\n"
     with patch(
-        "artemis.graph.graph.invoke_tool_with_injection",
+        "apollo.graph.graph.invoke_tool_with_injection",
         side_effect=_save_invoke(path),
     ):
         wrapped = wrap_note_tool(ctx, _save_tool())
@@ -237,7 +237,7 @@ async def test_operator_adding_check_lines_is_allowed(tmp_path):
 
     extended = GUARDED_PLAN + "  - verify: extra criterion\n"
     with patch(
-        "artemis.graph.graph.invoke_tool_with_injection",
+        "apollo.graph.graph.invoke_tool_with_injection",
         side_effect=_save_invoke(path),
     ):
         wrapped = wrap_note_tool(ctx, _save_tool())
@@ -257,7 +257,7 @@ async def test_guard_holds_with_planner_validation_disabled_and_checks_off(tmp_p
     ctx = _guard_ctx(tmp_path, disable_checker=True, disable_planner_validation=True)
 
     with patch(
-        "artemis.graph.graph.invoke_tool_with_injection",
+        "apollo.graph.graph.invoke_tool_with_injection",
         side_effect=_save_invoke(path),
     ):
         wrapped = wrap_note_tool(ctx, _save_tool())
@@ -278,8 +278,8 @@ async def test_guard_holds_with_planner_validation_disabled_and_checks_off(tmp_p
 async def test_planner_node_writes_are_not_guarded():
     """The Planner keeps revision authority over check standards: its node is
     wired with the UNWRAPPED note tools, so the guard never applies to it."""
-    from artemis.context import DeviceContext, DevicePlatform
-    from artemis.graph.graph import get_graph
+    from apollo.context import DeviceContext, DevicePlatform
+    from apollo.graph.graph import get_graph
 
     device = DeviceContext(
         host_platform="LINUX",
@@ -288,7 +288,7 @@ async def test_planner_node_writes_are_not_guarded():
         device_width=1080,
         device_height=2400,
     )
-    ctx = ArtemisContext(device=device, execution_setup=ExecutionSetup())
+    ctx = ApolloContext(device=device, execution_setup=ExecutionSetup())
     graph = await get_graph(ctx)
 
     planner_tools = {t.name: t for t in graph.nodes["planner"].bound.afunc.tools}

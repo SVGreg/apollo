@@ -5,9 +5,9 @@ from types import SimpleNamespace
 from langchain_core.messages import AIMessage, AIMessageChunk
 import pytest
 
-from artemis.llm.reliability import LLMExhaustedError, LLMPermanentError
-from artemis.services import llm as llm_service
-from artemis.services.llm import (
+from apollo.llm.reliability import LLMExhaustedError, LLMPermanentError
+from apollo.services import llm as llm_service
+from apollo.services.llm import (
     RobustChatModelWrapper,
     acomplete,
     acomplete_structured,
@@ -19,7 +19,7 @@ from artemis.services.llm import (
 def _isolate_gateway_state(monkeypatch, tmp_path):
     llm_service._ENDPOINT_BREAKER._states.clear()
     llm_service._NON_STREAMING_ENDPOINTS.clear()
-    monkeypatch.setattr(llm_service, "PAUSE_FILE", tmp_path / ".artemis_paused")
+    monkeypatch.setattr(llm_service, "PAUSE_FILE", tmp_path / ".apollo_paused")
     monkeypatch.setattr(
         llm_service,
         "retry_policy_for",

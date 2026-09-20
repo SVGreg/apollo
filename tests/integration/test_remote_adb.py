@@ -31,8 +31,8 @@ from cloud_service.virtualization.remote_adb import (
     RemoteAdbClient,
 )
 
-from artemis.context import ArtemisContext, DeviceContext, DevicePlatform
-from artemis.controllers.platform_specific_commands_controller import (
+from apollo.context import ApolloContext, DeviceContext, DevicePlatform
+from apollo.controllers.platform_specific_commands_controller import (
     get_adb_device,
     list_packages,
     get_current_foreground_package,
@@ -81,8 +81,8 @@ def test_remote_adb_device_window_size():
 
 
 def test_platform_commands_parity_with_remote_device(monkeypatch):
-    monkeypatch.setenv("ARTEMIS_CLOUD_MODE", "1")
-    monkeypatch.setenv("ARTEMIS_CLOUD_SESSION_ID", "session_parity_001")
+    monkeypatch.setenv("APOLLO_CLOUD_MODE", "1")
+    monkeypatch.setenv("APOLLO_CLOUD_SESSION_ID", "session_parity_001")
     monkeypatch.setenv("ADB_DEVICE_SERIAL", "emulator-5554")
 
     mock_bridge = MagicMock()
@@ -101,7 +101,7 @@ def test_platform_commands_parity_with_remote_device(monkeypatch):
     client = RemoteAdbClient(bridge=mock_bridge)
     device = client.device("emulator-5554")
 
-    ctx = ArtemisContext(
+    ctx = ApolloContext(
         device=DeviceContext(
             host_platform="LINUX",
             mobile_platform=DevicePlatform.ANDROID,
@@ -153,14 +153,14 @@ def test_remote_uiautomator_client_parity():
 
 def test_controller_factory_cloud_mode_uses_unified_controller(monkeypatch):
     """Verify controller_factory creates UnifiedMobileController in Cloud Mode."""
-    monkeypatch.setenv("ARTEMIS_CLOUD_MODE", "1")
-    monkeypatch.setenv("ARTEMIS_CLOUD_SESSION_ID", "test_cloud_session")
+    monkeypatch.setenv("APOLLO_CLOUD_MODE", "1")
+    monkeypatch.setenv("APOLLO_CLOUD_SESSION_ID", "test_cloud_session")
     monkeypatch.setenv("ADB_DEVICE_SERIAL", "emulator-5554")
 
-    from artemis.controllers.controller_factory import create_device_controller
-    from artemis.controllers.unified_controller import UnifiedMobileController
+    from apollo.controllers.controller_factory import create_device_controller
+    from apollo.controllers.unified_controller import UnifiedMobileController
 
-    ctx = ArtemisContext(
+    ctx = ApolloContext(
         device=DeviceContext(
             host_platform="LINUX",
             mobile_platform=DevicePlatform.ANDROID,

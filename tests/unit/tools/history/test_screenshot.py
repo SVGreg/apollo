@@ -21,9 +21,9 @@ from unittest.mock import MagicMock
 import pytest
 from PIL import Image
 
-from artemis.core.tool_failure import is_tool_failure
-from artemis.tools.history import get_step_screenshot, load_step_screenshot
-from artemis.tools.tool_wrapper import tool_result_messages
+from apollo.core.tool_failure import is_tool_failure
+from apollo.tools.history import get_step_screenshot, load_step_screenshot
+from apollo.tools.tool_wrapper import tool_result_messages
 
 
 def _jpeg_file(tmp_path, name="pre.jpg", color="white"):

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from unittest.mock import AsyncMock, patch
-from artemis.agents.object_detector.object_detector import _run_object_detection
+from apollo.agents.object_detector.object_detector import _run_object_detection
 import pytest
 
 
@@ -32,11 +32,11 @@ async def test_coordinate_normalization_swap():
     # 2. Patch dependencies to run in a pure offline sandbox
     with (
         patch(
-            "artemis.agents.object_detector.object_detector._detect_single_label",
+            "apollo.agents.object_detector.object_detector._detect_single_label",
             new_callable=AsyncMock,
             return_value=mock_vlm_output,
         ),
-        patch("artemis.agents.object_detector.object_detector.get_llm"),
+        patch("apollo.agents.object_detector.object_detector.get_llm"),
     ):
         # Mock context setup
         mock_ctx = AsyncMock()

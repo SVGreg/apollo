@@ -14,9 +14,9 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from artemis.context import ArtemisContext
-from artemis.tools.base import ArtemisTool
-from artemis.tools.video_tool import (
+from apollo.context import ApolloContext
+from apollo.tools.base import ApolloTool
+from apollo.tools.video_tool import (
     VideoAnalyzerArgs,
     VideoAnalyzerPure,
     VideoAnalyzerPureTool,
@@ -28,15 +28,15 @@ import pytest
 
 @pytest.fixture
 def mock_ctx():
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     return ctx
 
 
 def test_video_analyzer_pure_tool_subclass():
-    """Verify VideoAnalyzerPureTool is a subclass of ArtemisTool."""
-    assert issubclass(VideoAnalyzerPureTool, ArtemisTool)
-    assert issubclass(VideoAnalyzerPure, ArtemisTool)
-    assert isinstance(video_analyzer_pure, ArtemisTool)
+    """Verify VideoAnalyzerPureTool is a subclass of ApolloTool."""
+    assert issubclass(VideoAnalyzerPureTool, ApolloTool)
+    assert issubclass(VideoAnalyzerPure, ApolloTool)
+    assert isinstance(video_analyzer_pure, ApolloTool)
     assert isinstance(video_analyzer_pure, VideoAnalyzerPureTool)
 
     assert video_analyzer_pure.name == "video_analyzer_pure"
@@ -54,7 +54,7 @@ def test_video_analyzer_pure_tool_subclass():
 async def test_video_analyzer_pure_direct_execution_success(mock_ctx):
     """Verify direct execution of VideoAnalyzerPureTool.execute returns outcome directly."""
     with patch(
-        "artemis.tools.video_tool.VideoAnalyzer.run",
+        "apollo.tools.video_tool.VideoAnalyzer.run",
         new_callable=AsyncMock,
         return_value=("Pure video analysis success", "success"),
     ):
@@ -70,7 +70,7 @@ async def test_video_analyzer_pure_direct_execution_success(mock_ctx):
 async def test_video_analyzer_pure_direct_execution_failed(mock_ctx):
     """Verify direct execution handles failed status properly."""
     with patch(
-        "artemis.tools.video_tool.VideoAnalyzer.run",
+        "apollo.tools.video_tool.VideoAnalyzer.run",
         new_callable=AsyncMock,
         return_value=("Pure could not find element", "failed"),
     ):
@@ -86,7 +86,7 @@ async def test_video_analyzer_pure_direct_execution_failed(mock_ctx):
 async def test_video_analyzer_pure_callable_execution(mock_ctx):
     """Verify invoking video_analyzer_pure directly as a callable."""
     with patch(
-        "artemis.tools.video_tool.VideoAnalyzer.run",
+        "apollo.tools.video_tool.VideoAnalyzer.run",
         new_callable=AsyncMock,
         return_value=("Pure callable output", "success"),
     ):
@@ -102,7 +102,7 @@ async def test_video_analyzer_pure_callable_execution(mock_ctx):
 async def test_video_analyzer_pure_exception_handling(mock_ctx):
     """Verify VideoAnalyzerPureTool gracefully handles exceptions."""
     with patch(
-        "artemis.tools.video_tool.VideoAnalyzer.run",
+        "apollo.tools.video_tool.VideoAnalyzer.run",
         new_callable=AsyncMock,
         side_effect=RuntimeError("Video processing error"),
     ):
@@ -121,7 +121,7 @@ async def test_get_video_analyzer_tool_pure_ainvoke(mock_ctx):
     assert pure_tool.name == "video_analyzer"
 
     with patch(
-        "artemis.tools.video_tool.VideoAnalyzer.run",
+        "apollo.tools.video_tool.VideoAnalyzer.run",
         new_callable=AsyncMock,
         return_value=("Exported pure tool output", "success"),
     ):

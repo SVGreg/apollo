@@ -18,8 +18,8 @@ import time
 from uuid import UUID
 from fastapi import APIRouter, HTTPException
 
-from artemis.config import DB_PATH, TRACES_PATH
-from artemis.runtime import trace_store
+from apollo.config import DB_PATH, TRACES_PATH
+from apollo.runtime import trace_store
 
 try:
     from admin_console.core.state import state
@@ -63,7 +63,7 @@ def _list_sessions_sync():
     result = []
 
     try:
-        from artemis.runtime import DeviceExecutionLock
+        from apollo.runtime import DeviceExecutionLock
 
         active_owners = DeviceExecutionLock.get_active_owners()
         active_owner_sids = {
@@ -212,7 +212,7 @@ async def get_session_startup_progress(session_id: str):
 @router.post("/api/cleanup")
 async def cleanup_history_endpoint():
     try:
-        from artemis.data_engine.storage import StorageManager
+        from apollo.data_engine.storage import StorageManager
 
         storage = StorageManager(DB_PATH, TRACES_PATH)
         storage.clear_all_data()
@@ -227,7 +227,7 @@ async def cleanup_history_endpoint():
 @router.post("/api/sessions/{session_id}/delete")
 async def delete_session_endpoint(session_id: str):
     try:
-        from artemis.data_engine.storage import StorageManager
+        from apollo.data_engine.storage import StorageManager
 
         storage = StorageManager(DB_PATH, TRACES_PATH)
         storage.delete_session(UUID(session_id))

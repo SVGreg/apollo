@@ -19,17 +19,17 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 from langchain_core.messages import AIMessage
 
-from artemis.agents.video_analyzer.video_analyzer import (
+from apollo.agents.video_analyzer.video_analyzer import (
     UNIVERSAL_MAIN_TOOLS,
     UNIVERSAL_SUBMIT_ANSWER_TOOL,
     VideoAnalyzer,
 )
-from artemis.context import ArtemisContext
+from apollo.context import ApolloContext
 
 
 @pytest.fixture
 def mock_context(tmp_path):
-    ctx = Mock(spec=ArtemisContext)
+    ctx = Mock(spec=ApolloContext)
     ctx.llm_config = Mock()
     mock_llm_cfg = Mock()
     mock_llm_cfg.model = "claude-3-7-sonnet"
@@ -48,7 +48,7 @@ def mock_context(tmp_path):
 
 def test_video_analyzer_universal_engine_detection(mock_context):
     """Test that VideoAnalyzer routes to Universal Engine when non-Gemini model is set."""
-    from artemis.config import settings
+    from apollo.config import settings
 
     with patch.object(settings, "GOOGLE_API_KEY", None):
         agent = VideoAnalyzer(mock_context)
@@ -113,11 +113,11 @@ async def test_exec_single_chunk_universal(mock_context, tmp_path):
 
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.extract_keyframes_from_video",
+            "apollo.agents.video_analyzer.video_analyzer.extract_keyframes_from_video",
             return_value=fake_keyframes,
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.get_llm",
+            "apollo.agents.video_analyzer.video_analyzer.get_llm",
             return_value=mock_llm,
         ),
     ):
@@ -166,7 +166,7 @@ async def test_exec_analyze_audio_universal(mock_context, tmp_path):
     mock_llm.bind_tools.return_value = mock_bound
 
     with patch(
-        "artemis.agents.video_analyzer.video_analyzer.get_llm",
+        "apollo.agents.video_analyzer.video_analyzer.get_llm",
         return_value=mock_llm,
     ):
         result = await agent._exec_analyze_audio_universal(
@@ -216,7 +216,7 @@ async def test_run_universal_multi_turn_reasoning(mock_context):
 
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.get_llm",
+            "apollo.agents.video_analyzer.video_analyzer.get_llm",
             return_value=mock_llm,
         ),
         patch.object(
@@ -275,20 +275,20 @@ async def _run_chunk_with_response(agent, tmp_path, response):
     persist = AsyncMock()
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.extract_keyframes_from_video",
+            "apollo.agents.video_analyzer.video_analyzer.extract_keyframes_from_video",
             return_value=[(0.0, b"frame0")],
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.extract_frames_at_timestamps",
+            "apollo.agents.video_analyzer.video_analyzer.extract_frames_at_timestamps",
             return_value=[],
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.extract_audio_from_video",
+            "apollo.agents.video_analyzer.video_analyzer.extract_audio_from_video",
             new_callable=AsyncMock,
             side_effect=RuntimeError("no audio track"),
         ),
         patch(
-            "artemis.agents.video_analyzer.universal_engine._persist_universal_events",
+            "apollo.agents.video_analyzer.universal_engine._persist_universal_events",
             persist,
         ),
         patch.object(
@@ -319,7 +319,7 @@ async def test_exec_single_chunk_universal_raises_without_usable_answer(
     mock_context, tmp_path, response
 ):
     """No tool call + no text, or blank-summary tool call + no text -> raise, no persistence."""
-    from artemis.agents.video_analyzer.reliability import SubAgentAnswerExhausted
+    from apollo.agents.video_analyzer.reliability import SubAgentAnswerExhausted
 
     agent = _universal_agent(mock_context)
     outcome, persist = await _run_chunk_with_response(agent, tmp_path, response)
@@ -409,7 +409,7 @@ async def test_exec_analyze_audio_universal_raises_without_usable_answer(
     mock_context, tmp_path, response
 ):
     """Audio path: no usable answer -> raise before anything reaches the blackboard."""
-    from artemis.agents.video_analyzer.reliability import SubAgentAnswerExhausted
+    from apollo.agents.video_analyzer.reliability import SubAgentAnswerExhausted
 
     agent = _universal_agent(mock_context)
     outcome, record = await _run_audio_with_response(agent, tmp_path, response)
@@ -435,7 +435,7 @@ async def test_exec_analyze_audio_universal_text_only_is_degraded_answer(mock_co
 
 def test_sub_agent_answer_exhausted_classifies_as_unknown():
     """The raise must land in the retryable / split / fallback bucket of the callers."""
-    from artemis.agents.video_analyzer.reliability import (
+    from apollo.agents.video_analyzer.reliability import (
         SubAgentAnswerExhausted,
         VideoFailureCategory,
         classify_video_failure,

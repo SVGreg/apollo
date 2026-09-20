@@ -16,8 +16,8 @@
 
 import io
 from PIL import Image
-from artemis.utils.coordinates import normalize_step_actions
-from artemis.utils.visualization import draw_action_overlay_on_image
+from apollo.utils.coordinates import normalize_step_actions
+from apollo.utils.visualization import draw_action_overlay_on_image
 
 
 def test_normalize_step_actions_click_sequence_does_not_inherit_single_action():

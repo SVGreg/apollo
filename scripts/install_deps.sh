@@ -35,7 +35,7 @@ for arg in "$@"; do
 done
 
 echo -e "${BOLD}${CYAN}======================================================${NC}"
-echo -e "${BOLD}${CYAN}   🚀 Artemis - Smart Multi-Platform Installer        ${NC}"
+echo -e "${BOLD}${CYAN}   🚀 Apollo - Smart Multi-Platform Installer        ${NC}"
 echo -e "${BOLD}${CYAN}======================================================${NC}"
 echo ""
 
@@ -321,7 +321,7 @@ ensure_uv() {
     for rc in "${HOME}/.bashrc" "${HOME}/.zshrc" "${HOME}/.profile"; do
         if [ -f "${rc}" ]; then
             if ! grep -qs 'HOME/\.local/bin' "${rc}"; then
-                echo -e "\n# Added by Artemis installer\n${export_line}" >> "${rc}"
+                echo -e "\n# Added by Apollo installer\n${export_line}" >> "${rc}"
             fi
         fi
     done
@@ -519,15 +519,15 @@ setup_showcase_ui
 verify_readiness
 
 echo -e "\n${BOLD}${CYAN}======================================================${NC}"
-echo -e "${BOLD}${GREEN}   ✨ Artemis Environment Ready!                      ${NC}"
+echo -e "${BOLD}${GREEN}   ✨ Apollo Environment Ready!                      ${NC}"
 echo -e "${BOLD}${CYAN}======================================================${NC}"
 
 if [ "${AUTO_LAUNCH}" = true ]; then
     echo -e "\n${GREEN}🚀 Auto-launching Showcase UI...${NC}"
-    exec uv run artemis ui --open
+    exec uv run apollo ui --open
 else
     echo -e "To launch the unified UI & live device onboarding:"
     echo -e "  👉 ${BOLD}${CYAN}./start.sh${NC}   (Recommended - automatically sets up environment)"
-    echo -e "  👉 ${BOLD}source ~/.bashrc && uv run artemis ui${NC} (or open a new terminal tab)"
+    echo -e "  👉 ${BOLD}source ~/.bashrc && uv run apollo ui${NC} (or open a new terminal tab)"
     echo ""
 fi

@@ -16,16 +16,16 @@
 
 from importlib.metadata import version
 
-import artemis
-from artemis import resources
+import apollo
+from apollo import resources
 
 
 def test_public_version_comes_from_distribution_metadata():
-    assert artemis.__version__ == version("artemis")
+    assert apollo.__version__ == version("apollo")
 
 
 def test_source_tree_contains_complete_release_resources():
-    config_path = resources.get_bundled_config_path("artemis.jsonc")
+    config_path = resources.get_bundled_config_path("apollo.jsonc")
     showcase_path = resources.get_bundled_showcase_dist()
 
     assert config_path is not None and config_path.is_file()
@@ -38,12 +38,12 @@ def test_bundled_resource_accessors_require_complete_assets(tmp_path, monkeypatc
     showcase_dir = resource_root / "showcase_ui"
     config_dir.mkdir(parents=True)
     showcase_dir.mkdir()
-    (config_dir / "artemis.jsonc").write_text("{}", encoding="utf-8")
+    (config_dir / "apollo.jsonc").write_text("{}", encoding="utf-8")
     (showcase_dir / "index.html").write_text("<html></html>", encoding="utf-8")
 
     monkeypatch.setattr(resources, "files", lambda _package: resource_root)
 
-    assert resources.get_bundled_config_path("artemis.jsonc") == (config_dir / "artemis.jsonc")
+    assert resources.get_bundled_config_path("apollo.jsonc") == (config_dir / "apollo.jsonc")
     assert resources.get_bundled_config_path("missing.jsonc") is None
     assert resources.get_bundled_showcase_dist() == showcase_dir
 

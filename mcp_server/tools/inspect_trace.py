@@ -22,10 +22,10 @@ from typing import Any
 
 from mcp_server.base import mcp
 from mcp_server.utils import env_utils
-from artemis.data_engine.history_reader import OfflineHistoryReader
-from artemis.runtime import trace_store
-from artemis.tools.history import load_step_screenshot, replay_steps_text, search_history_text
-from artemis.utils.task_tree import build_plan_and_history
+from apollo.data_engine.history_reader import OfflineHistoryReader
+from apollo.runtime import trace_store
+from apollo.tools.history import load_step_screenshot, replay_steps_text, search_history_text
+from apollo.utils.task_tree import build_plan_and_history
 
 
 def _write_overlay(annotated_bytes: bytes, output_path: str) -> bool:
@@ -42,7 +42,7 @@ def _write_overlay(annotated_bytes: bytes, output_path: str) -> bool:
 
 def _recall_config() -> Any:
     try:
-        from artemis.config import load_agent_config
+        from apollo.config import load_agent_config
 
         return load_agent_config().memory.recall
     except Exception:
@@ -212,7 +212,7 @@ async def mobile_inspect_trace(
 
         if is_flash:
             summary_lines = [
-                "# ARTEMIS Flash Execution Summary",
+                "# APOLLO Flash Execution Summary",
                 f"**Session ID:** `{trace_id}` | **Model:** Flash{device_info_str}\n",
                 "---",
                 "## Step-by-Step Execution Chain\n",
@@ -272,7 +272,7 @@ async def mobile_inspect_trace(
         except Exception as e:
             return {
                 "error": "Formatting error",
-                "message": f"Failed to format plan and history using Artemis task tree: {e}",
+                "message": f"Failed to format plan and history using Apollo task tree: {e}",
             }
 
     # 2. Actions served by the offline history reader (same records as the live engine)

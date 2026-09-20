@@ -15,8 +15,8 @@
 import json
 from unittest.mock import MagicMock
 
-from artemis.context import ArtemisContext
-from artemis.data_engine.trace import (
+from apollo.context import ApolloContext
+from apollo.data_engine.trace import (
     TraceSpan,
     smart_serialize,
 )
@@ -46,7 +46,7 @@ def test_smart_serialize():
 
 @pytest.mark.asyncio
 async def test_trace_span():
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = MagicMock()
 
     with TraceSpan(name="test_span", ctx=mock_ctx) as span:
@@ -66,7 +66,7 @@ async def test_trace_span():
 
 @pytest.mark.asyncio
 async def test_trace_span_failure():
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = MagicMock()
 
     try:
@@ -90,9 +90,9 @@ async def test_trace_span_failure():
 def test_data_engine_callback_handler():
     from uuid import uuid4
     from langchain_core.messages import HumanMessage, AIMessage
-    from artemis.data_engine.trace import DataEngineCallbackHandler
+    from apollo.data_engine.trace import DataEngineCallbackHandler
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = MagicMock()
 
     mock_step_id = uuid4()
@@ -147,9 +147,9 @@ def test_data_engine_callback_handler():
 def test_callback_handler_chain_parenting():
     from uuid import uuid4
     from langchain_core.messages import HumanMessage
-    from artemis.data_engine.trace import DataEngineCallbackHandler, CURRENT_TRACE_ID
+    from apollo.data_engine.trace import DataEngineCallbackHandler, CURRENT_TRACE_ID
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = MagicMock()
 
     handler = DataEngineCallbackHandler(mock_ctx)

@@ -15,9 +15,9 @@
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from artemis.context import ArtemisContext
-from artemis.tools.base import ArtemisTool
-from artemis.tools.scratchpad import (
+from apollo.context import ApolloContext
+from apollo.tools.base import ApolloTool
+from apollo.tools.scratchpad import (
     SaveNoteArgs,
     SaveNotePure,
     SaveNotePureTool,
@@ -29,17 +29,17 @@ import pytest
 
 @pytest.fixture
 def mock_ctx(tmp_path):
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.data_engine = MagicMock()
     ctx.data_engine.base_dir = str(tmp_path)
     return ctx
 
 
 def test_save_note_pure_tool_subclass():
-    """Verify SaveNotePureTool is a subclass of ArtemisTool."""
-    assert issubclass(SaveNotePureTool, ArtemisTool)
-    assert issubclass(SaveNotePure, ArtemisTool)
-    assert isinstance(save_note_pure, ArtemisTool)
+    """Verify SaveNotePureTool is a subclass of ApolloTool."""
+    assert issubclass(SaveNotePureTool, ApolloTool)
+    assert issubclass(SaveNotePure, ApolloTool)
+    assert isinstance(save_note_pure, ApolloTool)
     assert isinstance(save_note_pure, SaveNotePureTool)
 
     assert save_note_pure.name == "save_note_pure"
@@ -87,7 +87,7 @@ async def test_save_note_pure_callable_execution(mock_ctx, tmp_path):
 async def test_save_note_pure_execution_failure(mock_ctx):
     """Verify error handling when save_note_content fails."""
     with patch(
-        "artemis.tools.scratchpad.save_note_content",
+        "apollo.tools.scratchpad.save_note_content",
         side_effect=PermissionError("Permission denied"),
     ):
         result = await save_note_pure.execute(

@@ -35,7 +35,7 @@ class DesktopNotifier(BaseNotifier):
 
     def is_available(self) -> bool:
         try:
-            val = os.getenv("ARTEMIS_DESKTOP_NOTIFY", "").lower()
+            val = os.getenv("APOLLO_DESKTOP_NOTIFY", "").lower()
             if val in ("0", "false", "no", "off"):
                 return False
             if os.getenv("CI", "").lower() in ("1", "true", "yes") and val not in (
@@ -63,7 +63,7 @@ class DesktopNotifier(BaseNotifier):
         if not self.is_available():
             return False
 
-        header = title or f"☕ Artemis Task {event_type.capitalize()}"
+        header = title or f"☕ Apollo Task {event_type.capitalize()}"
         clean_body = message.split("\n\n")[0][:120]
 
         try:
@@ -94,7 +94,7 @@ class DesktopNotifier(BaseNotifier):
                     f'$textNodes.Item(0).AppendChild($template.CreateTextNode("{header}")) > $null; '
                     f'$textNodes.Item(1).AppendChild($template.CreateTextNode("{clean_body}")) > $null; '
                     f"$toast = [Windows.UI.Notifications.ToastNotification]::new($template); "
-                    f'[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("Artemis").Show($toast);'
+                    f'[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("Apollo").Show($toast);'
                 )
                 subprocess.run(
                     ["powershell", "-NoProfile", "-Command", ps_cmd],

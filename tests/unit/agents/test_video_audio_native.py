@@ -17,23 +17,23 @@
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
-from artemis.agents.video_analyzer.audio_native import (
+from apollo.agents.video_analyzer.audio_native import (
     _BAD_CONFIDENCE_ERROR,
     _AudioMedia,
     _drive_audio_agent_loop,
     _run_native_audio_conversation,
 )
-from artemis.agents.video_analyzer.chunk_conversation import (
+from apollo.agents.video_analyzer.chunk_conversation import (
     _MISSING_SUMMARY_ERROR,
     _NO_TOOL_CALL_ERROR,
     SUB_AGENT_MAX_TURNS,
 )
-from artemis.agents.video_analyzer.reliability import (
+from apollo.agents.video_analyzer.reliability import (
     SubAgentAnswerExhausted,
     VideoFailureCategory,
     classify_video_failure,
 )
-from artemis.agents.video_analyzer.universal_tools import build_submit_answer_declaration
+from apollo.agents.video_analyzer.universal_tools import build_submit_answer_declaration
 from google.genai import types
 import pytest
 

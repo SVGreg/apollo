@@ -17,8 +17,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from artemis.agents.video_analyzer import chunk_conversation
-from artemis.agents.video_analyzer.chunk_conversation import (
+from apollo.agents.video_analyzer import chunk_conversation
+from apollo.agents.video_analyzer.chunk_conversation import (
     _MISSING_SUMMARY_ERROR,
     _NO_TOOL_CALL_ERROR,
     SubAgentAnswerExhausted,
@@ -26,8 +26,8 @@ from artemis.agents.video_analyzer.chunk_conversation import (
     _drive_sub_agent_loop,
     _run_native_chunk_conversation,
 )
-from artemis.agents.video_analyzer.video_analyzer import VideoAnalyzer
-from artemis.context import ArtemisContext
+from apollo.agents.video_analyzer.video_analyzer import VideoAnalyzer
+from apollo.context import ApolloContext
 from google.genai import types
 import pytest
 
@@ -35,7 +35,7 @@ import pytest
 @pytest.mark.asyncio
 async def test_video_analyzer_run():
     # Mock context
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = None
     mock_ctx.llm_config = MagicMock()
     mock_ctx.llm_config.utils.video_analyzer = MagicMock()
@@ -60,7 +60,7 @@ async def test_video_analyzer_run():
 
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.genai.Client",
+            "apollo.agents.video_analyzer.video_analyzer.genai.Client",
             return_value=mock_client,
         ),
         patch(
@@ -70,7 +70,7 @@ async def test_video_analyzer_run():
         ),
         patch("pathlib.Path.read_text", return_value=mock_prompt),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.cleanup_abandoned_gemini_files",
+            "apollo.agents.video_analyzer.video_analyzer.cleanup_abandoned_gemini_files",
             AsyncMock(),
         ),
     ):
@@ -87,7 +87,7 @@ async def test_video_analyzer_run():
 @pytest.mark.asyncio
 async def test_video_analyzer_preserves_thought_signature():
     # Mock context
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = None
     mock_ctx.llm_config = MagicMock()
     mock_ctx.llm_config.utils.video_analyzer = MagicMock()
@@ -215,11 +215,11 @@ async def test_video_analyzer_preserves_thought_signature():
 
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.genai.Client",
+            "apollo.agents.video_analyzer.video_analyzer.genai.Client",
             return_value=mock_client,
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.get_controller",
+            "apollo.agents.video_analyzer.video_analyzer.get_controller",
             return_value=mock_controller,
         ),
         patch(
@@ -233,11 +233,11 @@ async def test_video_analyzer_preserves_thought_signature():
         ),
         patch("pathlib.Path.read_text", return_value=mock_prompt),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.cleanup_abandoned_gemini_files",
+            "apollo.agents.video_analyzer.video_analyzer.cleanup_abandoned_gemini_files",
             AsyncMock(),
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.compress_video_for_api",
+            "apollo.agents.video_analyzer.video_analyzer.compress_video_for_api",
             AsyncMock(return_value=Path("/tmp/video.mp4")),
         ),
     ):
@@ -264,7 +264,7 @@ async def test_video_analyzer_preserves_thought_signature():
 @pytest.mark.asyncio
 async def test_video_analyzer_sub_agent_confidence_validation():
     # Mock context
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = None
     mock_ctx.llm_config = MagicMock()
     mock_ctx.llm_config.utils.video_analyzer = MagicMock()
@@ -417,11 +417,11 @@ async def test_video_analyzer_sub_agent_confidence_validation():
 
     with (
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.genai.Client",
+            "apollo.agents.video_analyzer.video_analyzer.genai.Client",
             return_value=mock_client,
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.get_controller",
+            "apollo.agents.video_analyzer.video_analyzer.get_controller",
             return_value=mock_controller,
         ),
         patch(
@@ -438,11 +438,11 @@ async def test_video_analyzer_sub_agent_confidence_validation():
         patch("pathlib.Path.touch"),
         patch("pathlib.Path.is_dir", return_value=True),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.cleanup_abandoned_gemini_files",
+            "apollo.agents.video_analyzer.video_analyzer.cleanup_abandoned_gemini_files",
             AsyncMock(),
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.compress_video_for_api",
+            "apollo.agents.video_analyzer.video_analyzer.compress_video_for_api",
             AsyncMock(return_value=Path("/tmp/video.mp4")),
         ),
         patch(

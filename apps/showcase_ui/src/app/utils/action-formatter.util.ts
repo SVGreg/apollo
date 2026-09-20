@@ -540,7 +540,7 @@ export function extractActionExtraParams(action: any, cache?: WeakMap<any, Actio
     if (v === null || v === undefined || v === '') continue;
 
     let valStr = String(v);
-    if (valStr.includes('object at 0x') || valStr.startsWith('<artemis.') || valStr.includes('<controller')) continue;
+    if (valStr.includes('object at 0x') || valStr.startsWith('<apollo.') || valStr.includes('<controller')) continue;
 
     if (typeof v === 'object') {
       try { valStr = JSON.stringify(v); } catch { valStr = String(v); }

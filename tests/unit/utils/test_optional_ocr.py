@@ -17,18 +17,18 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
-from artemis.agents.explorer.explorer import Explorer
-from artemis.config.settings import Settings
-from artemis.graph.perception import perception_node
-from artemis.graph.state import State
-from artemis.tools.index import get_tools_from_wrappers
-from artemis.tools.mobile.ocr import (
+from apollo.agents.explorer.explorer import Explorer
+from apollo.config.settings import Settings
+from apollo.graph.perception import perception_node
+from apollo.graph.state import State
+from apollo.tools.index import get_tools_from_wrappers
+from apollo.tools.mobile.ocr import (
     ocr_recognition,
     ocr_recognition_wrapper,
 )
-from artemis.utils.ocr_api import is_ocr_configured, perform_ocr
-from artemis.utils.ocr_xml_fusion import fuse_ocr_with_xml
-from artemis.utils.visualization import format_minimal_list_with_elements
+from apollo.utils.ocr_api import is_ocr_configured, perform_ocr
+from apollo.utils.ocr_xml_fusion import fuse_ocr_with_xml
+from apollo.utils.visualization import format_minimal_list_with_elements
 
 
 @pytest.mark.asyncio
@@ -62,7 +62,7 @@ async def test_perform_ocr_executes_api_call_when_configured():
 
     with (
         patch.object(Settings, "get_api_key", return_value=mock_key),
-        patch("artemis.utils.ocr_api.get_http_client") as mock_client,
+        patch("apollo.utils.ocr_api.get_http_client") as mock_client,
     ):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -122,7 +122,7 @@ def test_fuse_ocr_with_xml_empty_ocr_retains_xml_pruning():
 
 def test_ocr_tool_not_exposed_when_unconfigured():
     """Verify ocr_recognition tool is hidden and not exposed when OCR is unconfigured."""
-    with patch("artemis.tools.mobile.ocr.is_ocr_configured", return_value=False):
+    with patch("apollo.tools.mobile.ocr.is_ocr_configured", return_value=False):
         assert not ocr_recognition.is_available()
 
         # get_tools_from_wrappers excludes ocr_recognition_wrapper
@@ -133,7 +133,7 @@ def test_ocr_tool_not_exposed_when_unconfigured():
 
 def test_explorer_does_not_expose_get_ocr_list_when_unconfigured():
     """Verify Explorer does not expose get_ocr_list tool declaration when OCR is unconfigured."""
-    with patch("artemis.agents.explorer.explorer.is_ocr_configured", return_value=False):
+    with patch("apollo.agents.explorer.explorer.is_ocr_configured", return_value=False):
         mock_ctx = MagicMock()
         mock_ctx.agent_config = None
         explorer = Explorer(mock_ctx)
@@ -148,8 +148,8 @@ def test_explorer_does_not_expose_get_ocr_list_when_unconfigured():
 async def test_perception_node_runs_smoothly_without_ocr():
     """Verify perception_node runs from start to finish with pure XML when OCR is unconfigured."""
     with (
-        patch("artemis.graph.perception.is_ocr_configured", return_value=False),
-        patch("artemis.graph.perception.UnifiedMobileController") as mock_controller_cls,
+        patch("apollo.graph.perception.is_ocr_configured", return_value=False),
+        patch("apollo.graph.perception.UnifiedMobileController") as mock_controller_cls,
     ):
         mock_controller = MagicMock()
         mock_device_data = MagicMock()

@@ -20,13 +20,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from artemis.agents.explorer.explorer import Explorer
-from artemis.agents.explorer.screen_index import ScreenElement, ScreenIndex
-from artemis.context import ArtemisContext
-from artemis.graph.state import State
+from apollo.agents.explorer.explorer import Explorer
+from apollo.agents.explorer.screen_index import ScreenElement, ScreenIndex
+from apollo.context import ApolloContext
+from apollo.graph.state import State
 
-RUN_SETUP = "artemis.agents.explorer.run_setup"
-PERCEPTION_TOOLS = "artemis.agents.explorer.perception_tools"
+RUN_SETUP = "apollo.agents.explorer.run_setup"
+PERCEPTION_TOOLS = "apollo.agents.explorer.perception_tools"
 W, H = 1080, 2400
 
 #: One "Settings" button, two "Send" buttons and two OCR-only texts.
@@ -56,7 +56,7 @@ SETTINGS_BOUNDS = [462, 166, 555, 233]
 
 
 def _context() -> MagicMock:
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.device = MagicMock()
     ctx.device.device_width = W
     ctx.device.device_height = H

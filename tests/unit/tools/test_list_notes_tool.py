@@ -14,10 +14,10 @@
 
 from unittest.mock import MagicMock, patch
 
-from artemis.context import ArtemisContext
-from artemis.graph.state import State
-from artemis.tools.base import ArtemisTool
-from artemis.tools.scratchpad import (
+from apollo.context import ApolloContext
+from apollo.graph.state import State
+from apollo.tools.base import ApolloTool
+from apollo.tools.scratchpad import (
     ListNotes,
     ListNotesArgs,
     ListNotesTool,
@@ -26,24 +26,24 @@ from artemis.tools.scratchpad import (
     list_notes,
     list_notes_wrapper,
 )
-from artemis.utils.notes import save_note_content
+from apollo.utils.notes import save_note_content
 from langchain_core.messages import ToolMessage
 import pytest
 
 
 @pytest.fixture
 def mock_ctx(tmp_path):
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.data_engine = MagicMock()
     ctx.data_engine.base_dir = str(tmp_path)
     return ctx
 
 
 def test_list_notes_tool_subclass():
-    """Verify ListNotesTool is a subclass of ArtemisTool."""
-    assert issubclass(ListNotesTool, ArtemisTool)
-    assert issubclass(ListNotes, ArtemisTool)
-    assert isinstance(list_notes, ArtemisTool)
+    """Verify ListNotesTool is a subclass of ApolloTool."""
+    assert issubclass(ListNotesTool, ApolloTool)
+    assert issubclass(ListNotes, ApolloTool)
+    assert isinstance(list_notes, ApolloTool)
     assert isinstance(list_notes, ListNotesTool)
 
     assert list_notes.name == "list_notes"
@@ -112,7 +112,7 @@ async def test_list_notes_with_state_tool_message(mock_ctx, tmp_path):
 async def test_list_notes_execution_failure(mock_ctx):
     """Verify error handling when list_notes fails."""
     with patch(
-        "artemis.tools.scratchpad.list_notes_info",
+        "apollo.tools.scratchpad.list_notes_info",
         side_effect=RuntimeError("Disk failure"),
     ):
         result = await list_notes.execute(ctx=mock_ctx)

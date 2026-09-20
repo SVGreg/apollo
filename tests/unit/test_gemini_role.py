@@ -26,7 +26,7 @@ pytestmark = pytest.mark.skip(
 def client():
     """Initializes the Gemini client. Requires GEMINI_API_KEY in environment."""
     import os
-    from artemis.config.settings import is_placeholder_key
+    from apollo.config.settings import is_placeholder_key
 
     key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not key or is_placeholder_key(key):

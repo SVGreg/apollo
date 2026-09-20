@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from artemis.utils.notes import (
+from apollo.utils.notes import (
     append_note_content,
     list_notes_info,
     read_note_content,

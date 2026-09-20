@@ -21,7 +21,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
-from artemis.agents.checker.checker import CheckReport, _structured_report
+from apollo.agents.checker.checker import CheckReport, _structured_report
 
 
 def _llm(report: CheckReport):

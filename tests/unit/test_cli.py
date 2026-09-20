@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for ARTEMIS Unified CLI application."""
+"""Unit tests for APOLLO Unified CLI application."""
 
 from typer.testing import CliRunner
-from artemis.interfaces.cli.main import app
+from apollo.interfaces.cli.main import app
 
 runner = CliRunner()
 
@@ -24,7 +24,7 @@ def test_cli_help():
     """Verify top-level CLI help returns status 0 and lists core subcommands."""
     result = runner.invoke(app, ["--help"])
     assert result.exit_code == 0
-    assert "Artemis: Autonomous Multimodal Android Agent" in result.output
+    assert "Apollo: Autonomous Multimodal Android Agent" in result.output
     assert "run" in result.output
     assert "batch" in result.output
     assert "server" in result.output
@@ -36,11 +36,11 @@ def test_cli_version():
     """Verify --version returns version banner."""
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert "Artemis Agent Platform" in result.output
+    assert "Apollo Agent Platform" in result.output
 
 
 def test_cli_run_help():
-    """Verify 'artemis run --help' displays execution options."""
+    """Verify 'apollo run --help' displays execution options."""
     result = runner.invoke(app, ["run", "--help"])
     assert result.exit_code == 0
     assert "--profile" in result.output
@@ -51,7 +51,7 @@ def test_cli_run_help():
 
 
 def test_cli_batch_help():
-    """Verify 'artemis batch --help' displays batch options."""
+    """Verify 'apollo batch --help' displays batch options."""
     result = runner.invoke(app, ["batch", "--help"])
     assert result.exit_code == 0
     assert "--file" in result.output
@@ -61,8 +61,8 @@ def test_cli_batch_help():
 
 
 def test_cli_batch_forwards_pro_tuning_in_standalone_mode(monkeypatch):
-    """`artemis batch --standalone` threads both knobs into run_batch_tasks."""
-    import artemis.interfaces.cli.commands.batch as batch_module
+    """`apollo batch --standalone` threads both knobs into run_batch_tasks."""
+    import apollo.interfaces.cli.commands.batch as batch_module
 
     captured: dict = {}
 
@@ -94,9 +94,9 @@ def test_cli_batch_forwards_pro_tuning_in_standalone_mode(monkeypatch):
 
 def test_cli_batch_forwards_pro_tuning_to_daemon(monkeypatch):
     """Daemon-routed batches carry the knobs as /api/run JSON fields."""
-    import artemis.runtime as runtime
+    import apollo.runtime as runtime
 
-    monkeypatch.delenv("ARTEMIS_STANDALONE", raising=False)
+    monkeypatch.delenv("APOLLO_STANDALONE", raising=False)
     captured: dict = {}
 
     def fake_submit_batch(goals, **kwargs):
@@ -122,7 +122,7 @@ def test_run_batch_tasks_applies_pro_tuning_to_agent_config(monkeypatch):
     """The standalone batch runner applies the knobs on the AgentConfig builder."""
     from unittest.mock import AsyncMock, MagicMock
 
-    import artemis.interfaces.cli.commands.batch as batch_module
+    import apollo.interfaces.cli.commands.batch as batch_module
 
     fake_builder = MagicMock()
     fake_builders = MagicMock()
@@ -154,7 +154,7 @@ def test_run_batch_tasks_applies_pro_tuning_to_agent_config(monkeypatch):
 
 
 def test_cli_trace_help():
-    """Verify 'artemis trace --help' lists trace subcommands."""
+    """Verify 'apollo trace --help' lists trace subcommands."""
     result = runner.invoke(app, ["trace", "--help"])
     assert result.exit_code == 0
     assert "list" in result.output
@@ -162,7 +162,7 @@ def test_cli_trace_help():
 
 
 def test_cli_mcp_help():
-    """Verify 'artemis mcp --help' lists server options."""
+    """Verify 'apollo mcp --help' lists server options."""
     result = runner.invoke(app, ["mcp", "--help"])
     assert result.exit_code == 0
     assert "--type" in result.output
@@ -170,7 +170,7 @@ def test_cli_mcp_help():
 
 
 def test_cli_mcp_generate_config():
-    """Verify 'artemis mcp --generate-config cursor' produces valid configuration."""
+    """Verify 'apollo mcp --generate-config cursor' produces valid configuration."""
     result = runner.invoke(app, ["mcp", "--generate-config", "cursor"])
     assert result.exit_code == 0
     assert "mcpServers" in result.output
@@ -179,18 +179,18 @@ def test_cli_mcp_generate_config():
 
 def test_cli_mcp_generate_config_antigravity():
     """Verify current Antigravity uses only documented, load-safe fields."""
-    from artemis.interfaces.cli.commands.mcp import _get_config_snippet
+    from apollo.interfaces.cli.commands.mcp import _get_config_snippet
 
     result = runner.invoke(app, ["mcp", "--generate-config", "antigravity"])
     assert result.exit_code == 0
     assert "mcpServers" in result.output
     server_config = _get_config_snippet("antigravity", "python", "/project")["mcpServers"][
-        "artemis"
+        "apollo"
     ]
     assert server_config["disabledTools"] == []
     assert "tools" not in server_config
 
-    legacy_config = _get_config_snippet("jetski", "python", "/project")["mcpServers"]["artemis"]
+    legacy_config = _get_config_snippet("jetski", "python", "/project")["mcpServers"]["apollo"]
     assert set(legacy_config["tools"]) == {
         "mobile_run_task",
         "mobile_manage_task",
@@ -202,7 +202,7 @@ def test_cli_mcp_generate_config_antigravity():
 
 
 def test_cli_mcp_generate_config_all():
-    """Verify 'artemis mcp --generate-config all' includes every supported client."""
+    """Verify 'apollo mcp --generate-config all' includes every supported client."""
     result = runner.invoke(app, ["mcp", "--generate-config", "all"])
     assert result.exit_code == 0
     assert "antigravity" in result.output
@@ -216,20 +216,20 @@ def test_cli_mcp_generate_config_all():
 
 
 def test_cli_mcp_generate_config_codex():
-    """Verify Codex initializes the server and enables every Artemis tool."""
-    from artemis.interfaces.cli.commands.mcp import _get_config_snippet
+    """Verify Codex initializes the server and enables every Apollo tool."""
+    from apollo.interfaces.cli.commands.mcp import _get_config_snippet
 
     result = runner.invoke(app, ["mcp", "--generate-config", "codex"])
     assert result.exit_code == 0
-    assert "[mcp_servers.artemis]" in result.output
-    assert "[mcp_servers.artemis.env]" in result.output
+    assert "[mcp_servers.apollo]" in result.output
+    assert "[mcp_servers.apollo.env]" in result.output
     assert "enabled = true" in result.output
     assert "required = true" in result.output
     assert "startup_timeout_sec = 120" in result.output
     assert "enabled_tools" in result.output
     assert "mobile_run_task" in result.output
     assert "mobile_manage_task" in result.output
-    server_config = _get_config_snippet("codex", "python", "/project")["mcp_servers"]["artemis"]
+    server_config = _get_config_snippet("codex", "python", "/project")["mcp_servers"]["apollo"]
     assert server_config["enabled_tools"] == [
         "mobile_run_task",
         "mobile_manage_task",
@@ -240,43 +240,43 @@ def test_cli_mcp_generate_config_codex():
 
 
 def test_cli_mcp_install_antigravity(tmp_path, monkeypatch):
-    """Verify 'artemis mcp --install antigravity' writes configuration and global rules into target files."""
+    """Verify 'apollo mcp --install antigravity' writes configuration and global rules into target files."""
     monkeypatch.setattr("pathlib.Path.home", lambda: tmp_path)
     monkeypatch.setattr("mcp_server.utils.env_utils.get_project_root", lambda: str(tmp_path))
     result = runner.invoke(app, ["mcp", "--install", "antigravity"])
     assert result.exit_code == 0
-    assert "Successfully installed ARTEMIS MCP server configuration & rules" in result.output
+    assert "Successfully installed APOLLO MCP server configuration & rules" in result.output
     jetski_file = tmp_path / ".gemini" / "jetski" / "mcp_config.json"
     assert jetski_file.exists()
     import json
 
     data = json.loads(jetski_file.read_text())
-    assert "artemis" in data["mcpServers"]
-    assert "mobile_run_task" in data["mcpServers"]["artemis"]["tools"]
-    assert "PYTHONPATH" in data["mcpServers"]["artemis"]["env"]
+    assert "apollo" in data["mcpServers"]
+    assert "mobile_run_task" in data["mcpServers"]["apollo"]["tools"]
+    assert "PYTHONPATH" in data["mcpServers"]["apollo"]["env"]
 
     current_file = tmp_path / ".gemini" / "config" / "mcp_config.json"
     current_data = json.loads(current_file.read_text())
-    assert current_data["mcpServers"]["artemis"]["disabledTools"] == []
-    assert "tools" not in current_data["mcpServers"]["artemis"]
+    assert current_data["mcpServers"]["apollo"]["disabledTools"] == []
+    assert "tools" not in current_data["mcpServers"]["apollo"]
 
     # Verify global rule file installed
     gemini_md = tmp_path / ".gemini" / "GEMINI.md"
     assert gemini_md.exists()
     assert "Mobile Testing Mindset" in gemini_md.read_text(encoding="utf-8")
-    rule_file = tmp_path / ".gemini" / "rules" / "artemis.md"
+    rule_file = tmp_path / ".gemini" / "rules" / "apollo.md"
     assert rule_file.exists()
     assert "Mobile Testing Mindset" in rule_file.read_text(encoding="utf-8")
 
 
 def test_cli_mcp_install_all(tmp_path, monkeypatch):
-    """Verify 'artemis mcp --install all' installs configs and global rules to all supported IDE locations."""
+    """Verify 'apollo mcp --install all' installs configs and global rules to all supported IDE locations."""
     monkeypatch.setattr("pathlib.Path.home", lambda: tmp_path)
     monkeypatch.setenv("APPDATA", str(tmp_path / "AppData" / "Roaming"))
     monkeypatch.setattr("mcp_server.utils.env_utils.get_project_root", lambda: str(tmp_path))
     result = runner.invoke(app, ["mcp", "--install", "all"])
     assert result.exit_code == 0
-    assert "Successfully installed ARTEMIS MCP server configuration & rules" in result.output
+    assert "Successfully installed APOLLO MCP server configuration & rules" in result.output
     assert (tmp_path / ".cursor" / "mcp.json").exists()
     assert (tmp_path / ".codeium" / "windsurf" / "mcp_config.json").exists()
     assert (tmp_path / ".openclaw" / "openclaw.json").exists()
@@ -286,52 +286,52 @@ def test_cli_mcp_install_all(tmp_path, monkeypatch):
     import json
 
     cursor_data = json.loads((tmp_path / ".cursor" / "mcp.json").read_text())
-    assert cursor_data["mcpServers"]["artemis"]["command"]
+    assert cursor_data["mcpServers"]["apollo"]["command"]
 
     windsurf_data = json.loads((tmp_path / ".codeium" / "windsurf" / "mcp_config.json").read_text())
-    assert windsurf_data["mcpServers"]["artemis"]["command"]
+    assert windsurf_data["mcpServers"]["apollo"]["command"]
 
     claude_data = json.loads((tmp_path / ".claude.json").read_text())
-    assert claude_data["mcpServers"]["artemis"]["type"] == "stdio"
+    assert claude_data["mcpServers"]["apollo"]["type"] == "stdio"
 
-    from artemis.interfaces.cli.commands.mcp import _get_vscode_user_dir
+    from apollo.interfaces.cli.commands.mcp import _get_vscode_user_dir
 
     vscode_data = json.loads((_get_vscode_user_dir() / "mcp.json").read_text())
-    assert vscode_data["servers"]["artemis"]["type"] == "stdio"
+    assert vscode_data["servers"]["apollo"]["type"] == "stdio"
     assert "mcpServers" not in vscode_data
 
     copilot_data = json.loads((tmp_path / ".copilot" / "mcp-config.json").read_text())
-    assert copilot_data["servers"]["artemis"]["type"] == "stdio"
+    assert copilot_data["servers"]["apollo"]["type"] == "stdio"
 
     openclaw_data = json.loads((tmp_path / ".openclaw" / "openclaw.json").read_text())
-    assert openclaw_data["mcp"]["servers"]["artemis"]["enabled"] is True
+    assert openclaw_data["mcp"]["servers"]["apollo"]["enabled"] is True
 
     cline_data = json.loads(
         (tmp_path / ".cline" / "data" / "settings" / "cline_mcp_settings.json").read_text()
     )
-    assert cline_data["mcpServers"]["artemis"]["disabled"] is False
+    assert cline_data["mcpServers"]["apollo"]["disabled"] is False
 
     roo_data = json.loads((tmp_path / ".roo" / "mcp.json").read_text())
-    assert roo_data["mcpServers"]["artemis"]["disabled"] is False
+    assert roo_data["mcpServers"]["apollo"]["disabled"] is False
 
     # Verify global rule files installed across IDEs
     assert (tmp_path / ".gemini" / "GEMINI.md").exists()
-    assert (tmp_path / ".gemini" / "rules" / "artemis.md").exists()
+    assert (tmp_path / ".gemini" / "rules" / "apollo.md").exists()
     assert (tmp_path / ".cursorrules").exists()
-    assert (tmp_path / ".cursor" / "rules" / "artemis.mdc").exists()
+    assert (tmp_path / ".cursor" / "rules" / "apollo.mdc").exists()
     # Claude Code loads both CLAUDE.md and rules/*.md, so rules are installed
     # only as the standalone rule file to avoid duplicated context.
     assert not (tmp_path / ".claude" / "CLAUDE.md").exists()
-    assert (tmp_path / ".claude" / "rules" / "artemis.md").exists()
+    assert (tmp_path / ".claude" / "rules" / "apollo.md").exists()
     assert (tmp_path / ".codeium" / "windsurf" / "memories" / "global_rules.md").exists()
-    assert (tmp_path / ".codeium" / "windsurf" / "rules" / "artemis.md").exists()
-    assert (tmp_path / ".vscode" / "rules" / "artemis.md").exists()
+    assert (tmp_path / ".codeium" / "windsurf" / "rules" / "apollo.md").exists()
+    assert (tmp_path / ".vscode" / "rules" / "apollo.md").exists()
     assert (tmp_path / ".clinerules").exists()
-    assert (tmp_path / ".cline" / "rules" / "artemis.md").exists()
+    assert (tmp_path / ".cline" / "rules" / "apollo.md").exists()
     assert (tmp_path / ".roorules").exists()
-    assert (tmp_path / ".roo" / "rules" / "artemis.md").exists()
+    assert (tmp_path / ".roo" / "rules" / "apollo.md").exists()
     assert (tmp_path / ".openclaw" / "OPENCLAW.md").exists()
-    assert (tmp_path / ".openclaw" / "rules" / "artemis.md").exists()
+    assert (tmp_path / ".openclaw" / "rules" / "apollo.md").exists()
     assert (tmp_path / ".codex" / "AGENTS.md").exists()
 
 
@@ -346,8 +346,8 @@ def test_cli_mcp_install_claude_migrates_legacy_claude_md(tmp_path, monkeypatch)
     claude_md = claude_dir / "CLAUDE.md"
     claude_md.write_text(
         "# My own instructions\n\n"
-        "<!-- BEGIN ARTEMIS MOBILE TESTING RULES -->\nold injected rules\n"
-        "<!-- END ARTEMIS MOBILE TESTING RULES -->\n",
+        "<!-- BEGIN APOLLO MOBILE TESTING RULES -->\nold injected rules\n"
+        "<!-- END APOLLO MOBILE TESTING RULES -->\n",
         encoding="utf-8",
     )
 
@@ -356,8 +356,8 @@ def test_cli_mcp_install_claude_migrates_legacy_claude_md(tmp_path, monkeypatch)
 
     remaining = claude_md.read_text(encoding="utf-8")
     assert "My own instructions" in remaining
-    assert "ARTEMIS MOBILE TESTING RULES" not in remaining
-    rule_file = claude_dir / "rules" / "artemis.md"
+    assert "APOLLO MOBILE TESTING RULES" not in remaining
+    rule_file = claude_dir / "rules" / "apollo.md"
     assert rule_file.exists()
     assert "Mobile Testing Mindset" in rule_file.read_text(encoding="utf-8")
 
@@ -372,15 +372,15 @@ def test_cli_mcp_install_claude_deletes_block_only_claude_md(tmp_path, monkeypat
     claude_dir.mkdir(parents=True)
     claude_md = claude_dir / "CLAUDE.md"
     claude_md.write_text(
-        "<!-- BEGIN ARTEMIS MOBILE TESTING RULES -->\nold injected rules\n"
-        "<!-- END ARTEMIS MOBILE TESTING RULES -->\n",
+        "<!-- BEGIN APOLLO MOBILE TESTING RULES -->\nold injected rules\n"
+        "<!-- END APOLLO MOBILE TESTING RULES -->\n",
         encoding="utf-8",
     )
 
     result = runner.invoke(app, ["mcp", "--install", "claude"])
     assert result.exit_code == 0
     assert not claude_md.exists()
-    assert (claude_dir / "rules" / "artemis.md").exists()
+    assert (claude_dir / "rules" / "apollo.md").exists()
 
 
 def test_cli_mcp_install_claude_refuses_unparseable_claude_json(tmp_path, monkeypatch):
@@ -399,7 +399,7 @@ def test_cli_mcp_install_claude_refuses_unparseable_claude_json(tmp_path, monkey
 
 
 def test_cli_mcp_install_codex_preserves_config_and_is_idempotent(tmp_path, monkeypatch):
-    """Verify Codex TOML merging preserves other servers and updates only Artemis."""
+    """Verify Codex TOML merging preserves other servers and updates only Apollo."""
     monkeypatch.setattr("pathlib.Path.home", lambda: tmp_path)
     monkeypatch.setattr("mcp_server.utils.env_utils.get_project_root", lambda: str(tmp_path))
     codex_dir = tmp_path / ".codex"
@@ -408,7 +408,7 @@ def test_cli_mcp_install_codex_preserves_config_and_is_idempotent(tmp_path, monk
     config_file.write_text(
         'model = "test-model"\n\n'
         '[mcp_servers.existing]\ncommand = "echo"\n\n'
-        '[mcp_servers.artemis]\ncommand = "old-command"\n',
+        '[mcp_servers.apollo]\ncommand = "old-command"\n',
         encoding="utf-8",
     )
 
@@ -423,24 +423,24 @@ def test_cli_mcp_install_codex_preserves_config_and_is_idempotent(tmp_path, monk
     data = tomllib.loads(config_text)
     assert data["model"] == "test-model"
     assert data["mcp_servers"]["existing"]["command"] == "echo"
-    assert data["mcp_servers"]["artemis"]["args"] == ["-m", "mcp_server"]
-    assert data["mcp_servers"]["artemis"]["enabled"] is True
-    assert data["mcp_servers"]["artemis"]["required"] is True
-    assert data["mcp_servers"]["artemis"]["startup_timeout_sec"] == 120
-    assert data["mcp_servers"]["artemis"]["enabled_tools"] == [
+    assert data["mcp_servers"]["apollo"]["args"] == ["-m", "mcp_server"]
+    assert data["mcp_servers"]["apollo"]["enabled"] is True
+    assert data["mcp_servers"]["apollo"]["required"] is True
+    assert data["mcp_servers"]["apollo"]["startup_timeout_sec"] == 120
+    assert data["mcp_servers"]["apollo"]["enabled_tools"] == [
         "mobile_run_task",
         "mobile_manage_task",
         "mobile_get_device_state",
         "mobile_inspect_trace",
         "mobile_diagnose",
     ]
-    assert data["mcp_servers"]["artemis"]["env"]["PYTHONPATH"] == str(tmp_path)
-    assert config_text.count("# BEGIN ARTEMIS MCP CONFIG") == 1
+    assert data["mcp_servers"]["apollo"]["env"]["PYTHONPATH"] == str(tmp_path)
+    assert config_text.count("# BEGIN APOLLO MCP CONFIG") == 1
 
     agents_file = codex_dir / "AGENTS.md"
     agents_text = agents_file.read_text(encoding="utf-8")
     assert "Mobile Testing Mindset" in agents_text
-    assert agents_text.count("<!-- BEGIN ARTEMIS MOBILE TESTING RULES -->") == 1
+    assert agents_text.count("<!-- BEGIN APOLLO MOBILE TESTING RULES -->") == 1
 
 
 def test_cli_mcp_install_jsonc_and_backup(tmp_path, monkeypatch):
@@ -463,7 +463,7 @@ def test_cli_mcp_install_jsonc_and_backup(tmp_path, monkeypatch):
 
     data = json.loads(mcp_json.read_text(encoding="utf-8"))
     assert "test" in data["mcpServers"]
-    assert "artemis" in data["mcpServers"]
+    assert "apollo" in data["mcpServers"]
 
     # 2. Corrupt / unparseable file triggers backup
     mcp_json.write_text("INVALID JSON DATA {{{{", encoding="utf-8")
@@ -509,7 +509,7 @@ def test_cli_mcp_install_openclaw_migrates_legacy_plugin_shape(tmp_path, monkeyp
     config_path = tmp_path / ".openclaw" / "openclaw.json"
     config_path.parent.mkdir(parents=True)
     config_path.write_text(
-        '{"plugins":{"artemis_mcp":{"enabled":true},"keep":{"enabled":true}}}',
+        '{"plugins":{"apollo_mcp":{"enabled":true},"keep":{"enabled":true}}}',
         encoding="utf-8",
     )
 
@@ -519,14 +519,14 @@ def test_cli_mcp_install_openclaw_migrates_legacy_plugin_shape(tmp_path, monkeyp
     import json
 
     data = json.loads(config_path.read_text(encoding="utf-8"))
-    assert "artemis_mcp" not in data["plugins"]
+    assert "apollo_mcp" not in data["plugins"]
     assert data["plugins"]["keep"]["enabled"] is True
-    assert data["mcp"]["servers"]["artemis"]["enabled"] is True
-    assert data["mcp"]["servers"]["artemis"]["command"]
+    assert data["mcp"]["servers"]["apollo"]["enabled"] is True
+    assert data["mcp"]["servers"]["apollo"]["command"]
 
 
 def test_cli_restart_help():
-    """Verify 'artemis restart --help' displays lifecycle options."""
+    """Verify 'apollo restart --help' displays lifecycle options."""
     result = runner.invoke(app, ["restart", "--help"])
     assert result.exit_code == 0
     assert "--port" in result.output
@@ -537,7 +537,7 @@ def test_cli_restart_help():
 
 
 def test_cli_stop_help():
-    """Verify 'artemis stop --help' displays stop options."""
+    """Verify 'apollo stop --help' displays stop options."""
     result = runner.invoke(app, ["stop", "--help"])
     assert result.exit_code == 0
     assert "--port" in result.output
@@ -545,15 +545,15 @@ def test_cli_stop_help():
 
 
 def test_cli_status_help():
-    """Verify 'artemis status --help' displays status options."""
+    """Verify 'apollo status --help' displays status options."""
     result = runner.invoke(app, ["status", "--help"])
     assert result.exit_code == 0
     assert "--port" in result.output
 
 
 def test_cli_status_offline(monkeypatch):
-    """Verify 'artemis status' reports offline when port is unused."""
-    from artemis.runtime import server_lifecycle
+    """Verify 'apollo status' reports offline when port is unused."""
+    from apollo.runtime import server_lifecycle
 
     monkeypatch.setattr(server_lifecycle, "is_port_in_use", lambda port, **kwargs: False)
     monkeypatch.setattr(server_lifecycle, "find_server_pids", lambda port: [])
@@ -565,8 +565,8 @@ def test_cli_status_offline(monkeypatch):
 
 
 def test_cli_status_online(monkeypatch):
-    """Verify 'artemis status' reports online details when server is active."""
-    from artemis.runtime import server_lifecycle
+    """Verify 'apollo status' reports online details when server is active."""
+    from apollo.runtime import server_lifecycle
 
     monkeypatch.setattr(server_lifecycle, "is_port_in_use", lambda port, **kwargs: True)
     monkeypatch.setattr(server_lifecycle, "find_server_pids", lambda port: [12345])
@@ -583,15 +583,15 @@ def test_cli_status_online(monkeypatch):
 
 
 def test_cli_stop_command(monkeypatch):
-    """Verify 'artemis stop' invokes stop_server with given parameters."""
-    from artemis.interfaces.cli.commands import server_lifecycle as sl_cmd
+    """Verify 'apollo stop' invokes stop_server with given parameters."""
+    from apollo.interfaces.cli.commands import server_lifecycle as sl_cmd
 
     mock_called = {}
 
     def mock_stop(port, timeout=4.0, force=False):
         mock_called["port"] = port
         mock_called["force"] = force
-        return True, "Artemis server stopped (PID: 12345).", [12345]
+        return True, "Apollo server stopped (PID: 12345).", [12345]
 
     monkeypatch.setattr(sl_cmd, "find_server_pids", lambda port: [12345])
     monkeypatch.setattr(sl_cmd, "stop_server", mock_stop)
@@ -604,11 +604,11 @@ def test_cli_stop_command(monkeypatch):
 
 
 def test_cli_restart_command(monkeypatch):
-    """Verify 'artemis restart' stops previous server and spawns a detached daemon by default."""
+    """Verify 'apollo restart' stops previous server and spawns a detached daemon by default."""
     from unittest.mock import MagicMock
 
-    from artemis.interfaces.cli.commands import server_lifecycle as sl_cmd
-    from artemis.runtime import server_lifecycle
+    from apollo.interfaces.cli.commands import server_lifecycle as sl_cmd
+    from apollo.runtime import server_lifecycle
 
     stopped = {}
     spawned = {}
@@ -639,9 +639,9 @@ def test_cli_restart_command(monkeypatch):
 
 
 def test_cli_restart_foreground_command(monkeypatch):
-    """Verify 'artemis restart --foreground' runs the server attached via ui_command."""
-    from artemis.interfaces.cli.commands import server_lifecycle as sl_cmd
-    from artemis.runtime import server_lifecycle
+    """Verify 'apollo restart --foreground' runs the server attached via ui_command."""
+    from apollo.interfaces.cli.commands import server_lifecycle as sl_cmd
+    from apollo.runtime import server_lifecycle
 
     stopped = {}
     ui_called = {}
@@ -667,8 +667,8 @@ def test_cli_restart_foreground_command(monkeypatch):
 
 
 def test_cli_server_lifecycle_aliases(monkeypatch):
-    """Verify 'artemis server status/stop/restart' subcommands are accessible."""
-    from artemis.runtime import server_lifecycle
+    """Verify 'apollo server status/stop/restart' subcommands are accessible."""
+    from apollo.runtime import server_lifecycle
 
     monkeypatch.setattr(server_lifecycle, "is_port_in_use", lambda port, **kwargs: False)
     monkeypatch.setattr(server_lifecycle, "find_server_pids", lambda port: [])
@@ -686,7 +686,7 @@ def test_cli_server_lifecycle_aliases(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# artemis doctor (readiness-engine backed)
+# apollo doctor (readiness-engine backed)
 # ---------------------------------------------------------------------------
 
 _RAW_SECRET = "sk-RAWSECRET0123456789abcdef"
@@ -702,7 +702,7 @@ def _probe(
     actions=(),
     metadata=None,
 ):
-    from artemis.core.diagnostics.schema import (
+    from apollo.core.diagnostics.schema import (
         ProbeAction,
         ProbeCategory,
         ProbeResult,
@@ -747,10 +747,10 @@ def _install_doctor_fakes(monkeypatch, probes, host=None, *, heal_result=None):
     from unittest.mock import AsyncMock
     import time
 
-    from artemis.core.diagnostics.engine import readiness_engine
-    from artemis.core.diagnostics.probes.host_probe import IntegrationHostProbe
-    from artemis.core.diagnostics.schema import ProbeStatus, SystemReadinessReport
-    import artemis.interfaces.cli.commands.doctor as doctor_module
+    from apollo.core.diagnostics.engine import readiness_engine
+    from apollo.core.diagnostics.probes.host_probe import IntegrationHostProbe
+    from apollo.core.diagnostics.schema import ProbeStatus, SystemReadinessReport
+    import apollo.interfaces.cli.commands.doctor as doctor_module
 
     monkeypatch.setenv("COLUMNS", "200")
     blockers = [p for p in probes if p.is_blocker]
@@ -791,7 +791,7 @@ def _install_doctor_fakes(monkeypatch, probes, host=None, *, heal_result=None):
             status="missing",
             status_markup="[bold yellow]○ Not Compiled[/bold yellow]",
             summary="Not Compiled",
-            detail="Run ./start.sh or artemis ui to auto-compile.",
+            detail="Run ./start.sh or apollo ui to auto-compile.",
         ),
     )
     return {"run_all": run_all, "heal": heal, "host": host_probe}
@@ -804,12 +804,12 @@ def test_cli_doctor_all_pass_renders_table_in_fix_order(monkeypatch):
     result = runner.invoke(app, ["doctor"])
     assert result.exit_code == 0, result.output
     out = result.output
-    assert "Artemis System & Environment Doctor" in out
+    assert "Apollo System & Environment Doctor" in out
     assert "Details & Recommendations" in out
     assert out.count("✔ OK") == 7
     assert "Node.js / npm" in out and "Showcase UI" in out
     assert "All system checks passed" in out
-    assert 'artemis run "Open Settings and check Battery level"' in out
+    assert 'apollo run "Open Settings and check Battery level"' in out
 
     order = [
         "Title python_runtime",
@@ -855,7 +855,7 @@ def test_cli_doctor_blocker_failure_shows_run_lines_and_splits_chains(monkeypatc
     assert "Enable USB debugging on the phone." in out
     assert "https://developer.android.com/tools/adb" in out
     assert "Action Required" in out
-    assert "artemis init" in out
+    assert "apollo init" in out
     assert "mobile_diagnose" in out
 
 
@@ -943,7 +943,7 @@ def test_cli_doctor_json_blocked_verdict_and_exit_code(monkeypatch):
             summary="Key Missing",
             description="No LLM credential found.",
             actions=[
-                ("command", "Run Artemis Init", "artemis init"),
+                ("command", "Run Apollo Init", "apollo init"),
                 ("link", "Get Key", "https://aistudio.google.com/app/apikey"),
             ],
         )
@@ -958,7 +958,7 @@ def test_cli_doctor_json_blocked_verdict_and_exit_code(monkeypatch):
     assert key_check["status"] == "fail"
     assert key_check["required"] is True
     assert key_check["fix"] == [
-        {"type": "command", "label": "Run Artemis Init", "payload": "artemis init"},
+        {"type": "command", "label": "Run Apollo Init", "payload": "apollo init"},
         {"type": "link", "label": "Get Key", "payload": "https://aistudio.google.com/app/apikey"},
     ]
 
@@ -972,14 +972,14 @@ def test_cli_doctor_host_warn_degrades_and_keeps_the_fix(monkeypatch):
         blocker=False,
         summary="Host Warning",
         description="MCP server runs on the wrong interpreter.",
-        actions=[("command", "Regenerate", "uv run artemis mcp --install cursor")],
+        actions=[("command", "Regenerate", "uv run apollo mcp --install cursor")],
     )
     _install_doctor_fakes(monkeypatch, _all_pass_probes(), host=host)
 
     result = runner.invoke(app, ["doctor"])
     assert result.exit_code == 0, result.output
     assert "⚠ Host Warning" in result.output
-    assert "Run: uv run artemis mcp --install cursor" in result.output
+    assert "Run: uv run apollo mcp --install cursor" in result.output
 
 
 def test_cli_doctor_host_fail_blocks_and_uses_summary(monkeypatch):
@@ -998,7 +998,7 @@ def test_cli_doctor_host_fail_blocks_and_uses_summary(monkeypatch):
 
 def test_cli_doctor_fix_heals_corrupted_keys_and_sweeps_locks(monkeypatch):
     """--fix heals ADB keys when the probe reports corruption and sweeps stale locks."""
-    from artemis.runtime.device_lock import DeviceExecutionLock
+    from apollo.runtime.device_lock import DeviceExecutionLock
 
     probes = [p for p in _all_pass_probes() if p.id != "android_adb"]
     probes.append(
@@ -1028,7 +1028,7 @@ def test_cli_doctor_fix_heals_corrupted_keys_and_sweeps_locks(monkeypatch):
 
 def test_cli_doctor_fix_skips_heal_when_keys_are_healthy(monkeypatch):
     """--fix does not touch healthy ADB keys but still sweeps stale locks."""
-    from artemis.runtime.device_lock import DeviceExecutionLock
+    from apollo.runtime.device_lock import DeviceExecutionLock
 
     fakes = _install_doctor_fakes(monkeypatch, _all_pass_probes())
     monkeypatch.setattr(

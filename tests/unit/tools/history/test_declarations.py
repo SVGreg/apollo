@@ -19,8 +19,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from artemis.core.tool_declaration import ToolDeclaration
-from artemis.tools.history import (
+from apollo.core.tool_declaration import ToolDeclaration
+from apollo.tools.history import (
     GET_STEP_SCREENSHOT_TOOL,
     HISTORY_TOOL_DECLARATIONS,
     HISTORY_TOOL_NAMES,

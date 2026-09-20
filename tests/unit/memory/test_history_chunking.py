@@ -34,7 +34,7 @@ from types import SimpleNamespace
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
-from artemis.memory.chunking import (
+from apollo.memory.chunking import (
     CHUNK_PENDING_NOTE,
     ChunkState,
     EraState,
@@ -45,8 +45,8 @@ from artemis.memory.chunking import (
     render_era_period_paragraph,
     validate_interval_coverage,
 )
-from artemis.memory.step_memory import StepMemoryService
-from artemis.memory.transcript import TranscriptLedger
+from apollo.memory.step_memory import StepMemoryService
+from apollo.memory.transcript import TranscriptLedger
 
 SESSION_START = 1000.0
 
@@ -909,7 +909,7 @@ async def test_capsule_retry_exhaustion_degrades_to_pending_chunk():
     """Bounded retries: a lens that never covers the range exhausts its retry
     budget, the job enters the explicit failed state, and the chunk simply
     stays pending — band ③ remains independently usable."""
-    from artemis.memory.chunking import ChunkCapsuleService
+    from apollo.memory.chunking import ChunkCapsuleService
 
     class NeverCoversLens(StepCapsuleLens):
         def __init__(self):
@@ -989,7 +989,7 @@ async def test_capsule_outage_without_fallback_exhausts_to_failed():
     """The A/B breakage shape: one dead endpoint and no fallback fails every
     attempt; the job exhausts to the explicit failed state (and the chunk
     stays pending, per test_capsule_retry_exhaustion_degrades_to_pending_chunk)."""
-    from artemis.memory.chunking import ChunkCapsuleService
+    from apollo.memory.chunking import ChunkCapsuleService
 
     class DeadLLM:
         async def ainvoke(self, messages):
@@ -1472,7 +1472,7 @@ def test_context_base_reads_the_ledger_operator_measurement_not_the_session_mete
     recorded on its own ledger. A session-wide meter reading from another
     agent's call (the 2026-09-08 trace: a 2.7k lite call right after the
     operator's 19.9k prompt) must not leak in."""
-    from artemis.services.token_meter import get_meter
+    from apollo.services.token_meter import get_meter
 
     steps = [_step(i, "hash-a" if i <= 4 else "hash-b") for i in range(1, 11)]
     ledger, chunker, _, _ = _make(steps, min_active=2, auto_capsule=True)
@@ -1545,7 +1545,7 @@ def test_held_note_is_fresh_after_a_retry():
 
 
 def test_estimate_prompt_tokens_counts_text_images_and_tool_call_args():
-    from artemis.memory.transcript import (
+    from apollo.memory.transcript import (
         IMAGE_BLOCK_TOKENS,
         estimate_prompt_tokens,
         measure_prompt_content,
@@ -1673,7 +1673,7 @@ def test_ledger_small_moves_hold_the_reference_until_they_accumulate():
     """A sample that moved less than the delta floor (in either direction)
     neither updates the ratio nor replaces the reference: the movement keeps
     accumulating against the held reference until it is measurable."""
-    from artemis.memory.transcript import MIN_CALIBRATION_DELTA_CHARS
+    from apollo.memory.transcript import MIN_CALIBRATION_DELTA_CHARS
 
     ledger = TranscriptLedger(step_memory=StepMemoryService(ctx=None))
     ledger.record_prompt_tokens(2500, messages=_measured_prompt(10_000, 1))
@@ -1753,7 +1753,7 @@ def test_ledger_calibration_regression_on_real_operator_trace():
     dropped. The whole-prompt quotient for the last call reads 1.62
     chars/token; the tail's own rate is denser, so the old estimator would
     have UNDER-counted the tail and fired the size trigger late here."""
-    from artemis.memory.transcript import IMAGE_BLOCK_TOKENS
+    from apollo.memory.transcript import IMAGE_BLOCK_TOKENS
 
     samples = [  # (text_chars, images, prompt_tokens) straight from the trace store
         (33262, 5, 20392),
@@ -1891,7 +1891,7 @@ def test_compression_trace_carries_a_plain_language_phase_on_every_path():
     capsule generating — also while retrying), ready (capsule on hand but the
     start gate holds the swap), applied (compressed block replaced the raw
     turns), failed (capsule generation gave up, full record kept)."""
-    from artemis.memory.chunking import COMPRESSION_PHASES
+    from apollo.memory.chunking import COMPRESSION_PHASES
 
     assert COMPRESSION_PHASES == ("summarizing", "ready", "applied", "failed")
 
@@ -1991,7 +1991,7 @@ def test_capsule_note_coverage_is_machine_checked():
 
 @pytest.mark.asyncio
 async def test_lens_backed_service_uses_lens_render():
-    from artemis.memory.step_memory import StepLens
+    from apollo.memory.step_memory import StepLens
 
     class EchoLens(StepLens):
         name = "echo"
@@ -2031,7 +2031,7 @@ def test_chunk_lists_every_step_of_a_multi_action_turn():
 def _rich_turn(i: int) -> list:
     """A turn that asks the explorer before acting, with a UI list and a
     native thinking block — the parts the old per-step projection dropped."""
-    from artemis.memory.transcript import PRO_UI_LIST_MARKER
+    from apollo.memory.transcript import PRO_UI_LIST_MARKER
 
     return [
         HumanMessage(
@@ -2164,7 +2164,7 @@ def test_visual_transition_line_is_skipped_when_the_transcript_already_has_it():
     """The resolved visual summary sits verbatim in the transcript once the
     scrub edge replaced the screenshot; only an unresolved turn (placeholder
     still there) gets the DataEngine summary as a separate line."""
-    from artemis.agents.flash.context_compressor import HISTORY_SUMMARY_PREFIX
+    from apollo.agents.flash.context_compressor import HISTORY_SUMMARY_PREFIX
 
     step = {
         "step_number": 4,
@@ -2226,7 +2226,7 @@ def test_size_trigger_measures_the_rendered_transcript_the_capsule_receives():
 async def test_ready_capsule_releases_its_turn_transcripts():
     """Once a capsule landed the job is never re-run, so the service drops the
     bulky ``turns`` from the retained payload (the flat step facts stay)."""
-    from artemis.memory.chunking import ChunkCapsuleService
+    from apollo.memory.chunking import ChunkCapsuleService
 
     class EchoLens(StepCapsuleLens):
         async def render(self, key, payload):
@@ -2271,7 +2271,7 @@ def test_band2_coordinates_are_machine_checked():
     """A coordinate literal in any band-② interval text fails the attempt
     (regenerate), same rank as the coverage check: band ③ already carries
     every action's target, so ② repeating it is the ledger written twice."""
-    from artemis.memory.chunking import band2_intervals_carry_coordinates
+    from apollo.memory.chunking import band2_intervals_carry_coordinates
 
     lens = StepCapsuleLens(model_name="test", llm=object())
     payload = {"start_step": 3, "end_step": 6, "steps": []}

@@ -17,7 +17,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 
-from artemis.config import IMAGES_DIR, TRACES_PATH, WORKSPACE_ROOT
+from apollo.config import IMAGES_DIR, TRACES_PATH, WORKSPACE_ROOT
 
 try:
     from admin_console.database.repositories.session_repository import session_repo

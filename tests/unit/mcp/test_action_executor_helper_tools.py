@@ -12,8 +12,8 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from artemis.mcp.action_executor import AGENT_TOOL_NAMES, McpActionExecutor
-from artemis.tools.explorer_tool import ExplorerCandidate, ExplorerOutcome
+from apollo.mcp.action_executor import AGENT_TOOL_NAMES, McpActionExecutor
+from apollo.tools.explorer_tool import ExplorerCandidate, ExplorerOutcome
 
 
 def _make_executor(**kwargs):
@@ -66,7 +66,7 @@ async def test_ask_explorer_runs_the_pipeline_for_the_executor_agent():
     outcome = ExplorerOutcome(
         candidates=[ExplorerCandidate(label="S1", coords=(500, 500), description="Send")]
     )
-    with patch("artemis.tools.explorer_tool.locate", new=AsyncMock(return_value=outcome)) as locate:
+    with patch("apollo.tools.explorer_tool.locate", new=AsyncMock(return_value=outcome)) as locate:
         result = await executor.execute(
             "ask_explorer", {"query": "blue Send button", "context_feedback": "n/a"}, "tc", state
         )
@@ -93,7 +93,7 @@ async def test_ask_explorer_runs_the_pipeline_for_the_executor_agent():
 async def test_ask_explorer_clean_not_found_is_a_successful_answer():
     executor = _make_executor()
     outcome = ExplorerOutcome(message="Nothing like that is visible; the keyboard covers it.")
-    with patch("artemis.tools.explorer_tool.locate", new=AsyncMock(return_value=outcome)):
+    with patch("apollo.tools.explorer_tool.locate", new=AsyncMock(return_value=outcome)):
         result = await executor.execute("ask_explorer", {"query": "gear icon"}, "tc", _state())
     assert result.status == "success"
     assert "Explorer could not locate 'gear icon'" in result.text_summary
@@ -104,7 +104,7 @@ async def test_ask_explorer_clean_not_found_is_a_successful_answer():
 async def test_ask_explorer_run_failure_is_an_error_result():
     executor = _make_executor()
     outcome = ExplorerOutcome.failure("Explorer failed: model quota exhausted")
-    with patch("artemis.tools.explorer_tool.locate", new=AsyncMock(return_value=outcome)):
+    with patch("apollo.tools.explorer_tool.locate", new=AsyncMock(return_value=outcome)):
         result = await executor.execute("ask_explorer", {"query": "gear icon"}, "tc", _state())
     assert result.status == "error"
     assert "Explorer could not run for 'gear icon'" in result.text_summary
@@ -115,7 +115,7 @@ async def test_ask_explorer_run_failure_is_an_error_result():
 async def test_ask_explorer_accepts_the_legacy_task_description_alias():
     executor = _make_executor()
     outcome = ExplorerOutcome(message="not here")
-    with patch("artemis.tools.explorer_tool.locate", new=AsyncMock(return_value=outcome)) as locate:
+    with patch("apollo.tools.explorer_tool.locate", new=AsyncMock(return_value=outcome)) as locate:
         result = await executor.execute(
             "ask_explorer", {"task_description": "gear icon top-right"}, "tc", _state()
         )
@@ -128,7 +128,7 @@ async def test_ask_explorer_accepts_the_legacy_task_description_alias():
 async def test_ask_explorer_exception_is_contained():
     executor = _make_executor()
     with patch(
-        "artemis.tools.explorer_tool.locate", new=AsyncMock(side_effect=RuntimeError("boom"))
+        "apollo.tools.explorer_tool.locate", new=AsyncMock(side_effect=RuntimeError("boom"))
     ):
         result = await executor.execute("ask_explorer", {"query": "x"}, "tc", _state())
     assert result.status == "error"
@@ -144,7 +144,7 @@ async def test_default_agent_name_reaches_the_tier_resolver_and_status_follows_t
 
     not_found = ExplorerOutcome(message="Not visible.")
     with patch(
-        "artemis.tools.explorer_tool.locate", new=AsyncMock(return_value=not_found)
+        "apollo.tools.explorer_tool.locate", new=AsyncMock(return_value=not_found)
     ) as locate:
         result = await executor.execute(
             "ask_explorer", {"task_description": "gear icon"}, "tc", _state()
@@ -154,7 +154,7 @@ async def test_default_agent_name_reaches_the_tier_resolver_and_status_follows_t
     assert result.status == "success"
 
     failed = ExplorerOutcome.failure("Explorer failed: boom")
-    with patch("artemis.tools.explorer_tool.locate", new=AsyncMock(return_value=failed)):
+    with patch("apollo.tools.explorer_tool.locate", new=AsyncMock(return_value=failed)):
         result = await executor.execute("ask_explorer", {"query": "gear icon"}, "tc", _state())
     assert result.status == "error"
 
@@ -164,7 +164,7 @@ async def test_flash_agent_name_reaches_the_tier_resolver():
     """The Flash profile resolves the Explorer tier from ``agent_name="flash"``."""
     executor = _make_executor(agent_name="flash")
     with patch(
-        "artemis.tools.explorer_tool.locate",
+        "apollo.tools.explorer_tool.locate",
         new=AsyncMock(return_value=ExplorerOutcome(message="no")),
     ) as locate:
         await executor.execute("ask_explorer", {"query": "x"}, "tc", _state())
@@ -180,7 +180,7 @@ async def test_flash_agent_name_reaches_the_tier_resolver():
 @pytest.mark.asyncio
 async def test_video_analyzer_routes_to_the_subagent_as_a_text_tool():
     executor = _make_executor()
-    with patch("artemis.agents.video_analyzer.video_analyzer.VideoAnalyzer") as analyzer_cls:
+    with patch("apollo.agents.video_analyzer.video_analyzer.VideoAnalyzer") as analyzer_cls:
         analyzer_cls.return_value.run = AsyncMock(
             return_value=("The ad finished at 12s; an Error dialog never appeared.", "success")
         )
@@ -202,7 +202,7 @@ async def test_video_analyzer_routes_to_the_subagent_as_a_text_tool():
 @pytest.mark.asyncio
 async def test_video_analyzer_failure_is_an_error_result():
     executor = _make_executor()
-    with patch("artemis.agents.video_analyzer.video_analyzer.VideoAnalyzer") as analyzer_cls:
+    with patch("apollo.agents.video_analyzer.video_analyzer.VideoAnalyzer") as analyzer_cls:
         analyzer_cls.return_value.run = AsyncMock(return_value=("no recording found", "failed"))
         result = await executor.execute(
             "video_analyzer", {"time_description": "from 0s to 3s", "purpose": "x"}, "tc", None
@@ -214,7 +214,7 @@ async def test_video_analyzer_failure_is_an_error_result():
 @pytest.mark.asyncio
 async def test_video_analyzer_exception_is_contained():
     executor = _make_executor()
-    with patch("artemis.agents.video_analyzer.video_analyzer.VideoAnalyzer") as analyzer_cls:
+    with patch("apollo.agents.video_analyzer.video_analyzer.VideoAnalyzer") as analyzer_cls:
         analyzer_cls.return_value.run = AsyncMock(side_effect=RuntimeError("boom"))
         result = await executor.execute(
             "video_analyzer", {"time_description": "from 0s to 3s", "purpose": "x"}, "tc", None
@@ -229,7 +229,7 @@ async def test_video_analyzer_exception_is_contained():
 
 
 def _history_tool_double(return_value=None, side_effect=None):
-    from artemis.tools.history import SearchHistoryArgs
+    from apollo.tools.history import SearchHistoryArgs
 
     tool = Mock()
     tool.args_schema = SearchHistoryArgs
@@ -241,7 +241,7 @@ def _history_tool_double(return_value=None, side_effect=None):
 async def test_history_tool_routes_to_the_shared_tool_with_text_result():
     executor = _make_executor()
     tool = _history_tool_double(return_value="- Step 3 (T+00:30): tap btn3 -> executed")
-    with patch("artemis.mcp.action_executor.history_tool_by_name", return_value=tool) as by_name:
+    with patch("apollo.mcp.action_executor.history_tool_by_name", return_value=tool) as by_name:
         result = await executor.execute(
             "search_history",
             {"query": "login Error timeout", "step_range": [1, 5], "unknown_arg": 1},
@@ -267,7 +267,7 @@ async def test_history_tool_forwards_multimodal_blocks():
         {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,AAA"}},
     ]
     tool = _history_tool_double(return_value=blocks)
-    with patch("artemis.mcp.action_executor.history_tool_by_name", return_value=tool):
+    with patch("apollo.mcp.action_executor.history_tool_by_name", return_value=tool):
         result = await executor.execute("get_step_screenshot", {"query": "unused"}, "tc", None)
     assert result.status == "success"
     assert result.text_summary == "Screenshot of step 4 (pre-action) is attached."
@@ -278,7 +278,7 @@ async def test_history_tool_forwards_multimodal_blocks():
 async def test_history_tool_exception_is_contained():
     executor = _make_executor()
     tool = _history_tool_double(side_effect=RuntimeError("db gone"))
-    with patch("artemis.mcp.action_executor.history_tool_by_name", return_value=tool):
+    with patch("apollo.mcp.action_executor.history_tool_by_name", return_value=tool):
         result = await executor.execute("replay_steps", {"query": "x"}, "tc", None)
     # Contained (no exception escapes) and reported structurally: the answer
     # explains the failure and the status says it is one.

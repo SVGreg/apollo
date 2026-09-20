@@ -27,10 +27,10 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 from langchain_core.messages import AIMessage
 import pytest
 
-from artemis.agents.validator.categories import ValidationErrorCategory
-from artemis.agents.validator.validator import ValidatorNode
-from artemis.context import ArtemisContext
-from artemis.mcp.action_types import ActionCode, ActionResult
+from apollo.agents.validator.categories import ValidationErrorCategory
+from apollo.agents.validator.validator import ValidatorNode
+from apollo.context import ApolloContext
+from apollo.mcp.action_types import ActionCode, ActionResult
 
 
 class DummyState:
@@ -48,7 +48,7 @@ class DummyState:
 
 
 class FakeActionSession:
-    """Test double for artemis.mcp.action_session.ActionSession."""
+    """Test double for apollo.mcp.action_session.ActionSession."""
 
     def __init__(self):
         self.started = True
@@ -89,7 +89,7 @@ class FakeActionSession:
 
 @pytest.fixture
 def mock_context(tmp_path):
-    ctx = Mock(spec=ArtemisContext)
+    ctx = Mock(spec=ApolloContext)
     ctx.llm_config = Mock()
     ctx.data_engine = Mock()
     ctx.data_engine.base_dir = tmp_path
@@ -114,7 +114,7 @@ def mock_mcp():
     async def _get_session(ctx, actuator=None):
         return fake
 
-    with patch("artemis.agents.validator.validator.get_action_session", _get_session):
+    with patch("apollo.agents.validator.validator.get_action_session", _get_session):
         yield fake
 
 
@@ -124,7 +124,7 @@ async def test_validator_success(mock_mcp, mock_context, temp_screenshot):
     decisions = json.dumps([{"action": "tap", "coordinates": [105, 205]}])
     state = DummyState(structured_decisions=decisions, latest_screenshot=temp_screenshot)
 
-    with patch("artemis.utils.image_diff.check_ui_change", return_value=True):
+    with patch("apollo.utils.image_diff.check_ui_change", return_value=True):
         node = ValidatorNode(mock_context)
         result = await node(state)
 
@@ -156,7 +156,7 @@ async def test_validator_exec_error_opens_incident(mock_mcp, mock_context, temp_
     state = DummyState(structured_decisions=decisions, latest_screenshot=temp_screenshot)
 
     node = ValidatorNode(mock_context)
-    with patch("artemis.utils.image_diff.check_ui_change", return_value=False):
+    with patch("apollo.utils.image_diff.check_ui_change", return_value=False):
         result = await node(state)
 
     report = result["last_execution_result"]
@@ -210,10 +210,10 @@ async def test_validator_burst_skips_safety_net_and_aborts_on_first_failure(
     node = ValidatorNode(mock_context)
     with (
         patch(
-            "artemis.agents.validator.execution_loop._run_precondition_gate",
+            "apollo.agents.validator.execution_loop._run_precondition_gate",
             new_callable=AsyncMock,
         ) as mock_gate,
-        patch("artemis.utils.image_diff.check_ui_change", return_value=False),
+        patch("apollo.utils.image_diff.check_ui_change", return_value=False),
     ):
         result = await node(state)
 
@@ -253,7 +253,7 @@ async def test_validator_burst_success_executes_every_member(
     state = DummyState(structured_decisions=decisions, latest_screenshot=temp_screenshot)
 
     node = ValidatorNode(mock_context)
-    with patch("artemis.utils.image_diff.check_ui_change", return_value=True):
+    with patch("apollo.utils.image_diff.check_ui_change", return_value=True):
         result = await node(state)
 
     report = result["last_execution_result"]
@@ -284,7 +284,7 @@ async def test_validator_success_closes_open_incident(mock_mcp, mock_context, te
     )
 
     node = ValidatorNode(mock_context)
-    with patch("artemis.utils.image_diff.check_ui_change", return_value=True):
+    with patch("apollo.utils.image_diff.check_ui_change", return_value=True):
         result = await node(state)
 
     assert result["last_execution_result"]["status"] == "dispatched"
@@ -316,7 +316,7 @@ async def test_validator_consecutive_failures_escalate_incident(
     )
 
     node = ValidatorNode(mock_context)
-    with patch("artemis.utils.image_diff.check_ui_change", return_value=False):
+    with patch("apollo.utils.image_diff.check_ui_change", return_value=False):
         result = await node(state)
 
     assert result["open_incident"]["consecutive_failures"] == 3
@@ -328,7 +328,7 @@ async def test_validator_wait_for_delay(mock_mcp, mock_context, temp_screenshot)
     decisions = json.dumps([{"action": "wait_for_delay", "time_in_ms": 10}])
     state = DummyState(structured_decisions=decisions, latest_screenshot=temp_screenshot)
 
-    with patch("artemis.utils.image_diff.check_ui_change", return_value=False):
+    with patch("apollo.utils.image_diff.check_ui_change", return_value=False):
         node = ValidatorNode(mock_context)
         result = await node(state)
 
@@ -347,7 +347,7 @@ async def test_validator_focus_and_clear_text_no_ui_change(mock_mcp, mock_contex
     decisions = json.dumps([{"action": "focus_and_clear_text", "coordinates": [400, 500]}])
     state = DummyState(structured_decisions=decisions, latest_screenshot=temp_screenshot)
 
-    with patch("artemis.utils.image_diff.check_ui_change", return_value=False):
+    with patch("apollo.utils.image_diff.check_ui_change", return_value=False):
         node = ValidatorNode(mock_context)
         result = await node(state)
 
@@ -370,9 +370,9 @@ async def test_validator_silent_failure_treated_as_success(mock_mcp, mock_contex
     node = ValidatorNode(mock_context)
 
     with (
-        patch("artemis.agents.validator.validator.VALIDATOR_POLL_TIMEOUT", 0.1),
-        patch("artemis.agents.validator.validator.VALIDATOR_POLL_INTERVAL", 0.01),
-        patch("artemis.utils.image_diff.check_ui_change", return_value=False),  # No UI change
+        patch("apollo.agents.validator.validator.VALIDATOR_POLL_TIMEOUT", 0.1),
+        patch("apollo.agents.validator.validator.VALIDATOR_POLL_INTERVAL", 0.01),
+        patch("apollo.utils.image_diff.check_ui_change", return_value=False),  # No UI change
     ):
         result = await node(state)
 
@@ -403,7 +403,7 @@ async def test_validator_burst_first_member_failure_marks_rest_skipped(
     state = DummyState(structured_decisions=decisions, latest_screenshot=temp_screenshot)
 
     node = ValidatorNode(mock_context)
-    with patch("artemis.utils.image_diff.check_ui_change", return_value=False):
+    with patch("apollo.utils.image_diff.check_ui_change", return_value=False):
         result = await node(state)
 
     report = result["last_execution_result"]
@@ -449,7 +449,7 @@ async def test_validator_pre_execution_validation_opens_incident(
     node = ValidatorNode(mock_context)
 
     with (
-        patch("artemis.utils.image_diff.check_ui_change", return_value=True),
+        patch("apollo.utils.image_diff.check_ui_change", return_value=True),
         patch.object(
             ValidatorNode,
             "_validate_action_precondition_pixel",
@@ -505,7 +505,7 @@ async def test_validator_pre_execution_validation_self_healing(
     state = DummyState(structured_decisions=decisions, latest_screenshot=temp_screenshot)
     node = ValidatorNode(mock_context)
 
-    with patch("artemis.utils.image_diff.check_ui_change", return_value=True):
+    with patch("apollo.utils.image_diff.check_ui_change", return_value=True):
         result = await node(state)
 
     # Center of [100, 220][300, 320] is pixel [200, 270]; the healed coordinates
@@ -550,7 +550,7 @@ async def test_validator_pre_execution_validation_anonymous_occupant(
     node = ValidatorNode(mock_context)
 
     with (
-        patch("artemis.utils.image_diff.check_ui_change", return_value=True),
+        patch("apollo.utils.image_diff.check_ui_change", return_value=True),
         patch.object(
             ValidatorNode,
             "_validate_action_precondition_pixel",
@@ -600,11 +600,11 @@ async def test_validator_pixel_validation_success(mock_mcp, mock_context, temp_s
     # Mock crop and draw helpers to return dummy bytes
     with (
         patch(
-            "artemis.utils.visualization.crop_and_annotate_target",
+            "apollo.utils.visualization.crop_and_annotate_target",
             return_value=b"dummy_bytes",
         ),
-        patch("artemis.agents.validator.validator.get_llm", return_value=mock_llm),
-        patch("artemis.utils.image_diff.check_ui_change", return_value=True),
+        patch("apollo.agents.validator.validator.get_llm", return_value=mock_llm),
+        patch("apollo.utils.image_diff.check_ui_change", return_value=True),
     ):
         node = ValidatorNode(mock_context)
         result = await node(state)
@@ -642,11 +642,11 @@ async def test_validator_pixel_validation_failure(mock_mcp, mock_context, temp_s
 
     with (
         patch(
-            "artemis.utils.visualization.crop_and_annotate_target",
+            "apollo.utils.visualization.crop_and_annotate_target",
             return_value=b"dummy_bytes",
         ),
-        patch("artemis.agents.validator.validator.get_llm", return_value=mock_llm),
-        patch("artemis.utils.image_diff.check_ui_change", return_value=False),
+        patch("apollo.agents.validator.validator.get_llm", return_value=mock_llm),
+        patch("apollo.utils.image_diff.check_ui_change", return_value=False),
     ):
         node = ValidatorNode(mock_context)
         result = await node(state)
@@ -669,7 +669,7 @@ async def test_validator_launch_app_routes_through_manage_app(
     decisions = json.dumps([{"action": "launch_app", "app_name": "My App"}])
     state = DummyState(structured_decisions=decisions, latest_screenshot=temp_screenshot)
 
-    with patch("artemis.utils.image_diff.check_ui_change", return_value=True):
+    with patch("apollo.utils.image_diff.check_ui_change", return_value=True):
         node = ValidatorNode(mock_context)
         result = await node(state)
 
@@ -689,9 +689,9 @@ async def test_validator_launch_app_failure_no_retry(mock_mcp, mock_context, tem
     state = DummyState(structured_decisions=decisions, latest_screenshot=temp_screenshot)
 
     with (
-        patch("artemis.agents.validator.validator.VALIDATOR_POLL_TIMEOUT", 0.05),
-        patch("artemis.agents.validator.validator.VALIDATOR_POLL_INTERVAL", 0.01),
-        patch("artemis.utils.image_diff.check_ui_change", return_value=False),
+        patch("apollo.agents.validator.validator.VALIDATOR_POLL_TIMEOUT", 0.05),
+        patch("apollo.agents.validator.validator.VALIDATOR_POLL_INTERVAL", 0.01),
+        patch("apollo.utils.image_diff.check_ui_change", return_value=False),
     ):
         node = ValidatorNode(mock_context)
         result = await node(state)
@@ -739,7 +739,7 @@ async def test_validator_pre_execution_validation_disappeared_not_shifted(
     node = ValidatorNode(mock_context)
 
     with (
-        patch("artemis.utils.image_diff.check_ui_change", return_value=True),
+        patch("apollo.utils.image_diff.check_ui_change", return_value=True),
         patch.object(
             ValidatorNode,
             "_validate_action_precondition_pixel",
@@ -792,7 +792,7 @@ async def test_validator_pre_execution_validation_ocr_direct_to_pixel(
             "_validate_action_precondition_pixel",
             new_callable=AsyncMock,
         ) as mock_pixel,
-        patch("artemis.utils.image_diff.check_ui_change", return_value=True),
+        patch("apollo.utils.image_diff.check_ui_change", return_value=True),
     ):
         mock_pixel.return_value = (True, ValidationErrorCategory.NONE, "")
 
@@ -839,7 +839,7 @@ async def test_validator_pre_execution_xml_failure_not_overridden_when_pixel_byp
     node = ValidatorNode(mock_context)
 
     with (
-        patch("artemis.utils.image_diff.check_ui_change", return_value=True),
+        patch("apollo.utils.image_diff.check_ui_change", return_value=True),
         patch.object(
             ValidatorNode,
             "_validate_action_precondition_pixel",
@@ -877,7 +877,7 @@ async def test_validator_failure_screenshot_mcp_error_handled_safely(
     node = ValidatorNode(mock_context)
 
     with (
-        patch("artemis.utils.image_diff.check_ui_change", return_value=False),
+        patch("apollo.utils.image_diff.check_ui_change", return_value=False),
     ):
         result = await node(state)
 

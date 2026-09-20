@@ -30,17 +30,17 @@ from unittest.mock import MagicMock
 import pytest
 from PIL import Image
 
-from artemis.context import ArtemisContext
-from artemis.core.tool_failure import is_tool_failure
-from artemis.data_engine.engine import DataEngine
-from artemis.tools.history import (
+from apollo.context import ApolloContext
+from apollo.core.tool_failure import is_tool_failure
+from apollo.data_engine.engine import DataEngine
+from apollo.tools.history import (
     SearchHistoryTool,
     search_history,
     search_history_available,
     search_history_text,
 )
-from artemis.tools.history.search import result_search_text
-from artemis.utils.notes import save_note_content
+from apollo.tools.history.search import result_search_text
+from apollo.utils.notes import save_note_content
 
 
 def _jpeg(color: str) -> bytes:
@@ -50,7 +50,7 @@ def _jpeg(color: str) -> bytes:
 
 
 def _make_engine(tmp_path):
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = mock_execution_setup
@@ -445,7 +445,7 @@ def test_action_matches_keep_target_provenance(engine):
     """The action haystack is the shared ledger rendering, so an excerpt shows a
     self-described coordinate target with its marker and an observed index
     target without one."""
-    from artemis.utils.task_tree import SELF_DESCRIBED_MARKER
+    from apollo.utils.task_tree import SELF_DESCRIBED_MARKER
 
     engine.record_step(
         summary="Started playback.",

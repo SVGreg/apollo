@@ -6,7 +6,7 @@ its error text. The renderers must read a retried-then-dispatched action as a
 clean dispatch, never as a failure.
 """
 
-from artemis.utils.task_tree import (
+from apollo.utils.task_tree import (
     _burst_member_status,
     failed_execution_error,
     format_result_clean,

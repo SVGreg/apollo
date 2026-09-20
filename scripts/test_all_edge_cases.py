@@ -1,4 +1,4 @@
-"""Comprehensive Edge-Case Test Suite for Artemis Multi-Device Concurrency & Unified Queue.
+"""Comprehensive Edge-Case Test Suite for Apollo Multi-Device Concurrency & Unified Queue.
 
 Covers:
 1. Single Device FIFO Serial Queueing & Relay
@@ -18,23 +18,23 @@ WORKSPACE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if WORKSPACE_ROOT not in sys.path:
     sys.path.insert(0, WORKSPACE_ROOT)
 
-from artemis.interfaces.sdk.client import ArtemisClient
-from artemis.runtime.device_lock import DeviceExecutionLock
-from artemis.toolchain import ensure_toolchain_in_path
+from apollo.interfaces.sdk.client import ApolloClient
+from apollo.runtime.device_lock import DeviceExecutionLock
+from apollo.toolchain import ensure_toolchain_in_path
 
 ensure_toolchain_in_path()
 
-from artemis.runtime import device_pool
+from apollo.runtime import device_pool
 
 
 def _resolve_devices() -> tuple[str, str]:
     all_devs = device_pool.list_devices()
     real_dev = next((d for d in all_devs if not d.is_emulator and d.state == "device"), None)
     emu_dev = next((d for d in all_devs if d.is_emulator and d.state == "device"), None)
-    phone = os.environ.get("ARTEMIS_PHONE_SERIAL") or (
+    phone = os.environ.get("APOLLO_PHONE_SERIAL") or (
         real_dev.serial if real_dev else "63191FDKX00062"
     )
-    emu = os.environ.get("ARTEMIS_EMULATOR_SERIAL") or (
+    emu = os.environ.get("APOLLO_EMULATOR_SERIAL") or (
         emu_dev.serial if emu_dev else "emulator-5554"
     )
     return phone, emu
@@ -73,7 +73,7 @@ async def stage_1_single_device_queueing():
     print(f"Target Device: {PHONE_SERIAL} (Pixel 11 Pro)")
     print("=" * 80)
 
-    client_phone = ArtemisClient(device_serial=PHONE_SERIAL, concurrency_mode="per_device")
+    client_phone = ApolloClient(device_serial=PHONE_SERIAL, concurrency_mode="per_device")
 
     t1_started = False
     t2_queued = False
@@ -117,8 +117,8 @@ async def stage_2_multi_device_parallel():
     print("Concurrency Mode: per_device (Should run simultaneously!)")
     print("=" * 80)
 
-    client_phone = ArtemisClient(device_serial=PHONE_SERIAL, concurrency_mode="per_device")
-    client_emu = ArtemisClient(device_serial=EMULATOR_SERIAL, concurrency_mode="per_device")
+    client_phone = ApolloClient(device_serial=PHONE_SERIAL, concurrency_mode="per_device")
+    client_emu = ApolloClient(device_serial=EMULATOR_SERIAL, concurrency_mode="per_device")
 
     start_time = time.time()
 
@@ -156,8 +156,8 @@ async def stage_3_global_concurrency_mode():
     print("Concurrency Mode: global (max 1 task system-wide even across different devices)")
     print("=" * 80)
 
-    client_phone_global = ArtemisClient(device_serial=PHONE_SERIAL, concurrency_mode="global")
-    client_emu_global = ArtemisClient(device_serial=EMULATOR_SERIAL, concurrency_mode="global")
+    client_phone_global = ApolloClient(device_serial=PHONE_SERIAL, concurrency_mode="global")
+    client_emu_global = ApolloClient(device_serial=EMULATOR_SERIAL, concurrency_mode="global")
 
     async def task_phone_g():
         print(f"📱 [Task 3A - Phone] Acquiring global lock on {PHONE_SERIAL}...")
@@ -195,8 +195,8 @@ async def stage_4_mixed_queue_and_parallel():
     print("Expectation: 4A (Phone) and 4C (Emulator) run concurrently; 4B waits for Phone.")
     print("=" * 80)
 
-    client_phone = ArtemisClient(device_serial=PHONE_SERIAL, concurrency_mode="per_device")
-    client_emu = ArtemisClient(device_serial=EMULATOR_SERIAL, concurrency_mode="per_device")
+    client_phone = ApolloClient(device_serial=PHONE_SERIAL, concurrency_mode="per_device")
+    client_emu = ApolloClient(device_serial=EMULATOR_SERIAL, concurrency_mode="per_device")
 
     async def task_4a():
         print("📱 [Task 4A - Phone] Running...")
@@ -227,7 +227,7 @@ async def main():
 
     global PHONE_SERIAL, EMULATOR_SERIAL
 
-    parser = argparse.ArgumentParser(description="ARTEMIS All Edge-Cases Comprehensive Test Suite")
+    parser = argparse.ArgumentParser(description="APOLLO All Edge-Cases Comprehensive Test Suite")
     parser.add_argument("--phone", default=None, help="Target physical phone serial number")
     parser.add_argument("--emulator", default=None, help="Target Android emulator serial number")
     args = parser.parse_args()
@@ -238,7 +238,7 @@ async def main():
         EMULATOR_SERIAL = args.emulator
 
     print("\n" + "#" * 80)
-    print("# ARTEMIS ALL EDGE-CASES COMPREHENSIVE CONCURRENCY & QUEUE TEST SUITE")
+    print("# APOLLO ALL EDGE-CASES COMPREHENSIVE CONCURRENCY & QUEUE TEST SUITE")
     print(f"# Devices: Real Phone ({PHONE_SERIAL}) + Android Emulator ({EMULATOR_SERIAL})")
     print("# Web Console API: http://127.0.0.1:8000/api/status")
     print("#" * 80)

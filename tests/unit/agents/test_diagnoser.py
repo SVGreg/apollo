@@ -15,16 +15,16 @@
 from unittest.mock import AsyncMock, Mock, patch
 from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.tools import StructuredTool
-from artemis.agents.diagnoser.diagnoser import Diagnoser
-from artemis.context import ArtemisContext
-from artemis.core.tool_failure import ToolFailure
-from artemis.graph.state import State
+from apollo.agents.diagnoser.diagnoser import Diagnoser
+from apollo.context import ApolloContext
+from apollo.core.tool_failure import ToolFailure
+from apollo.graph.state import State
 import pytest
 
 
 @pytest.fixture
 def mock_context():
-    ctx = Mock(spec=ArtemisContext)
+    ctx = Mock(spec=ApolloContext)
     ctx.llm_config = Mock()
     ctx.data_engine = Mock()
     ctx.data_engine.base_dir = "/tmp"
@@ -47,9 +47,9 @@ def mock_state():
     return state
 
 
-@patch("artemis.agents.diagnoser.diagnoser.get_llm")
-@patch("artemis.agents.diagnoser.diagnoser.get_video_analyzer_tool")
-@patch("artemis.agents.diagnoser.diagnoser.get_analyze_logs_tool")
+@patch("apollo.agents.diagnoser.diagnoser.get_llm")
+@patch("apollo.agents.diagnoser.diagnoser.get_video_analyzer_tool")
+@patch("apollo.agents.diagnoser.diagnoser.get_analyze_logs_tool")
 @pytest.mark.asyncio
 async def test_diagnostic_agent_simple_call(
     mock_get_log_tool,
@@ -85,9 +85,9 @@ async def test_diagnostic_agent_simple_call(
     assert result == "I diagnosed the issue: it is a network error."
 
 
-@patch("artemis.agents.diagnoser.diagnoser.get_llm")
-@patch("artemis.agents.diagnoser.diagnoser.get_video_analyzer_tool")
-@patch("artemis.agents.diagnoser.diagnoser.get_analyze_logs_tool")
+@patch("apollo.agents.diagnoser.diagnoser.get_llm")
+@patch("apollo.agents.diagnoser.diagnoser.get_video_analyzer_tool")
+@patch("apollo.agents.diagnoser.diagnoser.get_analyze_logs_tool")
 @pytest.mark.asyncio
 async def test_diagnostic_agent_tool_calls(
     mock_get_log_tool,
@@ -163,9 +163,9 @@ async def test_diagnostic_agent_tool_calls(
     mock_video_tool.ainvoke.assert_called_once()
 
 
-@patch("artemis.agents.diagnoser.diagnoser.get_llm")
-@patch("artemis.agents.diagnoser.diagnoser.get_video_analyzer_tool")
-@patch("artemis.agents.diagnoser.diagnoser.get_analyze_logs_tool")
+@patch("apollo.agents.diagnoser.diagnoser.get_llm")
+@patch("apollo.agents.diagnoser.diagnoser.get_video_analyzer_tool")
+@patch("apollo.agents.diagnoser.diagnoser.get_analyze_logs_tool")
 @pytest.mark.asyncio
 async def test_diagnostic_agent_no_video_tool_when_disabled(
     mock_get_log_tool,
@@ -212,14 +212,14 @@ async def test_diagnostic_agent_no_video_tool_when_disabled(
     assert "analyze_logs" in tool_names
 
 
-@patch("artemis.agents.diagnoser.diagnoser.get_llm")
-@patch("artemis.tools.video_tool.VideoAnalyzer")
+@patch("apollo.agents.diagnoser.diagnoser.get_llm")
+@patch("apollo.tools.video_tool.VideoAnalyzer")
 @pytest.mark.asyncio
 async def test_diagnoser_background_job_lifecycle(
     mock_video_analyzer_class, mock_get_llm, mock_state
 ):
     # Setup context
-    ctx = ArtemisContext.model_construct(
+    ctx = ApolloContext.model_construct(
         device=Mock(),
         llm_config=Mock(),
         execution_setup=Mock(video_recording_tools_enabled=True),
@@ -272,16 +272,16 @@ async def test_diagnoser_background_job_lifecycle(
     agent = Diagnoser(ctx)
 
     # We want to use the actual video analyzer tool so it triggers the background task
-    from artemis.tools.video_tool import get_video_analyzer_tool
+    from apollo.tools.video_tool import get_video_analyzer_tool
 
     real_video_tool = get_video_analyzer_tool(ctx, role="diagnoser")
 
     with patch(
-        "artemis.tools.log_tool.get_analyze_logs_tool",
+        "apollo.tools.log_tool.get_analyze_logs_tool",
         return_value=Mock(name="analyze_logs"),
     ):
         with patch(
-            "artemis.tools.video_tool.get_video_analyzer_tool",
+            "apollo.tools.video_tool.get_video_analyzer_tool",
             return_value=real_video_tool,
         ):
             result = await agent.run("Diagnose video issue", mock_state)

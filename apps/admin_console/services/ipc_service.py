@@ -41,7 +41,7 @@ class IPCService:
         if isinstance(val, str):
             if (
                 "object at 0x" in val
-                or val.startswith("<artemis.")
+                or val.startswith("<apollo.")
                 or val.startswith("<controller")
             ):
                 return None
@@ -125,7 +125,7 @@ class IPCService:
                 data["generic_tools"] = sanitized_tools
 
             try:
-                from artemis.utils.coordinates import normalize_step_actions
+                from apollo.utils.coordinates import normalize_step_actions
 
                 data = normalize_step_actions(data)
             except ImportError:
@@ -223,7 +223,7 @@ class IPCService:
         state.ipc_serve_task = asyncio.create_task(server.serve_forever())
         print(f"Internal IPC server started on port {state.ipc_port}")
         try:
-            from artemis.config import write_ipc_port
+            from apollo.config import write_ipc_port
 
             write_ipc_port(state.ipc_port)
         except Exception as e:
@@ -252,7 +252,7 @@ class IPCService:
             state.ipc_serve_task = None
         state.ipc_port = None
         try:
-            from artemis.config import clear_ipc_port
+            from apollo.config import clear_ipc_port
 
             clear_ipc_port()
         except Exception as e:

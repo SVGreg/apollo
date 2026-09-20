@@ -45,7 +45,7 @@ describe('startup Work block', () => {
       { stage: 'uiautomator', message: 'Connecting to the UI hierarchy service', timestamp: 10 },
       {
         stage: 'helper_install',
-        message: 'Installing the Artemis accessibility helper on this device for the first time (v1.1.3, about 3 seconds)',
+        message: 'Installing the Apollo accessibility helper on this device for the first time (v1.1.3, about 3 seconds)',
         timestamp: 10.2
       }
     ];
@@ -53,7 +53,7 @@ describe('startup Work block', () => {
     const [item] = buildStartupWorkItems(events, 12, false, true);
 
     expect(item.isActive).toBeTrue();
-    expect(item.message).toContain('Installing the Artemis accessibility helper');
+    expect(item.message).toContain('Installing the Apollo accessibility helper');
     expect(item.elapsed).toBe('2.0s');
   });
 
@@ -64,13 +64,13 @@ describe('startup Work block', () => {
       { stage: 'uiautomator_ready', message: 'UI hierarchy service is ready (helper)', timestamp: 13 },
       {
         stage: 'hierarchy_backend',
-        message: 'UI hierarchy source: Artemis accessibility helper v1.1.3',
+        message: 'UI hierarchy source: Apollo accessibility helper v1.1.3',
         timestamp: 13.1
       },
       // A later mid-run switch must not rewrite the startup line.
       {
         stage: 'hierarchy_backend_changed',
-        message: 'UI hierarchy source switched from Artemis accessibility helper to UIAutomator2 because ...',
+        message: 'UI hierarchy source switched from Apollo accessibility helper to UIAutomator2 because ...',
         timestamp: 90
       }
     ];
@@ -78,7 +78,7 @@ describe('startup Work block', () => {
     const [item] = buildStartupWorkItems(events, 100, true, true);
 
     expect(item.isActive).toBeFalse();
-    expect(item.message).toBe('UI hierarchy source: Artemis accessibility helper v1.1.3');
+    expect(item.message).toBe('UI hierarchy source: Apollo accessibility helper v1.1.3');
     expect(item.elapsed).toBe('3.0s');
   });
 

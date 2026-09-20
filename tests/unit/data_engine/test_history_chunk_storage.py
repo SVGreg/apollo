@@ -18,8 +18,8 @@ from uuid import uuid4
 
 import pytest
 
-from artemis.data_engine.models import HistoryChunkRecord
-from artemis.data_engine.storage import StorageManager
+from apollo.data_engine.models import HistoryChunkRecord
+from apollo.data_engine.storage import StorageManager
 
 SESSION = "11111111-1111-1111-1111-111111111111"
 

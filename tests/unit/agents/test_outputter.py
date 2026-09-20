@@ -17,11 +17,11 @@ from unittest.mock import AsyncMock, Mock, patch
 from pydantic import BaseModel
 import pytest
 
-from artemis.agents.outputter.outputter import outputter
-from artemis.config import LLM, OutputConfig  # noqa: E402
-from artemis.context import ArtemisContext  # noqa: E402
-from artemis.core.tool_failure import ToolFailure  # noqa: E402
-from artemis.utils.logger import get_logger  # noqa: E402
+from apollo.agents.outputter.outputter import outputter
+from apollo.config import LLM, OutputConfig  # noqa: E402
+from apollo.context import ApolloContext  # noqa: E402
+from apollo.core.tool_failure import ToolFailure  # noqa: E402
+from apollo.utils.logger import get_logger  # noqa: E402
 
 logger = get_logger(__name__)
 
@@ -70,7 +70,7 @@ class DummyState:
 @pytest.fixture
 def mock_context():
     """Create a properly mocked context with all required fields."""
-    ctx = Mock(spec=ArtemisContext)
+    ctx = Mock(spec=ApolloContext)
     ctx.llm_config = {
         "planner": LLM(provider="openai", model="gpt-5-nano"),
         "operator": LLM(provider="openai", model="gpt-5-nano"),
@@ -123,7 +123,7 @@ def setup_mock_llm(mock_get_llm, react_response_content="Paris", structured_resp
     return mock_llm, mock_llm_with_tools, mock_structured_llm
 
 
-@patch("artemis.agents.outputter.outputter.get_llm")
+@patch("apollo.agents.outputter.outputter.get_llm")
 @pytest.mark.asyncio
 async def test_outputter_with_pydantic_model(mock_get_llm, mock_context, mock_state):
     """Test outputter with Pydantic model output."""
@@ -150,7 +150,7 @@ async def test_outputter_with_pydantic_model(mock_get_llm, mock_context, mock_st
     assert result.get("color") == "green"
 
 
-@patch("artemis.agents.outputter.outputter.get_llm")
+@patch("apollo.agents.outputter.outputter.get_llm")
 @pytest.mark.asyncio
 async def test_outputter_with_dict(mock_get_llm, mock_context, mock_state):
     """Test outputter with dictionary output."""
@@ -180,7 +180,7 @@ async def test_outputter_with_dict(mock_get_llm, mock_context, mock_state):
     assert result.get("website_url") == "http://superwebsite.fr"
 
 
-@patch("artemis.agents.outputter.outputter.get_llm")
+@patch("apollo.agents.outputter.outputter.get_llm")
 @pytest.mark.asyncio
 async def test_outputter_with_natural_language_output(mock_get_llm, mock_context, mock_state):
     """Test outputter with natural language description output (returns JSON string)."""
@@ -206,7 +206,7 @@ async def test_outputter_with_natural_language_output(mock_get_llm, mock_context
     assert result.get("website_url") == "http://superwebsite.fr"
 
 
-@patch("artemis.agents.outputter.outputter.get_llm")
+@patch("apollo.agents.outputter.outputter.get_llm")
 @pytest.mark.asyncio
 async def test_outputter_with_history_and_image(mock_get_llm, mock_context):
     """Test outputter with explicit history and image."""
@@ -255,7 +255,7 @@ async def test_outputter_with_history_and_image(mock_get_llm, mock_context):
     assert human_content[1]["image_url"]["url"] == "data:image/jpeg;base64,mock_b64_data"
 
 
-@patch("artemis.agents.outputter.outputter.get_llm")
+@patch("apollo.agents.outputter.outputter.get_llm")
 @pytest.mark.asyncio
 async def test_outputter_builds_concise_history(mock_get_llm):
     """Test that the outputter dynamically builds clean Summary ➡️ Action history."""
@@ -267,7 +267,7 @@ async def test_outputter_builds_concise_history(mock_get_llm):
         output_description="Test output",
     )
 
-    ctx = Mock(spec=ArtemisContext)
+    ctx = Mock(spec=ApolloContext)
     ctx.llm_config = {
         "planner": LLM(provider="openai", model="gpt-5-nano"),
         "operator": LLM(provider="openai", model="gpt-5-nano"),
@@ -367,8 +367,8 @@ async def test_outputter_builds_concise_history(mock_get_llm):
     assert "*Action*: Tapped 'Search' at None" in human_content_standard
 
 
-@patch("artemis.tools.video_tool.VideoAnalyzer")
-@patch("artemis.agents.outputter.outputter.get_llm")
+@patch("apollo.tools.video_tool.VideoAnalyzer")
+@patch("apollo.agents.outputter.outputter.get_llm")
 @pytest.mark.asyncio
 async def test_outputter_executes_video_analyzer_tool(
     mock_get_llm, mock_video_analyzer, mock_context, mock_state
@@ -453,7 +453,7 @@ async def test_outputter_executes_video_analyzer_tool(
     assert result == "Video played successfully."
 
 
-@patch("artemis.agents.outputter.outputter.get_llm")
+@patch("apollo.agents.outputter.outputter.get_llm")
 @pytest.mark.asyncio
 async def test_outputter_executes_save_note_tool(mock_get_llm, mock_context, mock_state):
     """Test that the outputter ReAct loop can successfully invoke the save_note tool."""
@@ -502,7 +502,7 @@ async def test_outputter_executes_save_note_tool(mock_get_llm, mock_context, moc
     mock_context.data_engine = mock_data_engine
 
     # Patch save_note_content utility to avoid writing to disk
-    with patch("artemis.tools.scratchpad.save_note_content") as mock_save_content:
+    with patch("apollo.tools.scratchpad.save_note_content") as mock_save_content:
         result = await outputter(ctx=mock_context, output_config=config, graph_output=mock_state)
         mock_save_content.assert_called_once_with(
             "/tmp/mock_session", "verification_code", "123456"
@@ -532,8 +532,8 @@ def _text_tool(name: str, result):  # noqa: D103
     return StructuredTool.from_function(coroutine=_run, name=name, description=name)
 
 
-@patch("artemis.agents.outputter.outputter.get_read_note_tool_pure")
-@patch("artemis.agents.outputter.outputter.get_llm")
+@patch("apollo.agents.outputter.outputter.get_read_note_tool_pure")
+@patch("apollo.agents.outputter.outputter.get_llm")
 @pytest.mark.asyncio
 @pytest.mark.parametrize("result, expected_status", _STATUS_CASES)
 async def test_outputter_tool_message_status_is_structural(

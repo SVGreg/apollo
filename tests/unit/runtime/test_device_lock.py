@@ -18,13 +18,13 @@ import time
 
 import pytest
 
-from artemis.runtime.device_lock import DeviceBusyError, DeviceExecutionLock
+from apollo.runtime.device_lock import DeviceBusyError, DeviceExecutionLock
 
 
 @pytest.fixture(autouse=True)
 def isolated_lock_directory(tmp_path, monkeypatch):
     monkeypatch.setattr(
-        "artemis.runtime.device_lock.get_temp_dir",
+        "apollo.runtime.device_lock.get_temp_dir",
         lambda _name: tmp_path,
     )
 
@@ -295,15 +295,15 @@ def test_waiting_acquire_can_be_cancelled_without_leaving_a_ticket():
     thread.join(timeout=2.0)
 
     try:
-        assert errors == ["Waiting for the Artemis device queue was cancelled."]
+        assert errors == ["Waiting for the Apollo device queue was cancelled."]
         assert list(waiter.queue_dir.glob("*.wait")) == []
     finally:
         owner.release()
 
 
 def test_active_owner_is_discoverable_and_can_be_annotated(monkeypatch):
-    monkeypatch.setenv("ARTEMIS_TASK_INGRESS", "cli")
-    monkeypatch.delenv("ARTEMIS_SESSION_ID", raising=False)
+    monkeypatch.setenv("APOLLO_TASK_INGRESS", "cli")
+    monkeypatch.delenv("APOLLO_SESSION_ID", raising=False)
     owner_lock = DeviceExecutionLock("emulator-5554", "CLI task")
     owner_lock.acquire()
     try:
@@ -350,7 +350,7 @@ def test_multi_device_locks_can_run_concurrently():
 
 
 def test_global_concurrency_serial_mode_blocks_other_devices(monkeypatch):
-    monkeypatch.setenv("ARTEMIS_MAX_CONCURRENT_TASKS", "1")
+    monkeypatch.setenv("APOLLO_MAX_CONCURRENT_TASKS", "1")
     lock_a = DeviceExecutionLock("device_alpha", "task alpha")
     lock_b = DeviceExecutionLock("device_beta", "task beta")
 
@@ -368,7 +368,7 @@ def test_global_concurrency_serial_mode_blocks_other_devices(monkeypatch):
 
 def test_owner_is_alive_guards_against_recycled_pid():
     from unittest.mock import MagicMock, patch
-    from artemis.runtime.device_lock import DeviceLockOwner
+    from apollo.runtime.device_lock import DeviceLockOwner
 
     owner = DeviceLockOwner(
         pid=99999,
@@ -390,7 +390,7 @@ def test_owner_is_alive_guards_against_recycled_pid():
     )
     assert DeviceExecutionLock._owner_is_alive(invalid_owner) is False
 
-    # 2. Recycled PID belongs to non-Artemis system process -> treated as dead
+    # 2. Recycled PID belongs to non-Apollo system process -> treated as dead
     mock_proc = MagicMock()
     mock_proc.is_running.return_value = True
     mock_proc.name.return_value = "systemd"
@@ -399,9 +399,9 @@ def test_owner_is_alive_guards_against_recycled_pid():
     with patch("psutil.Process", return_value=mock_proc):
         assert DeviceExecutionLock._owner_is_alive(owner) is False
 
-    # 3. PID belongs to a Python / Artemis process -> alive
+    # 3. PID belongs to a Python / Apollo process -> alive
     mock_proc.name.return_value = "python3"
-    mock_proc.cmdline.return_value = ["python3", "-m", "artemis.main"]
+    mock_proc.cmdline.return_value = ["python3", "-m", "apollo.main"]
     with patch("psutil.Process", return_value=mock_proc):
         assert DeviceExecutionLock._owner_is_alive(owner) is True
 

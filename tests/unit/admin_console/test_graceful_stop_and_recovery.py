@@ -22,8 +22,8 @@ import pytest
 
 from apps.admin_console.core.state import state
 from apps.admin_console.services.task_queue_service import TaskQueueService, task_queue_service
-from artemis.runtime import cancel_requests
-from artemis.runtime.device_lock import DeviceLockOwner
+from apollo.runtime import cancel_requests
+from apollo.runtime.device_lock import DeviceLockOwner
 
 TQS = "apps.admin_console.services.task_queue_service"
 
@@ -47,9 +47,9 @@ def isolated(tmp_path, monkeypatch):
     lock_dir.mkdir()
     monkeypatch.setattr(cancel_requests, "get_temp_dir", lambda _subfolder=None: marker_dir)
     monkeypatch.setattr(
-        "artemis.runtime.device_lock.get_temp_dir", lambda _subfolder=None: lock_dir
+        "apollo.runtime.device_lock.get_temp_dir", lambda _subfolder=None: lock_dir
     )
-    monkeypatch.setenv("ARTEMIS_CANCEL_GRACE_SECONDS", "5")
+    monkeypatch.setenv("APOLLO_CANCEL_GRACE_SECONDS", "5")
     for task in list(TaskQueueService._forced_stop_tasks):
         task.cancel()
     TaskQueueService._forced_stop_tasks.clear()
@@ -82,7 +82,7 @@ def _stop_patches(stack: ExitStack, owner: DeviceLockOwner, alive: bool = True):
     stack.enter_context(patch(f"{TQS}.DeviceExecutionLock.is_active_owner", return_value=True))
     stack.enter_context(patch(f"{TQS}.DeviceExecutionLock.cleanup_stale_locks"))
     stack.enter_context(patch(f"{TQS}.session_repo.update_session_status"))
-    stack.enter_context(patch("artemis.runtime.trace_store.update_trace_status"))
+    stack.enter_context(patch("apollo.runtime.trace_store.update_trace_status"))
     pid_alive = stack.enter_context(patch(f"{TQS}.pid_is_alive", return_value=alive))
     terminate = stack.enter_context(patch(f"{TQS}.process_supervisor.terminate_tree_verified"))
     return pid_alive, terminate
@@ -113,7 +113,7 @@ async def test_stop_requests_graceful_cancel_and_skips_kill_when_worker_exits():
 
 @pytest.mark.asyncio
 async def test_stop_kills_worker_that_ignores_the_cancel_request(monkeypatch):
-    monkeypatch.setenv("ARTEMIS_CANCEL_GRACE_SECONDS", "0.6")
+    monkeypatch.setenv("APOLLO_CANCEL_GRACE_SECONDS", "0.6")
     owner = _owner()
     with ExitStack() as stack:
         _pid_alive, terminate = _stop_patches(stack, owner, alive=True)
@@ -130,7 +130,7 @@ async def test_stop_kills_worker_that_ignores_the_cancel_request(monkeypatch):
 
 
 def test_zero_grace_keeps_the_immediate_kill(monkeypatch):
-    monkeypatch.setenv("ARTEMIS_CANCEL_GRACE_SECONDS", "0")
+    monkeypatch.setenv("APOLLO_CANCEL_GRACE_SECONDS", "0")
     owner = _owner()
     with ExitStack() as stack:
         _pid_alive, terminate = _stop_patches(stack, owner)

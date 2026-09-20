@@ -15,10 +15,10 @@
 from unittest.mock import AsyncMock, Mock, patch
 from adbutils import AdbClient
 from langchain_core.messages import AIMessage, ToolMessage
-from artemis.agents.diagnoser.diagnoser import Diagnoser
-from artemis.context import ArtemisContext
-from artemis.core.tool_failure import ToolFailure
-from artemis.graph.state import State
+from apollo.agents.diagnoser.diagnoser import Diagnoser
+from apollo.context import ApolloContext
+from apollo.core.tool_failure import ToolFailure
+from apollo.graph.state import State
 import pytest
 
 
@@ -34,7 +34,7 @@ def ensure_device_connected():
 
 @pytest.fixture
 def mock_context():
-    ctx = Mock(spec=ArtemisContext)
+    ctx = Mock(spec=ApolloContext)
     ctx.llm_config = Mock()
     ctx.data_engine = Mock()
     ctx.data_engine.base_dir = "/tmp"
@@ -57,10 +57,10 @@ def mock_state():
     return state
 
 
-@patch("artemis.agents.diagnoser.diagnoser.get_llm")
-@patch("artemis.tools.video_tool.get_video_analyzer_tool")
-@patch("artemis.tools.log_tool.get_analyze_logs_tool")
-@patch("artemis.agents.diagnoser.diagnoser.get_ui_hierarchy_tool")
+@patch("apollo.agents.diagnoser.diagnoser.get_llm")
+@patch("apollo.tools.video_tool.get_video_analyzer_tool")
+@patch("apollo.tools.log_tool.get_analyze_logs_tool")
+@patch("apollo.agents.diagnoser.diagnoser.get_ui_hierarchy_tool")
 @pytest.mark.asyncio
 async def test_maestro_uninstall_timeout(
     mock_get_ui_tool,
@@ -131,10 +131,10 @@ async def test_maestro_uninstall_timeout(
     assert tool_message.status == "error"
 
 
-@patch("artemis.agents.diagnoser.diagnoser.get_llm")
-@patch("artemis.tools.video_tool.get_video_analyzer_tool")
-@patch("artemis.tools.log_tool.get_analyze_logs_tool")
-@patch("artemis.agents.diagnoser.diagnoser.get_ui_hierarchy_tool")
+@patch("apollo.agents.diagnoser.diagnoser.get_llm")
+@patch("apollo.tools.video_tool.get_video_analyzer_tool")
+@patch("apollo.tools.log_tool.get_analyze_logs_tool")
+@patch("apollo.agents.diagnoser.diagnoser.get_ui_hierarchy_tool")
 @pytest.mark.asyncio
 async def test_uiautomator2_connection_lost(
     mock_get_ui_tool,
@@ -205,10 +205,10 @@ async def test_uiautomator2_connection_lost(
     assert "UIAutomator2 connection lost, reconnecting..." in failed_trace[1]["payload"]["error"]
 
 
-@patch("artemis.agents.diagnoser.diagnoser.get_llm")
-@patch("artemis.tools.video_tool.get_video_analyzer_tool")
-@patch("artemis.tools.log_tool.get_analyze_logs_tool")
-@patch("artemis.agents.diagnoser.diagnoser.get_ui_hierarchy_tool")
+@patch("apollo.agents.diagnoser.diagnoser.get_llm")
+@patch("apollo.tools.video_tool.get_video_analyzer_tool")
+@patch("apollo.tools.log_tool.get_analyze_logs_tool")
+@patch("apollo.agents.diagnoser.diagnoser.get_ui_hierarchy_tool")
 @pytest.mark.asyncio
 async def test_ui_hierarchy_dump_stall(
     mock_get_ui_tool,
@@ -277,10 +277,10 @@ async def test_ui_hierarchy_dump_stall(
     assert tool_message.status == "error"
 
 
-@patch("artemis.agents.diagnoser.diagnoser.get_llm")
-@patch("artemis.tools.video_tool.get_video_analyzer_tool")
-@patch("artemis.tools.log_tool.get_analyze_logs_tool")
-@patch("artemis.agents.diagnoser.diagnoser.get_ui_hierarchy_tool")
+@patch("apollo.agents.diagnoser.diagnoser.get_llm")
+@patch("apollo.tools.video_tool.get_video_analyzer_tool")
+@patch("apollo.tools.log_tool.get_analyze_logs_tool")
+@patch("apollo.agents.diagnoser.diagnoser.get_ui_hierarchy_tool")
 @pytest.mark.asyncio
 async def test_device_offline(
     mock_get_ui_tool,

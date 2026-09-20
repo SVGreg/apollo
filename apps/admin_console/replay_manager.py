@@ -24,9 +24,9 @@ from uuid import UUID
 
 WORKSPACE_ROOT = Path(__file__).parent.parent.resolve()
 
-# Try to import settings from artemis
+# Try to import settings from apollo
 try:
-    from artemis.config import settings
+    from apollo.config import settings
 
     TRACES_PATH = Path(settings.TRACES_PATH)
 except ImportError:
@@ -37,10 +37,10 @@ DB_PATH = TRACES_PATH / "data_engine.db"
 IMAGES_DIR = TRACES_PATH / "images"
 
 try:
-    from artemis.context import ArtemisContext
-    from artemis.graph.state import State
+    from apollo.context import ApolloContext
+    from apollo.graph.state import State
 except ImportError:
-    ArtemisContext = Any
+    ApolloContext = Any
     State = Any
 
 REPLAY_TOOLS_CONFIG = {
@@ -49,7 +49,7 @@ REPLAY_TOOLS_CONFIG = {
         "description": (
             "Visual parsing agent that executes visual ReAct search loops using multi-modal models."
         ),
-        "module": "artemis.tools.explorer_tool",
+        "module": "apollo.tools.explorer_tool",
         "function": "_run_explorer_logic",
         "agent_name": "explorer",
         "denylist_args": ["ctx", "state"],
@@ -62,7 +62,7 @@ REPLAY_TOOLS_CONFIG = {
             "Visual parsing agent that writes Python code using OpenCV and"
             " computer vision to analyze and modify screen images."
         ),
-        "module": "artemis.tools.image_processor_tool",
+        "module": "apollo.tools.image_processor_tool",
         "function": "_run_image_processor_logic",
         "agent_name": "image_processor",
         "denylist_args": ["ctx", "state"],
@@ -73,7 +73,7 @@ REPLAY_TOOLS_CONFIG = {
     # "ask_validator": {
     #     "display_name": "Ask Validator",
     #     "description": "Validation agent that checks if a step or action was completed successfully.",
-    #     "module": "artemis.tools.validator_tool",
+    #     "module": "apollo.tools.validator_tool",
     #     ...
     # }
 }
@@ -82,7 +82,7 @@ REPLAY_TOOLS_CONFIG = {
 class ReplayManager:
     """Manages sandboxed execution and diagnostics of visual agent steps.
 
-    The ReplayManager is the core orchestrator for the Artemis step replay system.
+    The ReplayManager is the core orchestrator for the Apollo step replay system.
     It reconstructs historical execution states (SQLite database records, trace
     histories, and screenshots) and replays a single agent step in an isolated,
     deterministic sandbox environment while interacting live with a physical
@@ -91,7 +91,7 @@ class ReplayManager:
     Key Responsibilities:
         - Reconstructs and preloads historical SQLite states up to a specific
         step.
-        - Establishes sandboxed `ArtemisContext` and `DataEngine` instances.
+        - Establishes sandboxed `ApolloContext` and `DataEngine` instances.
         - Integrates with physical devices via ADB and UIAutomator.
         - Hooks and spies on the Gemini API to capture thoughts and raw outputs.
         - Reconciles live and preloaded traces into unified chronological trees.
@@ -158,10 +158,10 @@ class ReplayManager:
         from adbutils import AdbClient
 
         try:
-            from artemis.clients.ui_automator_client import UIAutomatorClient
+            from apollo.clients.ui_automator_client import UIAutomatorClient
         except ImportError:
             raise ImportError(
-                "Failed to import UIAutomatorClient. Ensure artemis package is installed in path."
+                "Failed to import UIAutomatorClient. Ensure apollo package is installed in path."
             )
 
         self.adb = AdbClient(host="localhost", port=5037)
@@ -607,8 +607,8 @@ class ReplayManager:
         temp_traces_dir.mkdir(parents=True, exist_ok=True)
 
         try:
-            from artemis.data_engine.storage import StorageManager
-            from artemis.data_engine.models import (
+            from apollo.data_engine.storage import StorageManager
+            from apollo.data_engine.models import (
                 SessionMetadata,
                 ImageRecord,
                 StepRecord,
@@ -616,7 +616,7 @@ class ReplayManager:
             )
         except ImportError:
             raise ImportError(
-                "Failed to import Artemis Data Engine modules. Ensure you are"
+                "Failed to import Apollo Data Engine modules. Ensure you are"
                 " running in the correct virtual environment."
             )
 
@@ -1312,7 +1312,7 @@ class ReplayManager:
         filename = db_video_path.name
         for search_dir in [
             self.traces_path,
-            self.workspace_root / "artemis-traces",
+            self.workspace_root / "apollo-traces",
         ]:
             if parent_dir_name and search_dir.exists():
                 try:
@@ -1326,10 +1326,10 @@ class ReplayManager:
                 except Exception as e:
                     print(f"Warning: Error while scanning {search_dir} for renamed folder: {e}")
 
-        # 5. Check if under traces_path or artemis-traces with parent_dir_name
+        # 5. Check if under traces_path or apollo-traces with parent_dir_name
         for search_dir in [
             self.traces_path,
-            self.workspace_root / "artemis-traces",
+            self.workspace_root / "apollo-traces",
         ]:
             fallback_path = search_dir / parent_dir_name / filename
             if fallback_path.exists():
@@ -1610,8 +1610,8 @@ class ReplayManager:
         step_number: int,
         agent_name: str = "explorer",
         replay_id: str = None,
-    ) -> ArtemisContext:
-        """Creates a sandboxed ArtemisContext and DataEngine for the given session and step."""
+    ) -> ApolloContext:
+        """Creates a sandboxed ApolloContext and DataEngine for the given session and step."""
         self._ensure_session_chunked(session_id)
         step_dir = self.test_data_dir / f"{session_id}_chunked" / f"step_{step_number:02d}"
         if not step_dir.exists():
@@ -1670,17 +1670,17 @@ class ReplayManager:
             print(f"Warning: Pre-emptive video clipping failed: {e}")
 
         try:
-            from artemis.context import (
-                ArtemisContext,
+            from apollo.context import (
+                ApolloContext,
                 DeviceContext,
                 DevicePlatform,
                 ExecutionSetup,
             )
-            from artemis.data_engine.engine import DataEngine
+            from apollo.data_engine.engine import DataEngine
 
-            ArtemisContext.model_rebuild()
+            ApolloContext.model_rebuild()
         except ImportError as import_err:
-            raise ImportError(f"Failed to import Artemis core modules: {import_err}")
+            raise ImportError(f"Failed to import Apollo core modules: {import_err}")
 
         import sqlite3
 
@@ -1714,7 +1714,7 @@ class ReplayManager:
         )
         print(f"Replay simulated device: {sim_device_id} ({sim_w}x{sim_h})")
 
-        from artemis.config import get_default_llm_config
+        from apollo.config import get_default_llm_config
 
         try:
             llm_cfg = get_default_llm_config()
@@ -1722,7 +1722,7 @@ class ReplayManager:
             print(f"Warning: Failed to load default LLM config: {e}")
             llm_cfg = None
 
-        ctx = ArtemisContext(
+        ctx = ApolloContext(
             device=device_context,
             adb_client=None,
             ui_adb_client=None,
@@ -1771,7 +1771,7 @@ class ReplayManager:
         )
 
         try:
-            from artemis.graph.state import State
+            from apollo.graph.state import State
         except ImportError as import_err:
             raise ImportError(f"Failed to import State module: {import_err}")
 

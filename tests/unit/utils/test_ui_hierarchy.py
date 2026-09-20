@@ -17,7 +17,7 @@
 
 from unittest.mock import patch
 
-from artemis.utils.ui_hierarchy import (
+from apollo.utils.ui_hierarchy import (
     ElementBounds,
     Point,
     find_element_by_resource_id,
@@ -196,7 +196,7 @@ def test_get_bounds_for_element():
     assert bounds is None
 
     # Suppress logger output for the invalid bounds test case
-    with patch("artemis.utils.ui_hierarchy.logger.error"):
+    with patch("apollo.utils.ui_hierarchy.logger.error"):
         element_invalid_bounds = {
             "bounds": {
                 "x": "invalid",  # Should be int

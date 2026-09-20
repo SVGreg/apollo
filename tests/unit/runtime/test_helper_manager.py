@@ -13,8 +13,8 @@ import subprocess
 
 import pytest
 
-from artemis.runtime import helper_manager as hm
-from artemis.runtime.helper_manager import (
+from apollo.runtime import helper_manager as hm
+from apollo.runtime.helper_manager import (
     DEVICE_PORT,
     SERVICE_NAME,
     AccessibilityHelperManager,
@@ -109,7 +109,7 @@ class FakeAdb:
             elif rest[:3] == ["shell", "am", "broadcast"]:
                 assert rest[3:8] == ["-n", hm.TOKEN_RECEIVER, "-a", hm.TOKEN_ACTION, "--es"]
                 self.tokens[serial] = rest[9]
-                out = "Broadcasting: Intent { act=com.artemis.helper.SET_TOKEN }\nBroadcast completed: result=0\n"
+                out = "Broadcasting: Intent { act=com.apollo.helper.SET_TOKEN }\nBroadcast completed: result=0\n"
             elif rest[:3] == ["shell", "am", "start"]:
                 self.settings_opened = getattr(self, "settings_opened", 0) + 1
             elif rest[:2] == ["shell", "ps"]:
@@ -619,7 +619,7 @@ def test_old_protocol_blocks_a_lazy_attach_without_installing(env):
 def test_auto_install_off_never_installs(env):
     adb, _, manager = env
     manager.auto_install_switch["install"] = False
-    with pytest.raises(HelperUnavailable, match="artemis helper install"):
+    with pytest.raises(HelperUnavailable, match="apollo helper install"):
         manager.attach(SERIAL)
     assert not _calls(adb, ["-s", SERIAL, "install"])
 

@@ -293,7 +293,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.tuningTouched.set(false);
   }
 
-  /** Pull the effective config defaults so the sliders start where artemis.jsonc is. */
+  /** Pull the effective config defaults so the sliders start where apollo.jsonc is. */
   private loadProTuningDefaults(): void {
     this.agentService.getProTuningDefaults().subscribe({
       next: (res) => {
@@ -780,7 +780,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   public getProviderHint(tab: string): string {
     switch (tab) {
       case 'gemini':
-        return 'For a quick start, Google Gemini provides a free API key. Artemis also supports other models (OpenAI, Claude, OpenRouter, etc.)—you can configure your own API keys directly in .env or your environment.';
+        return 'For a quick start, Google Gemini provides a free API key. Apollo also supports other models (OpenAI, Claude, OpenRouter, etc.)—you can configure your own API keys directly in .env or your environment.';
       case 'ocr':
         return 'Google Cloud Vision API key for on-screen OCR text detection and UI grounding.';
       default:

@@ -15,7 +15,7 @@
 import base64
 from io import BytesIO
 import unittest
-from artemis.utils.ocr_xml_fusion import (
+from apollo.utils.ocr_xml_fusion import (
     _calculate_overlap_ratio,
     _crop_image_remove_status_bar,
     _detect_status_bar_height,

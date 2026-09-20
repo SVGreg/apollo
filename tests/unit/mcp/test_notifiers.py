@@ -28,7 +28,7 @@ from mcp_server.notifiers import (
     WebhookNotifier,
     notify,
 )
-from artemis.runtime import trace_store
+from apollo.runtime import trace_store
 
 
 class DummyNotifier(BaseNotifier):
@@ -95,13 +95,13 @@ def test_webhook_notifier_not_configured(monkeypatch):
 
 
 def test_desktop_notifier_disabled(monkeypatch):
-    monkeypatch.setenv("ARTEMIS_DESKTOP_NOTIFY", "false")
+    monkeypatch.setenv("APOLLO_DESKTOP_NOTIFY", "false")
     notifier = DesktopNotifier()
     assert notifier.is_available() is False
 
 
 def test_desktop_notifier_enabled_by_default(monkeypatch):
-    monkeypatch.delenv("ARTEMIS_DESKTOP_NOTIFY", raising=False)
+    monkeypatch.delenv("APOLLO_DESKTOP_NOTIFY", raising=False)
     monkeypatch.delenv("CI", raising=False)
     import shutil
     import sys
@@ -121,12 +121,12 @@ def test_desktop_notifier_enabled_by_default(monkeypatch):
 def test_script_notifier(monkeypatch):
     from mcp_server.notifiers.script import ScriptNotifier
 
-    monkeypatch.delenv("ARTEMIS_NOTIFY_CMD", raising=False)
+    monkeypatch.delenv("APOLLO_NOTIFY_CMD", raising=False)
     monkeypatch.delenv("MCP_NOTIFY_COMMAND", raising=False)
     notifier = ScriptNotifier()
     assert notifier.is_available() is False
 
-    monkeypatch.setenv("ARTEMIS_NOTIFY_CMD", "echo 'Notify: {title} - {message}'")
+    monkeypatch.setenv("APOLLO_NOTIFY_CMD", "echo 'Notify: {title} - {message}'")
     assert notifier.is_available() is True
     res = notifier.notify("conv-123", "Task done", title="Success", payload={"trace_id": "t-1"})
     assert res is True

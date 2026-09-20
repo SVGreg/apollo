@@ -20,7 +20,7 @@ render normalizes, and the explicit marker — never a magnitude heuristic —
 is what makes that pass idempotent.
 """
 
-from artemis.utils.coordinates import (
+from apollo.utils.coordinates import (
     COORDINATE_SPACE_KEY,
     COORDINATE_SPACE_NORMALIZED,
     COORDINATE_SPACE_PIXEL,

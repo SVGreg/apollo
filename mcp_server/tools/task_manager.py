@@ -26,14 +26,14 @@ from typing import Any
 from mcp_server.base import mcp
 from mcp_server.notifiers import notify
 from mcp_server.utils import env_utils
-from artemis.runtime import (
+from apollo.runtime import (
     DeviceExecutionLock,
     is_daemon_running,
     process_supervisor,
     stop_task_on_daemon,
     trace_store,
 )
-from artemis.runtime.process_probe import pid_is_alive
+from apollo.runtime.process_probe import pid_is_alive
 
 logger = logging.getLogger(__name__)
 
@@ -198,7 +198,7 @@ def _mark_liveness_failure(trace_id: str, status_data: dict[str, Any]) -> None:
             notify(
                 conversation_id=conv_id,
                 message=(
-                    f"Artemis background task died unexpectedly for trace '{trace_id}'. "
+                    f"Apollo background task died unexpectedly for trace '{trace_id}'. "
                     f"Error: {_LIVENESS_FAILURE_ERROR}"
                 ),
                 event_type="failed",
@@ -493,7 +493,7 @@ def mobile_manage_task(
 
         # 1. First attempt graceful cancellation via unified Daemon if available
         stopped_via_daemon = False
-        if os.environ.get("ARTEMIS_STANDALONE") != "1":
+        if os.environ.get("APOLLO_STANDALONE") != "1":
             try:
                 if is_daemon_running():
                     stopped_via_daemon = stop_task_on_daemon(trace_id)

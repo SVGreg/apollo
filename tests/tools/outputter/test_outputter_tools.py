@@ -17,13 +17,13 @@ fixture database."""
 
 import pytest
 
-from artemis.context import ArtemisContext
-from artemis.tools.history import get_history_tools
+from apollo.context import ApolloContext
+from apollo.tools.history import get_history_tools
 
 
 @pytest.fixture
-def history_tools(artemis_context: ArtemisContext):
-    search, replay, screenshot = get_history_tools(artemis_context)
+def history_tools(apollo_context: ApolloContext):
+    search, replay, screenshot = get_history_tools(apollo_context)
     return {"search_history": search, "replay_steps": replay, "get_step_screenshot": screenshot}
 
 

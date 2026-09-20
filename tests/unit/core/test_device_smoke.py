@@ -21,9 +21,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from artemis.core.diagnostics import smoke_test_device
-from artemis.core.diagnostics import device_smoke
-from artemis.runtime.device_lock import DeviceExecutionLock, DeviceLockOwner
+from apollo.core.diagnostics import smoke_test_device
+from apollo.core.diagnostics import device_smoke
+from apollo.runtime.device_lock import DeviceExecutionLock, DeviceLockOwner
 
 SERIAL = "59100DLCR0033X"
 FAKE_JPEG = b"\xff\xd8\xff" + bytes(range(256)) * 8 + b"\xff\xd9"
@@ -33,7 +33,7 @@ FAKE_JPEG = b"\xff\xd8\xff" + bytes(range(256)) * 8 + b"\xff\xd9"
 def idle_devices(monkeypatch):
     """No live lock owners unless a test installs some."""
     monkeypatch.setattr(DeviceExecutionLock, "get_active_owners", classmethod(lambda cls: {}))
-    monkeypatch.delenv("ARTEMIS_DEVICE_ID", raising=False)
+    monkeypatch.delenv("APOLLO_DEVICE_ID", raising=False)
     monkeypatch.delenv("ADB_DEVICE_SERIAL", raising=False)
 
 
@@ -54,7 +54,7 @@ def patch_controller(monkeypatch):
                 return factory(device_serial)
             return controller
 
-        monkeypatch.setattr("artemis.mcp.adb_server._get_controller", _fake_get_controller)
+        monkeypatch.setattr("apollo.mcp.adb_server._get_controller", _fake_get_controller)
         controller.calls = calls
         return controller
 
@@ -359,7 +359,7 @@ def test_fix_for_error_generic_fallback_uses_serial():
 
 
 def test_smoke_test_is_exported_from_diagnostics_package():
-    import artemis.core.diagnostics as diagnostics
+    import apollo.core.diagnostics as diagnostics
 
     assert "smoke_test_device" in diagnostics.__all__
     assert diagnostics.smoke_test_device is device_smoke.smoke_test_device

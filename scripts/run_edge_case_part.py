@@ -20,23 +20,23 @@ WORKSPACE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if WORKSPACE_ROOT not in sys.path:
     sys.path.insert(0, WORKSPACE_ROOT)
 
-from artemis.interfaces.sdk.client import ArtemisClient
-from artemis.runtime.device_lock import DeviceExecutionLock
-from artemis.toolchain import ensure_toolchain_in_path
+from apollo.interfaces.sdk.client import ApolloClient
+from apollo.runtime.device_lock import DeviceExecutionLock
+from apollo.toolchain import ensure_toolchain_in_path
 
 ensure_toolchain_in_path()
 
-from artemis.runtime import device_pool
+from apollo.runtime import device_pool
 
 
 def _resolve_devices() -> tuple[str, str]:
     all_devs = device_pool.list_devices()
     real_dev = next((d for d in all_devs if not d.is_emulator and d.state == "device"), None)
     emu_dev = next((d for d in all_devs if d.is_emulator and d.state == "device"), None)
-    phone = os.environ.get("ARTEMIS_PHONE_SERIAL") or (
+    phone = os.environ.get("APOLLO_PHONE_SERIAL") or (
         real_dev.serial if real_dev else "63191FDKX00062"
     )
-    emu = os.environ.get("ARTEMIS_EMULATOR_SERIAL") or (
+    emu = os.environ.get("APOLLO_EMULATOR_SERIAL") or (
         emu_dev.serial if emu_dev else "emulator-5554"
     )
     return phone, emu
@@ -89,7 +89,7 @@ async def run_part_1():
     print("-" * 80)
 
     DeviceExecutionLock.cleanup_stale_locks()
-    client = ArtemisClient(device_serial=PHONE_SERIAL, concurrency_mode="per_device")
+    client = ApolloClient(device_serial=PHONE_SERIAL, concurrency_mode="per_device")
 
     async def task_1a():
         print("🚀 [Task 1A] Launching: Open Settings on physical device...")
@@ -143,8 +143,8 @@ async def run_part_2():
     print("-" * 80)
 
     DeviceExecutionLock.cleanup_stale_locks()
-    client_phone = ArtemisClient(device_serial=PHONE_SERIAL, concurrency_mode="per_device")
-    client_emu = ArtemisClient(device_serial=EMULATOR_SERIAL, concurrency_mode="per_device")
+    client_phone = ApolloClient(device_serial=PHONE_SERIAL, concurrency_mode="per_device")
+    client_emu = ApolloClient(device_serial=EMULATOR_SERIAL, concurrency_mode="per_device")
 
     start_t = time.time()
 
@@ -198,8 +198,8 @@ async def run_part_3():
     print("-" * 80)
 
     DeviceExecutionLock.cleanup_stale_locks()
-    client_phone_g = ArtemisClient(device_serial=PHONE_SERIAL, concurrency_mode="global")
-    client_emu_g = ArtemisClient(device_serial=EMULATOR_SERIAL, concurrency_mode="global")
+    client_phone_g = ApolloClient(device_serial=PHONE_SERIAL, concurrency_mode="global")
+    client_emu_g = ApolloClient(device_serial=EMULATOR_SERIAL, concurrency_mode="global")
 
     async def task_3a():
         print(f"🚀 [Task 3A - Phone] Global mode starting: Executing on {PHONE_SERIAL}...")
@@ -252,8 +252,8 @@ async def run_part_4():
     print("-" * 80)
 
     DeviceExecutionLock.cleanup_stale_locks()
-    client_phone = ArtemisClient(device_serial=PHONE_SERIAL, concurrency_mode="per_device")
-    client_emu = ArtemisClient(device_serial=EMULATOR_SERIAL, concurrency_mode="per_device")
+    client_phone = ApolloClient(device_serial=PHONE_SERIAL, concurrency_mode="per_device")
+    client_emu = ApolloClient(device_serial=EMULATOR_SERIAL, concurrency_mode="per_device")
 
     async def task_4a():
         print("🚀 [Task 4A - Phone] Started...")
@@ -289,7 +289,7 @@ async def run_part_4():
 
 async def main():
     global PHONE_SERIAL, EMULATOR_SERIAL
-    parser = argparse.ArgumentParser(description="Artemis Concurrency & Queue Edge-Cases Runner")
+    parser = argparse.ArgumentParser(description="Apollo Concurrency & Queue Edge-Cases Runner")
     parser.add_argument(
         "--part",
         choices=["1", "2", "3", "4", "all"],

@@ -18,7 +18,7 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 from langchain_core.tools import StructuredTool
 import pytest
 
-from artemis.agents.checker.checker import (
+from apollo.agents.checker.checker import (
     CheckReport,
     CheckVerdict,
     _normalize_report,
@@ -30,10 +30,10 @@ from artemis.agents.checker.checker import (
     run_final_check,
     verdicts_allow_release,
 )
-from artemis.context import ArtemisContext, ExecutionSetup
-from artemis.core.tool_failure import ToolFailure
-from artemis.graph.checkpoints import EvidenceAnchor
-from artemis.utils.plan_grammar import CheckItem
+from apollo.context import ApolloContext, ExecutionSetup
+from apollo.core.tool_failure import ToolFailure
+from apollo.graph.checkpoints import EvidenceAnchor
+from apollo.utils.plan_grammar import CheckItem
 
 
 def _ci(kind="verify", when="on_complete", text="expected state", parent="p"):
@@ -41,7 +41,7 @@ def _ci(kind="verify", when="on_complete", text="expected state", parent="p"):
 
 
 def _mock_ctx(**setup_kwargs):
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.execution_setup = ExecutionSetup(**setup_kwargs)
     ctx.data_engine = MagicMock()
     ctx.data_engine.base_dir = "unused"
@@ -213,13 +213,13 @@ async def test_checkpoint_entry_never_touches_live_screen():
     response.tool_calls = []
 
     with (
-        patch("artemis.agents.checker.checker.get_llm", return_value=llm),
+        patch("apollo.agents.checker.checker.get_llm", return_value=llm),
         patch(
-            "artemis.agents.checker.checker.acomplete",
+            "apollo.agents.checker.checker.acomplete",
             new=AsyncMock(return_value=response),
         ),
         patch(
-            "artemis.agents.checker.checker._capture_final_screen",
+            "apollo.agents.checker.checker._capture_final_screen",
             new=AsyncMock(return_value=(None, "SHOULD NOT BE CALLED")),
         ) as capture_mock,
     ):
@@ -248,13 +248,13 @@ async def test_final_entry_captures_live_screen():
     response.tool_calls = []
 
     with (
-        patch("artemis.agents.checker.checker.get_llm", return_value=llm),
+        patch("apollo.agents.checker.checker.get_llm", return_value=llm),
         patch(
-            "artemis.agents.checker.checker.acomplete",
+            "apollo.agents.checker.checker.acomplete",
             new=AsyncMock(return_value=response),
         ),
         patch(
-            "artemis.agents.checker.checker._capture_final_screen",
+            "apollo.agents.checker.checker._capture_final_screen",
             new=AsyncMock(return_value=("b64img", "elements")),
         ) as capture_mock,
     ):
@@ -315,8 +315,8 @@ async def _run_with_screenshot(tmp_path, provider):
     llm, acomplete = _screenshot_then_verdict(provider)
 
     with (
-        patch("artemis.agents.checker.checker.get_llm", return_value=llm),
-        patch("artemis.agents.checker.checker.acomplete", new=acomplete),
+        patch("apollo.agents.checker.checker.get_llm", return_value=llm),
+        patch("apollo.agents.checker.checker.acomplete", new=acomplete),
     ):
         report = await run_checkpoint_check(
             ctx,
@@ -384,8 +384,8 @@ async def test_replay_steps_result_is_a_plain_tool_message(tmp_path):
         "google", {"name": "replay_steps", "args": {"start_step": 3}, "id": "tc-replay"}
     )
     with (
-        patch("artemis.agents.checker.checker.get_llm", return_value=llm),
-        patch("artemis.agents.checker.checker.acomplete", new=acomplete),
+        patch("apollo.agents.checker.checker.get_llm", return_value=llm),
+        patch("apollo.agents.checker.checker.acomplete", new=acomplete),
     ):
         await run_checkpoint_check(
             ctx,
@@ -436,7 +436,7 @@ def _bus_ctx(tmp_path):
 
 
 def _stream(ctx, exec_id, chunk, *, stream_type="text", parent=None):
-    from artemis.data_engine.context_vars import CURRENT_TRACE_ID
+    from apollo.data_engine.context_vars import CURRENT_TRACE_ID
 
     ctx.data_engine._publish(
         "llm_stream",
@@ -450,7 +450,7 @@ def _stream(ctx, exec_id, chunk, *, stream_type="text", parent=None):
 
 
 def _read_streams(tmp_path):
-    from artemis.graph.checkpoints import read_attempt_streams
+    from apollo.graph.checkpoints import read_attempt_streams
 
     return read_attempt_streams(tmp_path)
 
@@ -475,8 +475,8 @@ async def test_checker_persists_its_streamed_turns_as_timestamped_segments(tmp_p
         return CheckReport(verdicts=[])
 
     with (
-        patch("artemis.agents.checker.checker._run_check_loop", side_effect=loop),
-        patch("artemis.agents.checker.checker.build_checker_tools", return_value=[]),
+        patch("apollo.agents.checker.checker._run_check_loop", side_effect=loop),
+        patch("apollo.agents.checker.checker.build_checker_tools", return_value=[]),
     ):
         await run_checkpoint_check(
             ctx,
@@ -518,10 +518,10 @@ async def test_final_entry_persists_transcript_even_when_the_loop_fails(tmp_path
         raise RuntimeError("provider down")
 
     with (
-        patch("artemis.agents.checker.checker._run_check_loop", side_effect=loop),
-        patch("artemis.agents.checker.checker.build_checker_tools", return_value=[]),
+        patch("apollo.agents.checker.checker._run_check_loop", side_effect=loop),
+        patch("apollo.agents.checker.checker.build_checker_tools", return_value=[]),
         patch(
-            "artemis.agents.checker.checker._capture_final_screen",
+            "apollo.agents.checker.checker._capture_final_screen",
             AsyncMock(return_value=(None, "")),
         ),
         pytest.raises(RuntimeError),
@@ -552,8 +552,8 @@ async def test_no_transcript_without_attempt_id_or_streamed_text(tmp_path):
         _stream(ctx, "turn-1", "text")
         return CheckReport(verdicts=[])
 
-    with patch("artemis.agents.checker.checker.build_checker_tools", return_value=[]):
-        with patch("artemis.agents.checker.checker._run_check_loop", side_effect=talkative):
+    with patch("apollo.agents.checker.checker.build_checker_tools", return_value=[]):
+        with patch("apollo.agents.checker.checker._run_check_loop", side_effect=talkative):
             await run_checkpoint_check(
                 ctx,
                 check_items=[_ci(text="x")],
@@ -561,7 +561,7 @@ async def test_no_transcript_without_attempt_id_or_streamed_text(tmp_path):
                 goal="g",
                 subgoal_text="G",
             )
-        with patch("artemis.agents.checker.checker._run_check_loop", side_effect=silent):
+        with patch("apollo.agents.checker.checker._run_check_loop", side_effect=silent):
             await run_checkpoint_check(
                 ctx,
                 check_items=[_ci(text="x")],
@@ -582,8 +582,8 @@ async def test_no_transcript_without_attempt_id_or_streamed_text(tmp_path):
 async def test_probe_device_invalid_kind_is_a_tool_failure():
     """A refused probe answers with a ToolFailure, so the tool loop marks the
     ToolMessage as an error structurally rather than by sniffing its wording."""
-    from artemis.agents.checker.checker import get_probe_tool
-    from artemis.core.tool_failure import is_tool_failure
+    from apollo.agents.checker.checker import get_probe_tool
+    from apollo.core.tool_failure import is_tool_failure
 
     tool = get_probe_tool(_mock_ctx(disable_device_probes=False))
     result = await tool.ainvoke({"kind": "shell", "params": None})
@@ -593,8 +593,8 @@ async def test_probe_device_invalid_kind_is_a_tool_failure():
 
 @pytest.mark.asyncio
 async def test_probe_device_execution_error_is_a_tool_failure():
-    from artemis.agents.checker.checker import get_probe_tool
-    from artemis.core.tool_failure import is_tool_failure
+    from apollo.agents.checker.checker import get_probe_tool
+    from apollo.core.tool_failure import is_tool_failure
 
     ctx = _mock_ctx(disable_device_probes=False)
     ctx.get_adb_client.side_effect = RuntimeError("no adb")
@@ -607,8 +607,8 @@ async def test_probe_device_execution_error_is_a_tool_failure():
 def test_format_history_marks_self_described_targets_only():
     """A step without a summary renders its action through the shared renderer,
     so the Checker sees which target labels are the model's own statement."""
-    from artemis.agents.checker.checker import _format_history
-    from artemis.utils.task_tree import SELF_DESCRIBED_MARKER
+    from apollo.agents.checker.checker import _format_history
+    from apollo.utils.task_tree import SELF_DESCRIBED_MARKER
 
     ctx = _mock_ctx()
     ctx.data_engine.get_agent_friendly_steps.return_value = [
@@ -651,7 +651,7 @@ def test_format_history_uses_session_offsets_and_skips_empty_steps():
     """Rows carry the session-relative ``T+mm:ss`` clock every agent shares
     (from the step timestamp, else from the engine's ``97.7s`` label), and a
     step with neither summary nor action renders no row."""
-    from artemis.agents.checker.checker import _format_history
+    from apollo.agents.checker.checker import _format_history
 
     ctx = _mock_ctx()
     ctx.data_engine.session_start_time = 1000.0
@@ -684,10 +684,10 @@ async def _final_check_human_text(ctx) -> str:
     acomplete_mock = AsyncMock(return_value=response)
 
     with (
-        patch("artemis.agents.checker.checker.get_llm", return_value=llm),
-        patch("artemis.agents.checker.checker.acomplete", new=acomplete_mock),
+        patch("apollo.agents.checker.checker.get_llm", return_value=llm),
+        patch("apollo.agents.checker.checker.acomplete", new=acomplete_mock),
         patch(
-            "artemis.agents.checker.checker._capture_final_screen",
+            "apollo.agents.checker.checker._capture_final_screen",
             new=AsyncMock(return_value=(None, "elements")),
         ),
     ):
@@ -718,7 +718,7 @@ async def test_final_review_lists_user_guidance_from_the_step_records():
     section = text.split("# User guidance received during the run\n", 1)[1].split("\n\n", 1)[0]
     assert section == '- Step 2 (T+01:05): "Skip the login"'
     # The system prompt audits the goal as amended by that guidance.
-    from artemis.agents.checker.checker import _load_prompts
+    from apollo.agents.checker.checker import _load_prompts
 
     assert "as amended by the user guidance" in _load_prompts()["final_guide"]
 
@@ -766,9 +766,9 @@ async def test_check_loop_tool_message_status_is_structural(result, expected_sta
     messages = [SystemMessage(content="s"), HumanMessage(content="h")]
 
     with (
-        patch("artemis.agents.checker.checker.get_llm", return_value=llm),
+        patch("apollo.agents.checker.checker.get_llm", return_value=llm),
         patch(
-            "artemis.agents.checker.checker.acomplete",
+            "apollo.agents.checker.checker.acomplete",
             new=AsyncMock(side_effect=[tool_turn, final_turn]),
         ),
     ):

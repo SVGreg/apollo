@@ -14,7 +14,7 @@
 
 """Tests for element hit testing (used by the Explorer's candidate de-dup)."""
 
-from artemis.utils.element_hit_test import find_element_at_point
+from apollo.utils.element_hit_test import find_element_at_point
 
 
 def _xml_el(text, bounds, resource_id=None, cls="android.widget.TextView"):

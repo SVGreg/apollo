@@ -17,7 +17,7 @@
 from pathlib import Path
 from unittest.mock import patch
 
-from artemis.platform import (
+from apollo.platform import (
     DarwinPlatform,
     LinuxPlatform,
     OSType,
@@ -46,8 +46,8 @@ def test_linux_platform_paths():
     ):
         linux_p = LinuxPlatform()
         assert linux_p.os_type == OSType.LINUX
-        assert linux_p.paths.config_dir == Path("/tmp/test_xdg_config/artemis")
-        assert linux_p.paths.data_dir == Path("/tmp/test_xdg_data/artemis")
+        assert linux_p.paths.config_dir == Path("/tmp/test_xdg_config/apollo")
+        assert linux_p.paths.data_dir == Path("/tmp/test_xdg_data/apollo")
         assert linux_p.process.path_separator == ":"
 
 
@@ -57,7 +57,7 @@ def test_darwin_platform_paths():
     assert darwin_p.os_type == OSType.MACOS
     # Compare path components so the assertion holds regardless of the host
     # OS path separator used by str().
-    assert darwin_p.paths.config_dir.parts[-3:] == ("Library", "Application Support", "artemis")
+    assert darwin_p.paths.config_dir.parts[-3:] == ("Library", "Application Support", "apollo")
     assert darwin_p.process.path_separator == ":"
 
 

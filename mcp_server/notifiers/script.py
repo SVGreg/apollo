@@ -28,13 +28,13 @@ class ScriptNotifier(BaseNotifier):
     """Notifier that executes a user-defined command or script when an event occurs.
 
     This adapter enables universal integration with any custom IDE, editor (Neovim/Emacs),
-    or automation platform by allowing users to define ARTEMIS_NOTIFY_CMD or MCP_NOTIFY_COMMAND.
+    or automation platform by allowing users to define APOLLO_NOTIFY_CMD or MCP_NOTIFY_COMMAND.
     Placeholders like {title}, {message}, {conversation_id}, {event_type}, and {trace_id}
     are automatically replaced before execution.
     """
 
     ENV_VARS = [
-        "ARTEMIS_NOTIFY_CMD",
+        "APOLLO_NOTIFY_CMD",
         "MCP_NOTIFY_COMMAND",
     ]
 
@@ -65,7 +65,7 @@ class ScriptNotifier(BaseNotifier):
             return False
 
         trace_id = (payload or {}).get("trace_id", "")
-        formatted_title = title or f"Artemis Task {event_type.capitalize()}"
+        formatted_title = title or f"Apollo Task {event_type.capitalize()}"
 
         # Replace template placeholders safely
         try:

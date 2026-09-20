@@ -80,7 +80,7 @@ const STARTUP_WORK_STAGES: StartupWorkStage[] = [
     // First task on a device installs / upgrades the accessibility helper
     // (a few seconds): say so instead of a generic "connecting".
     liveDetailStages: ['helper_install', 'helper_upgrade'],
-    // "UI hierarchy source: Artemis accessibility helper v1.1.3" (or UIAutomator2).
+    // "UI hierarchy source: Apollo accessibility helper v1.1.3" (or UIAutomator2).
     completedDetailStage: 'hierarchy_backend'
   },
   {
@@ -2142,7 +2142,7 @@ export class AgentStreamComponent implements AfterViewInit {
     const lower = name.toLowerCase();
     if (lower.includes('pro')) return 'Pro';
     if (lower.includes('flash')) return 'Flash';
-    return name.replace(/^artemis\s+/i, '');
+    return name.replace(/^apollo\s+/i, '');
   }
 
   public getModelIcon(name: string | undefined | null): string {
@@ -2162,12 +2162,12 @@ export class AgentStreamComponent implements AfterViewInit {
   }
 
   public getArchitectureTooltip(model?: ModelInfo | null): string {
-    if (!model) return 'Agent Architecture: ARTEMIS Flash (Reactive Fast Loop)';
+    if (!model) return 'Agent Architecture: APOLLO Flash (Reactive Fast Loop)';
     const name = this.getModelDisplayName(model.name);
     const isPro = name.toLowerCase().includes('pro');
     const archDesc = isPro
-      ? 'ARTEMIS Pro (Multi-Agent Cognitive State Graph)'
-      : 'ARTEMIS Flash (Reactive Fast Loop)';
+      ? 'APOLLO Pro (Multi-Agent Cognitive State Graph)'
+      : 'APOLLO Flash (Reactive Fast Loop)';
     if (model.id) {
       return `Agent Architecture: ${archDesc} · LLM: ${model.id} (${model.provider || 'google'})`;
     }

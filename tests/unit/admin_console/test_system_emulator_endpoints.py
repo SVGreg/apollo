@@ -21,7 +21,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from apps.admin_console.server import app
-from artemis.core.diagnostics.emulator_manager import EmulatorManager
+from apollo.core.diagnostics.emulator_manager import EmulatorManager
 
 
 def test_emulator_uses_posix_session_isolation(monkeypatch):
@@ -84,12 +84,12 @@ async def test_adb_endpoint_mutation_rejects_cross_origin_browser_requests():
         )
 
     assert res.status_code == 403
-    assert "Artemis console" in res.json()["detail"]
+    assert "Apollo console" in res.json()["detail"]
 
 
 @pytest.mark.asyncio
 async def test_adb_endpoint_mutation_is_local_only_by_default(monkeypatch):
-    monkeypatch.delenv("ARTEMIS_ALLOW_REMOTE_ADB_CONFIGURATION", raising=False)
+    monkeypatch.delenv("APOLLO_ALLOW_REMOTE_ADB_CONFIGURATION", raising=False)
     transport = ASGITransport(app=app, client=("192.168.1.20", 42000))
     async with AsyncClient(transport=transport, base_url="http://localhost") as ac:
         res = await ac.post(

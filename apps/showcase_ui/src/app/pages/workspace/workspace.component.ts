@@ -65,7 +65,7 @@ export class WorkspaceComponent implements OnInit {
 
   ngOnInit(): void {
     if (typeof localStorage !== 'undefined') {
-      const saved = localStorage.getItem('artemis_selected_profile');
+      const saved = localStorage.getItem('apollo_selected_profile');
       if (saved === 'flash' || saved === 'pro') {
         this.selectedProfile.set(saved);
       }
@@ -91,7 +91,7 @@ export class WorkspaceComponent implements OnInit {
     }
     this.selectedProfile.set(profile);
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('artemis_selected_profile', profile);
+      localStorage.setItem('apollo_selected_profile', profile);
     }
   }
 

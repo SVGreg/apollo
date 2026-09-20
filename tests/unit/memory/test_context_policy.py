@@ -20,14 +20,14 @@ from unittest.mock import patch
 
 import pytest
 
-from artemis.memory.context_policy import (
+from apollo.memory.context_policy import (
     CONTEXT_POLICIES,
     DIGEST_LEDGER_MARKER_TEMPLATE,
     build_history_for,
     load_chunk_blocks,
     resolve_policy,
 )
-from artemis.utils.task_tree import build_plan_and_history
+from apollo.utils.task_tree import build_plan_and_history
 
 HASH_A = "hash-a"
 HASH_B = "hash-b"
@@ -156,7 +156,7 @@ def _config_with_policies(policies):
 
 def test_resolve_policy_applies_config_override():
     cfg = _config_with_policies({"planner": {"last_n_detailed": 3, "bogus_field": 1}})
-    with patch("artemis.config.load_agent_config", return_value=cfg):
+    with patch("apollo.config.load_agent_config", return_value=cfg):
         policy = resolve_policy("planner")
     assert policy.last_n_detailed == 3
     assert policy.strict_milestone_pruning is True  # untouched fields survive
@@ -213,7 +213,7 @@ def _transcript_cfg(enabled: bool):
 
 def test_flag_off_output_is_byte_identical_even_with_engine():
     engine = _FakeEngine([_chunk_row()])
-    with patch("artemis.config.load_agent_config", return_value=_transcript_cfg(False)):
+    with patch("apollo.config.load_agent_config", return_value=_transcript_cfg(False)):
         with_engine = build_history_for("outputter", TASK_PLAN, STEPS, HASH_B, engine=engine)
         without_engine = build_history_for("outputter", TASK_PLAN, STEPS, HASH_B)
     assert with_engine == without_engine
@@ -222,7 +222,7 @@ def test_flag_off_output_is_byte_identical_even_with_engine():
 
 def test_flag_on_full_view_renders_chunk_block_and_drops_covered_steps():
     engine = _FakeEngine([_chunk_row()])
-    with patch("artemis.config.load_agent_config", return_value=_transcript_cfg(True)):
+    with patch("apollo.config.load_agent_config", return_value=_transcript_cfg(True)):
         out = build_history_for("outputter", TASK_PLAN, STEPS, HASH_B, engine=engine)
     # Full view: the whole three-band block including the ③ ledger.
     assert "[Chunk 1 | Steps 1–3" in out
@@ -237,7 +237,7 @@ def test_flag_on_full_view_renders_chunk_block_and_drops_covered_steps():
 def test_flag_on_digest_view_replaces_ledger_with_recall_marker():
     engine = _FakeEngine([_chunk_row()])
     cfg = _transcript_cfg(True)
-    with patch("artemis.config.load_agent_config", return_value=cfg):
+    with patch("apollo.config.load_agent_config", return_value=cfg):
         out = build_history_for(
             "diagnoser",
             TASK_PLAN,
@@ -255,7 +255,7 @@ def test_flag_on_digest_view_replaces_ledger_with_recall_marker():
 
 def test_chunk_view_none_never_loads_chunks():
     engine = _FakeEngine([_chunk_row()])
-    with patch("artemis.config.load_agent_config", return_value=_transcript_cfg(True)):
+    with patch("apollo.config.load_agent_config", return_value=_transcript_cfg(True)):
         assert load_chunk_blocks(engine, None) is None
         # The cold-start policy declares chunk_view=None: even with an engine
         # and the flag on, its output carries no chunk blocks (the restored
@@ -276,7 +276,7 @@ def test_most_recent_step_is_never_suppressed_by_a_chunk():
             )
         ]
     )
-    with patch("artemis.config.load_agent_config", return_value=_transcript_cfg(True)):
+    with patch("apollo.config.load_agent_config", return_value=_transcript_cfg(True)):
         out = build_history_for("outputter", TASK_PLAN, STEPS, HASH_B, engine=engine)
     # The most-recent step must keep its own (detailed) rendering.
     assert "Step 7" in out

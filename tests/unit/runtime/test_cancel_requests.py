@@ -18,7 +18,7 @@ import time
 
 import pytest
 
-from artemis.runtime import cancel_requests as cr
+from apollo.runtime import cancel_requests as cr
 
 
 @pytest.fixture(autouse=True)

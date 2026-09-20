@@ -24,9 +24,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from artemis.agents.checker.checker import CheckReport, CheckVerdict
-from artemis.context import ArtemisContext, ExecutionSetup
-from artemis.graph.checkpoints import (
+from apollo.agents.checker.checker import CheckReport, CheckVerdict
+from apollo.context import ApolloContext, ExecutionSetup
+from apollo.graph.checkpoints import (
     CHECKER_EVENT,
     CheckpointRun,
     PendingCheckpoint,
@@ -35,9 +35,9 @@ from artemis.graph.checkpoints import (
     read_ledger,
     spawn_pending_checkpoints,
 )
-from artemis.graph.graph import exit_settlement_node
-from artemis.graph.state import State
-from artemis.utils.plan_grammar import CheckItem, subgoal_hash
+from apollo.graph.graph import exit_settlement_node
+from apollo.graph.state import State
+from apollo.utils.plan_grammar import CheckItem, subgoal_hash
 
 GOAL_TEXT = "Create the alarm"
 GOAL_KEY = subgoal_hash(GOAL_TEXT)
@@ -49,7 +49,7 @@ PLAN = (
 def _make_ctx(tmp_path, **setup_kwargs):
     setup_kwargs.setdefault("disable_checker", False)
     setup_kwargs.setdefault("disable_midway_checks", False)
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.execution_setup = ExecutionSetup(**setup_kwargs)
     ctx.data_engine = MagicMock()
     ctx.data_engine.base_dir = tmp_path
@@ -109,7 +109,7 @@ def _events(ctx, event: str | None = None) -> list[dict]:
 
 
 def test_publish_is_best_effort_without_engine():
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.data_engine = None
     publish_checker_event(ctx, {"event": "attempt_started"})  # must not raise
 
@@ -132,7 +132,7 @@ async def test_spawn_passes_attempt_id_to_checker(tmp_path):
         seen.update(k)
         await never.wait()
 
-    with patch("artemis.agents.checker.checker.run_checkpoint_check", side_effect=hang):
+    with patch("apollo.agents.checker.checker.run_checkpoint_check", side_effect=hang):
         await spawn_pending_checkpoints(ctx, _make_state(), anchor_step_id="step-7")
         await asyncio.sleep(0)
 
@@ -152,8 +152,8 @@ async def test_checker_entry_announces_attempt_with_trace_id(tmp_path):
     """attempt_started is published from inside the traced checker scope and
     carries the Checker's own trace id (UI routing key for its stream/tools),
     the anchor and the declared items."""
-    from artemis.agents.checker.checker import run_checkpoint_check, run_final_check
-    from artemis.graph.checkpoints import EvidenceAnchor
+    from apollo.agents.checker.checker import run_checkpoint_check, run_final_check
+    from apollo.graph.checkpoints import EvidenceAnchor
 
     _write_plan(tmp_path)
     ctx = _make_ctx(tmp_path)
@@ -163,12 +163,12 @@ async def test_checker_entry_announces_attempt_with_trace_id(tmp_path):
 
     with (
         patch(
-            "artemis.agents.checker.checker._run_check_loop", AsyncMock(return_value=empty_report)
+            "apollo.agents.checker.checker._run_check_loop", AsyncMock(return_value=empty_report)
         ),
-        patch("artemis.agents.checker.checker.build_checker_tools", return_value=[]),
-        patch("artemis.agents.checker.checker._format_history", return_value=""),
+        patch("apollo.agents.checker.checker.build_checker_tools", return_value=[]),
+        patch("apollo.agents.checker.checker._format_history", return_value=""),
         patch(
-            "artemis.agents.checker.checker._capture_final_screen",
+            "apollo.agents.checker.checker._capture_final_screen",
             AsyncMock(return_value=(None, "")),
         ),
     ):
@@ -295,7 +295,7 @@ async def test_final_review_and_run_outcome_are_published(tmp_path):
             ),
         ]
     )
-    with patch("artemis.graph.graph.run_final_check", AsyncMock(return_value=report)):
+    with patch("apollo.graph.graph.run_final_check", AsyncMock(return_value=report)):
         update = await exit_settlement_node(_make_state(), ctx)
 
     assert update["exit_settlement_route"] == "end"
@@ -336,7 +336,7 @@ async def test_final_review_bounce_back_publishes_continue_route(tmp_path):
         ],
         unmet_subgoals=[GOAL_TEXT],
     )
-    with patch("artemis.graph.graph.run_final_check", AsyncMock(return_value=report)):
+    with patch("apollo.graph.graph.run_final_check", AsyncMock(return_value=report)):
         update = await exit_settlement_node(_make_state(), ctx)
 
     assert update["exit_settlement_route"] == "continue"

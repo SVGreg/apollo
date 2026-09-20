@@ -16,8 +16,8 @@
 
 /**
  * Launcher options for `/api/run` (`verification_level`, `explorer_mode`).
- * Keep ids in sync with `VERIFICATION_LEVEL_PRESETS` in `artemis/config/agent.py`
- * and `EXPLORER_TIERS` in `artemis/agents/explorer/tiers.py`.
+ * Keep ids in sync with `VERIFICATION_LEVEL_PRESETS` in `apollo/config/agent.py`
+ * and `EXPLORER_TIERS` in `apollo/agents/explorer/tiers.py`.
  */
 
 export type VerificationLevelId = 'off' | 'final' | 'checkpoints' | 'strict';

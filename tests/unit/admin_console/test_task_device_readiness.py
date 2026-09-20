@@ -20,7 +20,7 @@ import pytest
 
 from apps.admin_console.routers import tasks
 from apps.admin_console.schemas.task_schema import RunRequest
-from artemis.core.diagnostics.schema import (
+from apollo.core.diagnostics.schema import (
     ProbeCategory,
     ProbeResult,
     ProbeStatus,

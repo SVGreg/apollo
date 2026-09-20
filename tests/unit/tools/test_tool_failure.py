@@ -7,10 +7,10 @@ from langchain_core.messages import ToolMessage
 from langchain_core.tools import StructuredTool
 import pytest
 
-from artemis.core.tool_failure import ToolFailure, is_tool_failure
-from artemis.data_engine import engine as engine_mod
-from artemis.tools.tool_wrapper import invoke_tool_with_injection
-from artemis.utils.notes import format_list_notes_failure, format_read_note_failure
+from apollo.core.tool_failure import ToolFailure, is_tool_failure
+from apollo.data_engine import engine as engine_mod
+from apollo.tools.tool_wrapper import invoke_tool_with_injection
+from apollo.utils.notes import format_list_notes_failure, format_read_note_failure
 
 
 def test_tool_failure_is_a_plain_string_to_every_text_consumer():

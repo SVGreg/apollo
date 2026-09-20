@@ -20,12 +20,12 @@ import re
 from jinja2 import Template
 import pytest
 
-from artemis.agents.operator.prompts import load_operator_prompts
-from artemis.agents.operator.prompts import (
+from apollo.agents.operator.prompts import load_operator_prompts
+from apollo.agents.operator.prompts import (
     OPERATOR_PROMPT_TOOLSET,
     apply_operator_prompt_contract,
 )
-from artemis.agents.prompt_assembly import gate_segment, render_tool_enum
+from apollo.agents.prompt_assembly import gate_segment, render_tool_enum
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -166,7 +166,7 @@ def test_full_set_enum_slots_render_verbatim():
 
 
 def _render_flash(available_tools: frozenset[str]) -> str:
-    template_text = (REPO_ROOT / "artemis/agents/flash/flash_runner.md").read_text(encoding="utf-8")
+    template_text = (REPO_ROOT / "apollo/agents/flash/flash_runner.md").read_text(encoding="utf-8")
     return Template(template_text).render(goal="test goal", available_tools=available_tools)
 
 

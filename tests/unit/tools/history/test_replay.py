@@ -20,8 +20,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from artemis.core.tool_failure import is_tool_failure
-from artemis.tools.history import ReplayStepsTool, replay_steps, replay_steps_text
+from apollo.core.tool_failure import is_tool_failure
+from apollo.tools.history import ReplayStepsTool, replay_steps, replay_steps_text
 
 
 SESSION_START = 1000.0

@@ -14,7 +14,7 @@
 
 """Unit tests for ModelFactory instantiation and grounding tool wiring."""
 
-from artemis.llm.router import ModelEndpoint, ModelFactory, ModelProvider
+from apollo.llm.router import ModelEndpoint, ModelFactory, ModelProvider
 
 
 def test_model_factory_anthropic_instantiation():
@@ -45,7 +45,7 @@ def test_model_factory_openai_instantiation():
 
 def test_robust_chat_model_wrapper_grounding_google():
     """Verify RobustChatModelWrapper auto-injects google_search and server-side tool config for Gemini."""
-    from artemis.services.llm import RobustChatModelWrapper
+    from apollo.services.llm import RobustChatModelWrapper
     from langchain_core.tools import tool
 
     @tool
@@ -96,7 +96,7 @@ def test_robust_chat_model_wrapper_grounding_google():
 
 def test_robust_chat_model_wrapper_grounding_non_google():
     """Verify RobustChatModelWrapper ignores grounding and strips google_search for non-Google providers."""
-    from artemis.services.llm import RobustChatModelWrapper
+    from apollo.services.llm import RobustChatModelWrapper
     from langchain_core.tools import tool
 
     @tool
@@ -130,7 +130,7 @@ def test_robust_chat_model_wrapper_grounding_non_google():
 
 def test_chat_google_generative_ai_process_tool_config_patch():
     """Verify patched ChatGoogleGenerativeAI preserves include_server_side_tool_invocations even with tool_choice."""
-    from artemis.llm.router import ModelFactory
+    from apollo.llm.router import ModelFactory
     from langchain_google_genai import ChatGoogleGenerativeAI
     from langchain_core.tools import tool
 

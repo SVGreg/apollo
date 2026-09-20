@@ -26,7 +26,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from artemis.mcp.action_executor import McpActionExecutor, _ArgError
+from apollo.mcp.action_executor import McpActionExecutor, _ArgError
 
 
 def _make_executor(width=1080, height=2400):

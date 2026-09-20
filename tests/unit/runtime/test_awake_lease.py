@@ -16,13 +16,13 @@ import json
 
 import pytest
 
-from artemis.runtime.awake_lease import ScreenAwakeLease
+from apollo.runtime.awake_lease import ScreenAwakeLease
 
 
 @pytest.fixture(autouse=True)
 def isolated_awake_directory(tmp_path, monkeypatch):
     monkeypatch.setattr(
-        "artemis.runtime.awake_lease.get_temp_dir",
+        "apollo.runtime.awake_lease.get_temp_dir",
         lambda _name: tmp_path,
     )
 

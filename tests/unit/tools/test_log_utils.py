@@ -14,14 +14,14 @@
 
 from datetime import datetime
 from unittest.mock import Mock, patch
-from artemis.context import ArtemisContext
-from artemis.tools.mobile.log_utils import fetch_and_filter_logs
+from apollo.context import ApolloContext
+from apollo.tools.mobile.log_utils import fetch_and_filter_logs
 import pytest
 
 
 @pytest.fixture
 def mock_context():
-    ctx = Mock(spec=ArtemisContext)
+    ctx = Mock(spec=ApolloContext)
     ctx.data_engine = Mock()
     ctx.data_engine.session_start_time = 1700000000.0  # Example timestamp
     return ctx
@@ -32,7 +32,7 @@ def mock_device():
     return Mock()
 
 
-@patch("artemis.tools.mobile.log_utils.get_adb_device")
+@patch("apollo.tools.mobile.log_utils.get_adb_device")
 def test_fetch_and_filter_logs_basic(mock_get_adb_device, mock_context, mock_device):
     mock_get_adb_device.return_value = mock_device
     mock_device.shell.return_value = "line 1\nline 2\n"
@@ -43,8 +43,8 @@ def test_fetch_and_filter_logs_basic(mock_get_adb_device, mock_context, mock_dev
     assert result == "line 1\nline 2\n"
 
 
-@patch("artemis.tools.mobile.log_utils.get_adb_device")
-@patch("artemis.tools.mobile.log_utils.resolve_time")
+@patch("apollo.tools.mobile.log_utils.get_adb_device")
+@patch("apollo.tools.mobile.log_utils.resolve_time")
 def test_fetch_and_filter_logs_since_time_success(
     mock_resolve_time, mock_get_adb_device, mock_context, mock_device
 ):
@@ -64,8 +64,8 @@ def test_fetch_and_filter_logs_since_time_success(
     assert "line 2" in result
 
 
-@patch("artemis.tools.mobile.log_utils.get_adb_device")
-@patch("artemis.tools.mobile.log_utils.resolve_time")
+@patch("apollo.tools.mobile.log_utils.get_adb_device")
+@patch("apollo.tools.mobile.log_utils.resolve_time")
 def test_fetch_and_filter_logs_since_time_fallback(
     mock_resolve_time, mock_get_adb_device, mock_context, mock_device
 ):
@@ -94,8 +94,8 @@ def test_fetch_and_filter_logs_since_time_fallback(
     assert "line new" in result
 
 
-@patch("artemis.tools.mobile.log_utils.get_adb_device")
-@patch("artemis.tools.mobile.log_utils.resolve_time")
+@patch("apollo.tools.mobile.log_utils.get_adb_device")
+@patch("apollo.tools.mobile.log_utils.resolve_time")
 def test_fetch_and_filter_logs_until_time(
     mock_resolve_time, mock_get_adb_device, mock_context, mock_device
 ):

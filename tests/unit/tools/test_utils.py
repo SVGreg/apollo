@@ -20,20 +20,20 @@ import pytest
 
 # Mock the problematic langgraph import at module level
 _orig_chat_agent_executor = sys.modules.get("langgraph.prebuilt.chat_agent_executor")
-_orig_state = sys.modules.get("artemis.graph.state")
+_orig_state = sys.modules.get("apollo.graph.state")
 
 sys.modules["langgraph.prebuilt.chat_agent_executor"] = Mock()
-sys.modules["artemis.graph.state"] = Mock()
+sys.modules["apollo.graph.state"] = Mock()
 
-from artemis.context import DeviceContext, DevicePlatform, ArtemisContext  # noqa: E402
-from artemis.tools.types import Target  # noqa: E402
-from artemis.tools.utils import (  # noqa: E402
+from apollo.context import DeviceContext, DevicePlatform, ApolloContext  # noqa: E402
+from apollo.tools.types import Target  # noqa: E402
+from apollo.tools.utils import (  # noqa: E402
     IdSelectorRequest,
     SelectorRequestWithCoordinates,
     focus_element_if_needed,
     move_cursor_to_end_if_bounds,
 )
-from artemis.utils.ui_hierarchy import ElementBounds  # noqa: E402
+from apollo.utils.ui_hierarchy import ElementBounds  # noqa: E402
 
 # Restore original modules to prevent contaminating other tests
 if _orig_chat_agent_executor is not None:
@@ -42,15 +42,15 @@ else:
     del sys.modules["langgraph.prebuilt.chat_agent_executor"]
 
 if _orig_state is not None:
-    sys.modules["artemis.graph.state"] = _orig_state
+    sys.modules["apollo.graph.state"] = _orig_state
 else:
-    del sys.modules["artemis.graph.state"]
+    del sys.modules["apollo.graph.state"]
 
 
 @pytest.fixture
 def mock_context():
-    """Create a mock ArtemisContext for testing."""
-    ctx = Mock(spec=ArtemisContext)
+    """Create a mock ApolloContext for testing."""
+    ctx = Mock(spec=ApolloContext)
 
     # Create device context with necessary attributes
     ctx.device = Mock(spec=DeviceContext)
@@ -118,8 +118,8 @@ def sample_rich_element():
 class TestMoveCursorToEndIfBounds:
     """Test cases for move_cursor_to_end_if_bounds function."""
 
-    @patch("artemis.tools.utils.tap")
-    @patch("artemis.tools.utils.find_element_by_resource_id")
+    @patch("apollo.tools.utils.tap")
+    @patch("apollo.tools.utils.find_element_by_resource_id")
     def test_move_cursor_with_resource_id(
         self,
         mock_find_element,
@@ -157,8 +157,8 @@ class TestMoveCursorToEndIfBounds:
         assert coords.y == 249  # 200 + 50 * 0.99
         assert result == sample_element
 
-    @patch("artemis.tools.utils.tap")
-    @patch("artemis.tools.utils.find_element_by_resource_id")
+    @patch("apollo.tools.utils.tap")
+    @patch("apollo.tools.utils.find_element_by_resource_id")
     def test_move_cursor_with_coordinates_only(
         self, mock_find_element, mock_tap, mock_context, mock_state
     ):
@@ -185,8 +185,8 @@ class TestMoveCursorToEndIfBounds:
         assert coords.y == 189  # 150 + 40 * 0.99
         assert result is None  # No element is returned when using coords directly
 
-    @patch("artemis.tools.utils.tap")
-    @patch("artemis.tools.utils.find_element_by_text")
+    @patch("apollo.tools.utils.tap")
+    @patch("apollo.tools.utils.find_element_by_text")
     def test_move_cursor_with_text_only_success(
         self, mock_find_text, mock_tap, mock_context, mock_state, sample_element
     ):
@@ -209,8 +209,8 @@ class TestMoveCursorToEndIfBounds:
         mock_tap.assert_called_once()
         assert result == sample_element
 
-    @patch("artemis.tools.utils.tap")
-    @patch("artemis.tools.utils.find_element_by_text")
+    @patch("apollo.tools.utils.tap")
+    @patch("apollo.tools.utils.find_element_by_text")
     def test_move_cursor_with_text_only_element_not_found(
         self, mock_find_text, mock_tap, mock_context, mock_state
     ):
@@ -232,8 +232,8 @@ class TestMoveCursorToEndIfBounds:
         mock_tap.assert_not_called()
         assert result is None
 
-    @patch("artemis.tools.utils.tap")
-    @patch("artemis.tools.utils.find_element_by_text")
+    @patch("apollo.tools.utils.tap")
+    @patch("apollo.tools.utils.find_element_by_text")
     def test_move_cursor_with_text_only_no_bounds(
         self, mock_find_text, mock_tap, mock_context, mock_state
     ):
@@ -256,7 +256,7 @@ class TestMoveCursorToEndIfBounds:
         mock_tap.assert_not_called()
         assert result is None  # Should return None as no action was taken
 
-    @patch("artemis.tools.utils.find_element_by_resource_id")
+    @patch("apollo.tools.utils.find_element_by_resource_id")
     def test_move_cursor_element_not_found_by_id(self, mock_find_element, mock_context, mock_state):
         """Test when element is not found by resource_id."""
         mock_find_element.return_value = None
@@ -278,8 +278,8 @@ class TestMoveCursorToEndIfBounds:
 class TestFocusElementIfNeeded:
     """Test cases for focus_element_if_needed function."""
 
-    @patch("artemis.tools.utils.tap")
-    @patch("artemis.tools.utils.find_element_by_resource_id")
+    @patch("apollo.tools.utils.tap")
+    @patch("apollo.tools.utils.find_element_by_resource_id")
     def test_focus_element_already_focused(
         self, mock_find_element, mock_tap, mock_context, sample_rich_element
     ):
@@ -305,8 +305,8 @@ class TestFocusElementIfNeeded:
         assert result == "resource_id"
         mock_context.ui_adb_client.get_hierarchy.assert_called_once()
 
-    @patch("artemis.tools.utils.tap")
-    @patch("artemis.tools.utils.find_element_by_resource_id")
+    @patch("apollo.tools.utils.tap")
+    @patch("apollo.tools.utils.find_element_by_resource_id")
     def test_focus_element_needs_focus_success(
         self, mock_find_element, mock_tap, mock_context, sample_rich_element
     ):
@@ -342,9 +342,9 @@ class TestFocusElementIfNeeded:
         assert mock_context.ui_adb_client.get_hierarchy.call_count == 2
         assert result == "resource_id"
 
-    @patch("artemis.tools.utils.tap")
-    @patch("artemis.tools.utils.logger")
-    @patch("artemis.tools.utils.find_element_by_resource_id")
+    @patch("apollo.tools.utils.tap")
+    @patch("apollo.tools.utils.logger")
+    @patch("apollo.tools.utils.find_element_by_resource_id")
     def test_focus_id_and_text_mismatch_fallback_to_text(
         self,
         mock_find_id,
@@ -370,7 +370,7 @@ class TestFocusElementIfNeeded:
         mock_context.ui_adb_client.get_screen_data = Mock(return_value=mock_response)
         mock_find_id.return_value = element_from_id
 
-        with patch("artemis.tools.utils.find_element_by_text") as mock_find_text:
+        with patch("apollo.tools.utils.find_element_by_text") as mock_find_text:
             mock_find_text.return_value = element_from_text["attributes"]
 
             target = Target(
@@ -386,8 +386,8 @@ class TestFocusElementIfNeeded:
             mock_tap.assert_called_once()
             assert result == "text"
 
-    @patch("artemis.tools.utils.tap")
-    @patch("artemis.tools.utils.find_element_by_text")
+    @patch("apollo.tools.utils.tap")
+    @patch("apollo.tools.utils.find_element_by_text")
     def test_focus_fallback_to_text(
         self, mock_find_text, mock_tap, mock_context, sample_rich_element
     ):
@@ -423,7 +423,7 @@ class TestFocusElementIfNeeded:
         assert selector.coordinates.y == 35  # 20 + 30/2
         assert result == "text"
 
-    @patch("artemis.tools.utils.logger")
+    @patch("apollo.tools.utils.logger")
     def test_focus_all_locators_fail(self, mock_logger, mock_context):
         """Test failure when no locator can find an element."""
 
@@ -431,8 +431,8 @@ class TestFocusElementIfNeeded:
         mock_response.json.return_value = {"elements": []}
         mock_context.ui_adb_client.get_screen_data = Mock(return_value=mock_response)
         with (
-            patch("artemis.tools.utils.find_element_by_resource_id") as mock_find_id,
-            patch("artemis.tools.utils.find_element_by_text") as mock_find_text,
+            patch("apollo.tools.utils.find_element_by_resource_id") as mock_find_id,
+            patch("apollo.tools.utils.find_element_by_text") as mock_find_text,
         ):
             mock_find_id.return_value = None
             mock_find_text.return_value = None

@@ -28,8 +28,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from PIL import Image, ImageDraw
 
-from artemis.agents.operator.prompts import HistoricalStateHintPromptComponent, PromptBuilder
-from artemis.utils.image_hash import dhash_hex
+from apollo.agents.operator.prompts import HistoricalStateHintPromptComponent, PromptBuilder
+from apollo.utils.image_hash import dhash_hex
 
 
 def _jpeg(draw_fn) -> bytes:
@@ -76,7 +76,7 @@ def _cfg(similarity_hint=True, max_distance=8):
 async def _run(steps, b64=B64_A, cfg=None):
     builder = PromptBuilder()
     component = HistoricalStateHintPromptComponent()
-    with patch("artemis.config.load_agent_config", return_value=cfg or _cfg()):
+    with patch("apollo.config.load_agent_config", return_value=cfg or _cfg()):
         await component(builder, MagicMock(), MagicMock(), latest_screenshot_b64=b64, steps=steps)
     return [p for p in builder.human_parts if isinstance(p, str)]
 
@@ -164,10 +164,10 @@ async def test_steps_without_hashes_are_skipped():
 
 
 def test_record_step_stamps_perceptual_hashes(tmp_path):
-    from artemis.context import ArtemisContext
-    from artemis.data_engine.engine import DataEngine
+    from apollo.context import ApolloContext
+    from apollo.data_engine.engine import DataEngine
 
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     setup = MagicMock()
     setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = setup

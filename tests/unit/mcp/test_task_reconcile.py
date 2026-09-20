@@ -41,7 +41,7 @@ def no_persistence(monkeypatch):
 
 
 def _db_with_session(tmp_path, trace_id: str, status: str, pid: int | None = 4242):
-    db_path = tmp_path / "artemis.db"
+    db_path = tmp_path / "apollo.db"
     conn = sqlite3.connect(db_path)
     conn.execute(
         "CREATE TABLE sessions (session_id TEXT, status TEXT, pid INTEGER, start_time REAL)"

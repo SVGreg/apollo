@@ -16,7 +16,7 @@
 
 The scan below re-derives the manifest classification from the prompt sources, so
 adding a tool name to a prompt without classifying it in
-``artemis/mcp/action_manifest.py`` fails here rather than at runtime.
+``apollo/mcp/action_manifest.py`` fails here rather than at runtime.
 """
 
 import json
@@ -25,8 +25,8 @@ import re
 
 import pytest
 
-from artemis.core.tool_declaration import ToolDeclaration
-from artemis.mcp.action_manifest import (
+from apollo.core.tool_declaration import ToolDeclaration
+from apollo.mcp.action_manifest import (
     ActuatorContractError,
     AGENT_ROLES,
     ALL_KNOWN_TOOLS,
@@ -47,8 +47,8 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 # Validator's safety net). Other agents (log_analyzer, image_processor, ...) have their
 # own tool universes and are deliberately out of scope.
 SCOPED_PROMPT_FILES = [
-    "artemis/agents/flash/flash_runner.md",
-    "artemis/agents/validator/pixel_safety_net.md",
+    "apollo/agents/flash/flash_runner.md",
+    "apollo/agents/validator/pixel_safety_net.md",
 ]
 
 # Backtick-quoted identifiers in scoped prompts that are not tools: parameter names,
@@ -70,7 +70,7 @@ def _scoped_prompt_sources() -> dict[str, str]:
 
     # The operator templates carry all operator prompt prose (teaching segments are
     # gated in-template by availability slots; prompts.py holds no prompt text).
-    operator_json = REPO_ROOT / "artemis/agents/operator/operator.json"
+    operator_json = REPO_ROOT / "apollo/agents/operator/operator.json"
     for key, text in json.loads(operator_json.read_text(encoding="utf-8")).items():
         sources[f"operator.json:{key}"] = text
 
@@ -106,7 +106,7 @@ def test_every_prompt_tool_reference_is_classified():
     }
     assert not unclassified, (
         "Prompts reference tools the manifest does not classify. Add each to the "
-        f"appropriate set in artemis/mcp/action_manifest.py: {unclassified}"
+        f"appropriate set in apollo/mcp/action_manifest.py: {unclassified}"
     )
 
 

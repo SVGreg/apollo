@@ -16,8 +16,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from langchain_core.messages import ToolMessage
 
-from artemis.context import ArtemisContext
-from artemis.graph.graph import wrap_note_tool, wrap_update_note_tool
+from apollo.context import ApolloContext
+from apollo.graph.graph import wrap_note_tool, wrap_update_note_tool
 import pytest
 
 ORIGINAL_PLAN = """# Test Plan
@@ -28,7 +28,7 @@ ORIGINAL_PLAN = """# Test Plan
 
 
 def _make_ctx(base_dir, *, disable_checker=True, disable_planner_validation=False):
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.data_engine = MagicMock()
     ctx.data_engine.base_dir = str(base_dir)
     ctx.execution_setup = MagicMock()
@@ -82,7 +82,7 @@ async def test_wrap_update_note_tool_valid_status_change(tmp_path):
     ctx = _make_ctx(tmp_path)
 
     with patch(
-        "artemis.graph.graph.invoke_tool_with_injection",
+        "apollo.graph.graph.invoke_tool_with_injection",
         side_effect=_fake_update_invoke(task_plan_path),
     ):
         wrapped_tool = wrap_update_note_tool(ctx, _mock_tool("update_note"))
@@ -111,10 +111,10 @@ async def test_wrap_update_note_tool_intentional_rename_triggers_validation(tmp_
     mock_validation = AsyncMock(return_value={"status": "success", "feedback": ""})
     with (
         patch(
-            "artemis.graph.graph.invoke_tool_with_injection",
+            "apollo.graph.graph.invoke_tool_with_injection",
             side_effect=_fake_update_invoke(task_plan_path),
         ),
-        patch("artemis.graph.graph.run_async_planner_validation", mock_validation),
+        patch("apollo.graph.graph.run_async_planner_validation", mock_validation),
     ):
         wrapped_tool = wrap_update_note_tool(ctx, _mock_tool("update_note"))
         result = await wrapped_tool.ainvoke(
@@ -154,10 +154,10 @@ async def test_ratchet_baseline_survives_consecutive_small_edits(tmp_path):
     mock_validation = AsyncMock(side_effect=blocking_validation)
     with (
         patch(
-            "artemis.graph.graph.invoke_tool_with_injection",
+            "apollo.graph.graph.invoke_tool_with_injection",
             side_effect=_fake_update_invoke(task_plan_path),
         ),
-        patch("artemis.graph.graph.run_async_planner_validation", mock_validation),
+        patch("apollo.graph.graph.run_async_planner_validation", mock_validation),
     ):
         wrapped_tool = wrap_update_note_tool(ctx, _mock_tool("update_note"))
         await wrapped_tool.ainvoke(
@@ -199,7 +199,7 @@ async def test_wrap_update_note_tool_allow_subgoal_changes(tmp_path):
     ctx = _make_ctx(tmp_path)
 
     with patch(
-        "artemis.graph.graph.invoke_tool_with_injection",
+        "apollo.graph.graph.invoke_tool_with_injection",
         side_effect=_fake_update_invoke(task_plan_path),
     ):
         wrapped_tool = wrap_update_note_tool(ctx, _mock_tool("update_note"))
@@ -233,7 +233,7 @@ async def test_wrap_note_tool_full_rewrite_hand_slip_rejected(tmp_path):
 """
 
     with patch(
-        "artemis.graph.graph.invoke_tool_with_injection",
+        "apollo.graph.graph.invoke_tool_with_injection",
         side_effect=_fake_save_invoke(task_plan_path),
     ):
         wrapped_tool = wrap_note_tool(ctx, _mock_tool("save_note"))
@@ -265,7 +265,7 @@ async def test_wrap_note_tool_lexical_drift_rejected(tmp_path):
 """
 
     with patch(
-        "artemis.graph.graph.invoke_tool_with_injection",
+        "apollo.graph.graph.invoke_tool_with_injection",
         side_effect=_fake_save_invoke(task_plan_path),
     ):
         wrapped_tool = wrap_note_tool(ctx, _mock_tool("save_note"))
@@ -300,10 +300,10 @@ async def test_wrap_note_tool_structural_replan_triggers_validation(tmp_path):
     mock_validation = AsyncMock(return_value={"status": "success", "feedback": ""})
     with (
         patch(
-            "artemis.graph.graph.invoke_tool_with_injection",
+            "apollo.graph.graph.invoke_tool_with_injection",
             side_effect=_fake_save_invoke(task_plan_path),
         ),
-        patch("artemis.graph.graph.run_async_planner_validation", mock_validation),
+        patch("apollo.graph.graph.run_async_planner_validation", mock_validation),
     ):
         wrapped_tool = wrap_note_tool(ctx, _mock_tool("save_note"))
         result = await wrapped_tool.ainvoke(

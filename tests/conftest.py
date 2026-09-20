@@ -23,7 +23,7 @@ from pathlib import Path
 
 import pytest
 
-from artemis.drivers.mock.mock_driver import MockDeviceDriver
+from apollo.drivers.mock.mock_driver import MockDeviceDriver
 
 
 @pytest.fixture

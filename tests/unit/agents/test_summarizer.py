@@ -25,8 +25,8 @@ from unittest.mock import MagicMock, Mock
 
 import pytest
 
-from artemis.agents.summarizer.summarizer import SummarizerNode
-from artemis.context import ArtemisContext
+from apollo.agents.summarizer.summarizer import SummarizerNode
+from apollo.context import ApolloContext
 
 
 class DummyState:
@@ -51,7 +51,7 @@ class DummyState:
 
 @pytest.fixture
 def mock_context(tmp_path):
-    ctx = Mock(spec=ArtemisContext)
+    ctx = Mock(spec=ApolloContext)
     ctx.device = None
     ctx.background_tasks = []
     ctx.step_memory = MagicMock()

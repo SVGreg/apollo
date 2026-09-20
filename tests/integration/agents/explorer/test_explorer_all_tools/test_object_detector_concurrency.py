@@ -16,7 +16,7 @@ import asyncio
 import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from artemis.agents.object_detector.object_detector import _run_object_detection
+from apollo.agents.object_detector.object_detector import _run_object_detection
 from tests.integration.agents.explorer.test_explorer_all_tools.helpers import create_mock_context
 import pytest
 
@@ -65,7 +65,7 @@ async def test_object_detector_concurrency_and_throttling(tmp_path):
     mock_llm.ainvoke = AsyncMock(side_effect=mock_generate_content)
 
     with patch(
-        "artemis.agents.object_detector.object_detector.get_llm",
+        "apollo.agents.object_detector.object_detector.get_llm",
         return_value=mock_llm,
     ):
         # --- TEST 1: Concurrency Assertion (5 labels) ---

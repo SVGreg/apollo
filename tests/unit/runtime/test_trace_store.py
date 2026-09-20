@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for the shared trace store (artemis.runtime.trace_store)."""
+"""Unit tests for the shared trace store (apollo.runtime.trace_store)."""
 
 import glob
 import logging
@@ -23,7 +23,7 @@ import threading
 import uuid
 import pytest
 
-from artemis.runtime import trace_store
+from apollo.runtime import trace_store
 
 
 @pytest.fixture
@@ -139,7 +139,7 @@ def test_corrupt_status_is_quarantined_and_read_returns_none(temp_trace_env, cap
     with open(status_path, "w", encoding="utf-8") as f:
         f.write('{"status": "running", "trace_id"')  # torn write
 
-    with caplog.at_level(logging.WARNING, logger="artemis.runtime.trace_store"):
+    with caplog.at_level(logging.WARNING, logger="apollo.runtime.trace_store"):
         assert trace_store.read_status(trace_id) is None
 
     assert any("Corrupt status.json" in rec.message for rec in caplog.records)
@@ -148,7 +148,7 @@ def test_corrupt_status_is_quarantined_and_read_returns_none(temp_trace_env, cap
 
 
 def test_missing_status_stays_silent(temp_trace_env, caplog):
-    with caplog.at_level(logging.WARNING, logger="artemis.runtime.trace_store"):
+    with caplog.at_level(logging.WARNING, logger="apollo.runtime.trace_store"):
         assert trace_store.read_status(str(uuid.uuid4())) is None
     assert caplog.records == []
 
@@ -161,13 +161,13 @@ def test_update_on_corrupt_status_logs_and_drops(temp_trace_env, caplog):
     with open(status_path, "w", encoding="utf-8") as f:
         f.write("not json at all")
 
-    with caplog.at_level(logging.WARNING, logger="artemis.runtime.trace_store"):
+    with caplog.at_level(logging.WARNING, logger="apollo.runtime.trace_store"):
         assert trace_store.update_trace_status(trace_id, "completed") is None
 
     assert any("Dropping status update" in rec.message for rec in caplog.records)
     # Updating a trace that never existed stays a silent no-op.
     caplog.clear()
-    with caplog.at_level(logging.WARNING, logger="artemis.runtime.trace_store"):
+    with caplog.at_level(logging.WARNING, logger="apollo.runtime.trace_store"):
         assert trace_store.update_trace_status(str(uuid.uuid4()), "completed") is None
     assert not any("Dropping status update" in rec.message for rec in caplog.records)
 
@@ -197,7 +197,7 @@ def test_concurrent_read_modify_write_does_not_lose_updates(temp_trace_env, capl
             failures.append(exc)
 
     threads = [threading.Thread(target=set_errors), threading.Thread(target=set_serials)]
-    with caplog.at_level(logging.WARNING, logger="artemis.runtime.trace_store"):
+    with caplog.at_level(logging.WARNING, logger="apollo.runtime.trace_store"):
         for t in threads:
             t.start()
         for t in threads:

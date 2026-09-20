@@ -194,7 +194,7 @@ describe('getUniqueGenericTools retry aggregation', () => {
         type: 'llm_call',
         name: 'llm_retry',
         status: 'retrying',
-        payload: { error: '429', delay: 2, provider: 'openai', source: 'artemis_wrapper' }
+        payload: { error: '429', delay: 2, provider: 'openai', source: 'apollo_wrapper' }
       },
       {
         trace_id: 'failure-openai',

@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Same-origin security boundary for the Artemis console.
+"""Same-origin security boundary for the Apollo console.
 
-Artemis runs without user accounts: whoever can reach the TCP port is the
+Apollo runs without user accounts: whoever can reach the TCP port is the
 operator. For that model to hold for a server that browsers also talk to,
 two browser-borne attack vectors must be closed even on a loopback bind:
 
@@ -28,7 +28,7 @@ two browser-borne attack vectors must be closed even on a loopback bind:
 Non-browser clients (the SDK, curl, the CLI, MCP) send no ``Origin`` header
 and pass through untouched. Remote access is expected to arrive over a
 network-level tunnel (Tailscale, SSH port forward); a tunnel hostname that is
-not an IP literal can be admitted via ``ARTEMIS_ALLOWED_HOSTS``.
+not an IP literal can be admitted via ``APOLLO_ALLOWED_HOSTS``.
 """
 
 from __future__ import annotations
@@ -71,7 +71,7 @@ def _is_ip_literal(host: str) -> bool:
 def allowed_hostnames() -> frozenset[str]:
     """Hostnames (not IP literals) accepted in Host and Origin headers."""
     names = {"localhost"}
-    extra = os.environ.get("ARTEMIS_ALLOWED_HOSTS", "")
+    extra = os.environ.get("APOLLO_ALLOWED_HOSTS", "")
     names.update(part.strip().lower() for part in extra.split(",") if part.strip())
     return frozenset(names)
 
@@ -110,7 +110,7 @@ class SameOriginBoundaryMiddleware:
             await self.app(scope, receive, send)
             return
 
-        if os.environ.get("ARTEMIS_DISABLE_ORIGIN_GUARD", "").lower() in {"1", "true", "yes"}:
+        if os.environ.get("APOLLO_DISABLE_ORIGIN_GUARD", "").lower() in {"1", "true", "yes"}:
             await self._forward(scope, receive, send)
             return
 
@@ -122,8 +122,8 @@ class SameOriginBoundaryMiddleware:
             await self._reject(
                 scope,
                 send,
-                "Unrecognized Host header. Access Artemis via localhost or an IP address, "
-                "or add your tunnel hostname to ARTEMIS_ALLOWED_HOSTS.",
+                "Unrecognized Host header. Access Apollo via localhost or an IP address, "
+                "or add your tunnel hostname to APOLLO_ALLOWED_HOSTS.",
             )
             return
 
@@ -131,7 +131,7 @@ class SameOriginBoundaryMiddleware:
             await self._reject(
                 scope,
                 send,
-                "Cross-origin browser requests are not accepted by the Artemis console.",
+                "Cross-origin browser requests are not accepted by the Apollo console.",
             )
             return
 

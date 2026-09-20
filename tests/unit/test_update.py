@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import os
-from artemis.utils.notes import update_note_content
+from apollo.utils.notes import update_note_content
 
-base_dir = "/tmp/artemis_test"
+base_dir = "/tmp/apollo_test"
 os.makedirs(f"{base_dir}/notes", exist_ok=True)
 task_plan = """- [x] Initial task
 - [/] Active task

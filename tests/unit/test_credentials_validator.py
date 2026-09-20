@@ -14,7 +14,7 @@
 
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
-from artemis.utils.credentials_validator import validate_api_key, _extract_error_message
+from apollo.utils.credentials_validator import validate_api_key, _extract_error_message
 
 
 def test_extract_error_message():

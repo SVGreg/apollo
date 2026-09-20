@@ -14,8 +14,8 @@
 
 from unittest.mock import AsyncMock, Mock, patch
 
-from artemis.context import ArtemisContext
-from artemis.utils.app_launch_utils import (
+from apollo.context import ApolloContext
+from apollo.utils.app_launch_utils import (
     ForegroundTask,
     _handle_initial_app_launch,
     get_foreground_task,
@@ -106,7 +106,7 @@ Display #0 (activities from top to bottom):
 
 @pytest.fixture
 def mock_context():
-    ctx = Mock(spec=ArtemisContext)
+    ctx = Mock(spec=ApolloContext)
     ctx.device = Mock()
     ctx.device.mobile_platform = "android"
     ctx.device.device_id = "emulator-5554"
@@ -206,7 +206,7 @@ def test_describe_lists_other_member_packages():
     assert task.describe() == "task #5 (base=c.d, resumed=a.b/.Dialog, also=e.f)"
 
 
-@patch("artemis.utils.app_launch_utils.get_adb_device")
+@patch("apollo.utils.app_launch_utils.get_adb_device")
 def test_get_foreground_task_reads_dumpsys(mock_get_device, mock_context):
     device = Mock()
     device.shell.return_value = DUMP_SETTINGS_TASK_WITH_SEARCH_ON_TOP
@@ -222,7 +222,7 @@ def test_get_foreground_task_reads_dumpsys(mock_get_device, mock_context):
     assert task is not None and task.base_package == SETTINGS
 
 
-@patch("artemis.utils.app_launch_utils.get_adb_device")
+@patch("apollo.utils.app_launch_utils.get_adb_device")
 def test_get_foreground_task_falls_back_to_the_full_dump_without_grep(
     mock_get_device, mock_context
 ):
@@ -240,7 +240,7 @@ def test_get_foreground_task_falls_back_to_the_full_dump_without_grep(
 
 
 def test_task_header_accepts_android_11_taskrecord_form():
-    from artemis.utils.app_launch_utils import parse_foreground_task
+    from apollo.utils.app_launch_utils import parse_foreground_task
 
     dump = "\n".join(
         [
@@ -255,7 +255,7 @@ def test_task_header_accepts_android_11_taskrecord_form():
     assert task.owns("com.example.app")
 
 
-@patch("artemis.utils.app_launch_utils.get_adb_device")
+@patch("apollo.utils.app_launch_utils.get_adb_device")
 def test_get_foreground_task_tolerates_missing_device_and_errors(mock_get_device, mock_context):
     mock_get_device.return_value = None
     assert get_foreground_task(mock_context) is None
@@ -272,9 +272,9 @@ def test_get_foreground_task_tolerates_missing_device_and_errors(mock_get_device
 
 
 @pytest.mark.asyncio
-@patch("artemis.utils.app_launch_utils.get_foreground_task")
-@patch("artemis.utils.app_launch_utils.UnifiedMobileController")
-@patch("artemis.utils.app_launch_utils.get_current_foreground_package_async")
+@patch("apollo.utils.app_launch_utils.get_foreground_task")
+@patch("apollo.utils.app_launch_utils.UnifiedMobileController")
+@patch("apollo.utils.app_launch_utils.get_current_foreground_package_async")
 async def test_launch_app_success_immediate(
     mock_get_foreground, mock_controller_cls, mock_get_task, mock_context
 ):
@@ -293,9 +293,9 @@ async def test_launch_app_success_immediate(
 
 
 @pytest.mark.asyncio
-@patch("artemis.utils.app_launch_utils.get_foreground_task")
-@patch("artemis.utils.app_launch_utils.UnifiedMobileController")
-@patch("artemis.utils.app_launch_utils.get_current_foreground_package_async")
+@patch("apollo.utils.app_launch_utils.get_foreground_task")
+@patch("apollo.utils.app_launch_utils.UnifiedMobileController")
+@patch("apollo.utils.app_launch_utils.get_current_foreground_package_async")
 async def test_launch_app_success_when_top_task_belongs_to_app(
     mock_get_foreground, mock_controller_cls, mock_get_task, mock_context
 ):
@@ -316,9 +316,9 @@ async def test_launch_app_success_when_top_task_belongs_to_app(
 
 
 @pytest.mark.asyncio
-@patch("artemis.utils.app_launch_utils.get_foreground_task")
-@patch("artemis.utils.app_launch_utils.UnifiedMobileController")
-@patch("artemis.utils.app_launch_utils.get_current_foreground_package_async")
+@patch("apollo.utils.app_launch_utils.get_foreground_task")
+@patch("apollo.utils.app_launch_utils.UnifiedMobileController")
+@patch("apollo.utils.app_launch_utils.get_current_foreground_package_async")
 async def test_launch_app_success_permission_overlay_in_app_task(
     mock_get_foreground, mock_controller_cls, mock_get_task, mock_context
 ):
@@ -342,9 +342,9 @@ async def test_launch_app_success_permission_overlay_in_app_task(
 
 
 @pytest.mark.asyncio
-@patch("artemis.utils.app_launch_utils.get_foreground_task")
-@patch("artemis.utils.app_launch_utils.UnifiedMobileController")
-@patch("artemis.utils.app_launch_utils.get_current_foreground_package_async")
+@patch("apollo.utils.app_launch_utils.get_foreground_task")
+@patch("apollo.utils.app_launch_utils.UnifiedMobileController")
+@patch("apollo.utils.app_launch_utils.get_current_foreground_package_async")
 async def test_launch_app_failure_when_top_task_is_another_app(
     mock_get_foreground, mock_controller_cls, mock_get_task, mock_context
 ):
@@ -364,9 +364,9 @@ async def test_launch_app_failure_when_top_task_is_another_app(
 
 
 @pytest.mark.asyncio
-@patch("artemis.utils.app_launch_utils.get_foreground_task")
-@patch("artemis.utils.app_launch_utils.UnifiedMobileController")
-@patch("artemis.utils.app_launch_utils.get_current_foreground_package_async")
+@patch("apollo.utils.app_launch_utils.get_foreground_task")
+@patch("apollo.utils.app_launch_utils.UnifiedMobileController")
+@patch("apollo.utils.app_launch_utils.get_current_foreground_package_async")
 async def test_launch_timeout_message_names_foreground_package_and_task(
     mock_get_foreground, mock_controller_cls, mock_get_task, mock_context
 ):
@@ -374,7 +374,7 @@ async def test_launch_timeout_message_names_foreground_package_and_task(
     mock_get_foreground.return_value = SETTINGS_SEARCH
     mock_get_task.return_value = parse_foreground_task(DUMP_SEARCH_IN_OWN_TASK)
 
-    with patch("artemis.utils.app_launch_utils.logger") as mock_logger:
+    with patch("apollo.utils.app_launch_utils.logger") as mock_logger:
         success, _ = await launch_app_with_retries(
             mock_context, SETTINGS, max_retries=1, max_poll_seconds=1
         )
@@ -394,9 +394,9 @@ async def test_launch_timeout_message_names_foreground_package_and_task(
 
 
 @pytest.mark.asyncio
-@patch("artemis.utils.app_launch_utils.get_foreground_task")
-@patch("artemis.utils.app_launch_utils.UnifiedMobileController")
-@patch("artemis.utils.app_launch_utils.get_current_foreground_package_async")
+@patch("apollo.utils.app_launch_utils.get_foreground_task")
+@patch("apollo.utils.app_launch_utils.UnifiedMobileController")
+@patch("apollo.utils.app_launch_utils.get_current_foreground_package_async")
 async def test_launch_app_null_focus_keeps_polling_without_reading_task(
     mock_get_foreground, mock_controller_cls, mock_get_task, mock_context
 ):
@@ -419,9 +419,9 @@ async def test_launch_app_null_focus_keeps_polling_without_reading_task(
 
 
 @pytest.mark.asyncio
-@patch("artemis.utils.app_launch_utils.launch_app_with_retries")
-@patch("artemis.utils.app_launch_utils.get_foreground_task")
-@patch("artemis.utils.app_launch_utils.get_current_foreground_package_async")
+@patch("apollo.utils.app_launch_utils.launch_app_with_retries")
+@patch("apollo.utils.app_launch_utils.get_foreground_task")
+@patch("apollo.utils.app_launch_utils.get_current_foreground_package_async")
 async def test_initial_launch_skips_launch_when_app_task_is_already_foreground(
     mock_get_foreground, mock_get_task, mock_launch, mock_context
 ):
@@ -436,9 +436,9 @@ async def test_initial_launch_skips_launch_when_app_task_is_already_foreground(
 
 
 @pytest.mark.asyncio
-@patch("artemis.utils.app_launch_utils.launch_app_with_retries", new_callable=AsyncMock)
-@patch("artemis.utils.app_launch_utils.get_foreground_task")
-@patch("artemis.utils.app_launch_utils.get_current_foreground_package_async")
+@patch("apollo.utils.app_launch_utils.launch_app_with_retries", new_callable=AsyncMock)
+@patch("apollo.utils.app_launch_utils.get_foreground_task")
+@patch("apollo.utils.app_launch_utils.get_current_foreground_package_async")
 async def test_initial_launch_launches_when_another_app_is_foreground(
     mock_get_foreground, mock_get_task, mock_launch, mock_context
 ):
@@ -456,7 +456,7 @@ def test_task_affinity_alone_identifies_the_owning_app():
     """Seen on a Pixel 10: the Settings task had lost its root activity and only
     the search companion remained in its history, but the task affinity
     (``com.android.settings.root``) still named the app."""
-    from artemis.utils.app_launch_utils import ForegroundTask
+    from apollo.utils.app_launch_utils import ForegroundTask
 
     task = ForegroundTask(
         task_id=121,

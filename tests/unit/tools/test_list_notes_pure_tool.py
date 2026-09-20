@@ -14,32 +14,32 @@
 
 from unittest.mock import MagicMock, patch
 
-from artemis.context import ArtemisContext
-from artemis.tools.base import ArtemisTool
-from artemis.tools.scratchpad import (
+from apollo.context import ApolloContext
+from apollo.tools.base import ApolloTool
+from apollo.tools.scratchpad import (
     ListNotesArgs,
     ListNotesPure,
     ListNotesPureTool,
     get_list_notes_tool_pure,
     list_notes_pure,
 )
-from artemis.utils.notes import save_note_content
+from apollo.utils.notes import save_note_content
 import pytest
 
 
 @pytest.fixture
 def mock_ctx(tmp_path):
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.data_engine = MagicMock()
     ctx.data_engine.base_dir = str(tmp_path)
     return ctx
 
 
 def test_list_notes_pure_tool_subclass():
-    """Verify ListNotesPureTool is a subclass of ArtemisTool."""
-    assert issubclass(ListNotesPureTool, ArtemisTool)
-    assert issubclass(ListNotesPure, ArtemisTool)
-    assert isinstance(list_notes_pure, ArtemisTool)
+    """Verify ListNotesPureTool is a subclass of ApolloTool."""
+    assert issubclass(ListNotesPureTool, ApolloTool)
+    assert issubclass(ListNotesPure, ApolloTool)
+    assert isinstance(list_notes_pure, ApolloTool)
     assert isinstance(list_notes_pure, ListNotesPureTool)
 
     assert list_notes_pure.name == "list_notes_pure"
@@ -84,7 +84,7 @@ async def test_list_notes_pure_callable_execution(mock_ctx, tmp_path):
 async def test_list_notes_pure_execution_failure(mock_ctx):
     """Verify error handling when list_notes_pure fails."""
     with patch(
-        "artemis.tools.scratchpad.list_notes_info",
+        "apollo.tools.scratchpad.list_notes_info",
         side_effect=RuntimeError("Disk failure"),
     ):
         result = await list_notes_pure.execute(ctx=mock_ctx)

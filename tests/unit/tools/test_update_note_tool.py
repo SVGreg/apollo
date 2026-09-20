@@ -15,10 +15,10 @@
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from artemis.context import ArtemisContext
-from artemis.graph.state import State
-from artemis.tools.base import ArtemisTool
-from artemis.tools.scratchpad import (
+from apollo.context import ApolloContext
+from apollo.graph.state import State
+from apollo.tools.base import ApolloTool
+from apollo.tools.scratchpad import (
     UpdateNote,
     UpdateNoteArgs,
     UpdateNoteTool,
@@ -27,24 +27,24 @@ from artemis.tools.scratchpad import (
     update_note,
     update_note_wrapper,
 )
-from artemis.utils.notes import save_note_content
+from apollo.utils.notes import save_note_content
 from langchain_core.messages import ToolMessage
 import pytest
 
 
 @pytest.fixture
 def mock_ctx(tmp_path):
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.data_engine = MagicMock()
     ctx.data_engine.base_dir = str(tmp_path)
     return ctx
 
 
 def test_update_note_tool_subclass():
-    """Verify UpdateNoteTool is a subclass of ArtemisTool."""
-    assert issubclass(UpdateNoteTool, ArtemisTool)
-    assert issubclass(UpdateNote, ArtemisTool)
-    assert isinstance(update_note, ArtemisTool)
+    """Verify UpdateNoteTool is a subclass of ApolloTool."""
+    assert issubclass(UpdateNoteTool, ApolloTool)
+    assert issubclass(UpdateNote, ApolloTool)
+    assert isinstance(update_note, ApolloTool)
     assert isinstance(update_note, UpdateNoteTool)
 
     assert update_note.name == "update_note"
@@ -86,7 +86,7 @@ async def test_update_note_with_warning(mock_ctx, tmp_path):
     save_note_content(tmp_path, "fuzzy_plan", "- [ ] Step 1")
 
     with patch(
-        "artemis.tools.scratchpad.update_note_content",
+        "apollo.tools.scratchpad.update_note_content",
         return_value="Fuzzy match applied",
     ):
         result = await update_note.execute(
@@ -186,10 +186,10 @@ async def test_get_update_note_tool_pure(mock_ctx, tmp_path):
         {
             "key": "pure_plan",
             "target": "world",
-            "replacement": "Artemis",
+            "replacement": "Apollo",
         }
     )
     assert result == "Updated note 'pure_plan'."
 
     note_path = Path(tmp_path) / "notes" / "pure_plan.md"
-    assert note_path.read_text(encoding="utf-8") == "hello Artemis"
+    assert note_path.read_text(encoding="utf-8") == "hello Apollo"

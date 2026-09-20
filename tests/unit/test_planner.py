@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import asyncio
-from artemis.agents.planner.planner import run_async_planner_validation
+from apollo.agents.planner.planner import run_async_planner_validation
 
 
 from pathlib import Path
@@ -31,7 +31,7 @@ class DummyCtx:
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from artemis.agents.planner.planner import ValidationResult
+from apollo.agents.planner.planner import ValidationResult
 
 
 @pytest.mark.asyncio
@@ -47,7 +47,7 @@ async def test_planner_validation():
     )
     mock_llm.with_structured_output.return_value = mock_structured
 
-    with patch("artemis.agents.planner.planner.get_llm", return_value=mock_llm) as get_llm:
+    with patch("apollo.agents.planner.planner.get_llm", return_value=mock_llm) as get_llm:
         res = await run_async_planner_validation(
             ctx=DummyCtx(),
             initial_goal="Do the task",
@@ -65,7 +65,7 @@ async def test_planner_validation():
 def test_planner_validation_node_defaults_to_lightweight_judge():
     """Unconfigured planner_validation resolves to the same flash-lite default
     as the pixel safety net (cheap, temperature 0)."""
-    from artemis.config import get_default_llm_config
+    from apollo.config import get_default_llm_config
 
     llm_cfg = get_default_llm_config()
     node = llm_cfg.get_agent("planner_validation")

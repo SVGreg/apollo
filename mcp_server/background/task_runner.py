@@ -30,7 +30,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 try:
-    from artemis.config.paths import get_app_dir
+    from apollo.config.paths import get_app_dir
 
     app_dir = str(get_app_dir())
     global_env = os.path.join(app_dir, ".env")
@@ -41,7 +41,7 @@ try:
 except Exception:
     load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 
-from artemis.runtime import trace_store
+from apollo.runtime import trace_store
 from mcp_server.notifiers import notify
 from mcp_server.utils import device_utils
 
@@ -64,7 +64,7 @@ async def _initialize_agent(
         )
     except TimeoutError as error:
         raise TimeoutError(
-            "Artemis Agent initialization exceeded "
+            "Apollo Agent initialization exceeded "
             f"{timeout_seconds:.1f}s; check ADB/UIAutomator health and the device queue."
         ) from error
 
@@ -72,19 +72,19 @@ async def _initialize_agent(
 def resolve_profile_file() -> str | None:
     """Resolves the LLM configuration profile across multiple locations."""
     candidates = []
-    artemis_config_dir = os.getenv("ARTEMIS_CONFIG_DIR")
-    if artemis_config_dir:
+    apollo_config_dir = os.getenv("APOLLO_CONFIG_DIR")
+    if apollo_config_dir:
         candidates.extend(
             [
-                os.path.join(artemis_config_dir, "llm-config.override.jsonc"),
-                os.path.join(artemis_config_dir, "llm-config.json"),
+                os.path.join(apollo_config_dir, "llm-config.override.jsonc"),
+                os.path.join(apollo_config_dir, "llm-config.json"),
             ]
         )
     try:
         # Deliberate guarded import mirroring the module-level bootstrap above:
         # profile resolution must degrade to repo-relative candidates when the
-        # artemis config package cannot be loaded.
-        from artemis.config.paths import get_app_dir
+        # apollo config package cannot be loaded.
+        from apollo.config.paths import get_app_dir
 
         app_dir = str(get_app_dir())
         candidates.extend(
@@ -126,7 +126,7 @@ async def run_task(
 
     ``verification_level`` ('off' | 'final' | 'checkpoints' | 'strict') and
     ``explorer_pro_mode`` ('flash' | 'pro' | 'ultra') are Pro-profile tuning
-    knobs mirroring ``artemis run --verification-level / --explorer-pro-mode``;
+    knobs mirroring ``apollo run --verification-level / --explorer-pro-mode``;
     the Flash profile ignores them.
     """
     trace_dir = trace_store.get_trace_dir(trace_id)
@@ -145,7 +145,7 @@ async def run_task(
 
     logging.basicConfig(level=logging.INFO, force=True)
     logging.getLogger("absl").setLevel(logging.WARNING)
-    logging.getLogger("artemis").setLevel(logging.INFO)
+    logging.getLogger("apollo").setLevel(logging.INFO)
 
     print(f"Starting task execution for Trace ID: {trace_id}")
     print(f"Goal: {task_desc}")
@@ -163,10 +163,10 @@ async def run_task(
         # converts an import-time failure into a properly recorded task
         # failure (trace status + wakeup notification) instead of a crash
         # before status.json is ever updated.
-        from artemis.config import settings
-        from artemis.sdk import Agent
-        from artemis.sdk.builders import Builders
-        from artemis.sdk.types import AgentProfile
+        from apollo.config import settings
+        from apollo.sdk import Agent
+        from apollo.sdk.builders import Builders
+        from apollo.sdk.types import AgentProfile
 
         connected_devices = device_utils.get_connected_devices(adb_path)
 
@@ -186,7 +186,7 @@ async def run_task(
                     try:
                         # Optional path: pool-based selection falls back to the
                         # first connected device on any import or query failure.
-                        from artemis.runtime import device_pool
+                        from apollo.runtime import device_pool
 
                         target_serial = device_pool.select_device()
                     except Exception:
@@ -204,8 +204,8 @@ async def run_task(
         if target_serial:
             trace_store.update_trace_device_serial(trace_id, target_serial)
 
-        print("Initializing Artemis Agent...")
-        from artemis.config import initialize_llm_config, settings
+        print("Initializing Apollo Agent...")
+        from apollo.config import initialize_llm_config, settings
 
         profile_file = resolve_profile_file()
         if profile_file:
@@ -222,7 +222,7 @@ async def run_task(
             config_builder.with_adb_server(host=settings.ADB_HOST, port=settings.ADB_PORT)
 
         if target_serial:
-            from artemis.context import DevicePlatform
+            from apollo.context import DevicePlatform
 
             config_builder.for_device(DevicePlatform.ANDROID, target_serial)
 
@@ -231,9 +231,9 @@ async def run_task(
         agent = Agent(config=config)
         await _initialize_agent(
             agent,
-            retry_count=int(os.getenv("ARTEMIS_HEALTH_RETRIES", 5)),
-            retry_wait_seconds=int(os.getenv("ARTEMIS_HEALTH_DELAY", 2)),
-            timeout_seconds=float(os.getenv("ARTEMIS_AGENT_INIT_TIMEOUT_SECONDS", 30)),
+            retry_count=int(os.getenv("APOLLO_HEALTH_RETRIES", 5)),
+            retry_wait_seconds=int(os.getenv("APOLLO_HEALTH_DELAY", 2)),
+            timeout_seconds=float(os.getenv("APOLLO_AGENT_INIT_TIMEOUT_SECONDS", 30)),
         )
 
         actual_serial = (
@@ -277,7 +277,7 @@ async def run_task(
 
             formatted_result = json.dumps(result, indent=2, ensure_ascii=False)
             failure_msg = (
-                f"Artemis background task finished with non-completed status.\n\n"
+                f"Apollo background task finished with non-completed status.\n\n"
                 f"Trace ID: {trace_id}\n"
                 f"{device_info_line}"
                 f"Goal: {task_desc}\n"
@@ -289,7 +289,7 @@ async def run_task(
             notify(
                 conversation_id=conversation_id,
                 message=failure_msg,
-                title="Artemis Task Incomplete",
+                title="Apollo Task Incomplete",
                 event_type="failed",
                 payload={
                     "trace_id": trace_id,
@@ -321,7 +321,7 @@ async def run_task(
             result_str = f"Result: {formatted_result}\n"
 
         success_msg = (
-            "Artemis background task completed successfully.\n\n"
+            "Apollo background task completed successfully.\n\n"
             f"Trace ID: {trace_id}\n"
             f"{device_info_line}"
             f"Goal: {task_desc}\n"
@@ -330,7 +330,7 @@ async def run_task(
         notify(
             conversation_id=conversation_id,
             message=success_msg,
-            title="Artemis Task Completed",
+            title="Apollo Task Completed",
             event_type="completed",
             payload={
                 "trace_id": trace_id,
@@ -346,11 +346,11 @@ async def run_task(
             trace_id, "cancelled", error="Task was cancelled", device_serial=target_serial
         )
         device_info_line = f"Device Serial: `{target_serial}`\n" if target_serial else ""
-        cancel_msg = f"Artemis background task was cancelled.\n\nTrace ID: {trace_id}\n{device_info_line}Goal: {task_desc}\n"
+        cancel_msg = f"Apollo background task was cancelled.\n\nTrace ID: {trace_id}\n{device_info_line}Goal: {task_desc}\n"
         notify(
             conversation_id=conversation_id,
             message=cancel_msg,
-            title="Artemis Task Cancelled",
+            title="Apollo Task Cancelled",
             event_type="cancelled",
             payload={"trace_id": trace_id, "device_serial": target_serial, "goal": task_desc},
         )
@@ -377,7 +377,7 @@ async def run_task(
 
         device_info_line = f"Device Serial: `{target_serial}`\n" if target_serial else ""
         failure_msg = (
-            f"Artemis background task failed.\n\n"
+            f"Apollo background task failed.\n\n"
             f"Trace ID: {trace_id}\n"
             f"{device_info_line}"
             f"Goal: {task_desc}\n"
@@ -388,7 +388,7 @@ async def run_task(
         notify(
             conversation_id=conversation_id,
             message=failure_msg,
-            title="Artemis Task Failed",
+            title="Apollo Task Failed",
             event_type="failed",
             payload={
                 "trace_id": trace_id,
@@ -413,7 +413,7 @@ async def run_task(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Artemis Background Task Runner")
+    parser = argparse.ArgumentParser(description="Apollo Background Task Runner")
     parser.add_argument("--trace-id", required=True, help="Unique trace identifier")
     parser.add_argument("--task-desc", required=True, help="Description of the task to run")
     parser.add_argument("--model", required=True, help="Model to use ('Flash' or 'Pro')")

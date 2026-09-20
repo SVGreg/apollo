@@ -21,8 +21,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from artemis.core.tool_failure import is_tool_failure
-from artemis.tools.history import (
+from apollo.core.tool_failure import is_tool_failure
+from apollo.tools.history import (
     GetStepScreenshotTool,
     ReplayStepsTool,
     SearchHistoryTool,
@@ -36,7 +36,7 @@ def _ctx():
 @pytest.mark.asyncio
 async def test_search_history_reader_exception_is_a_tool_failure():
     with patch(
-        "artemis.tools.history.search_history_text", side_effect=RuntimeError("index corrupt")
+        "apollo.tools.history.search_history_text", side_effect=RuntimeError("index corrupt")
     ):
         out = await SearchHistoryTool().execute(ctx=_ctx(), query="login")
     assert is_tool_failure(out)
@@ -54,7 +54,7 @@ async def test_search_history_usage_error_is_a_tool_failure():
 
 @pytest.mark.asyncio
 async def test_replay_steps_reader_exception_is_a_tool_failure():
-    with patch("artemis.tools.history.replay_steps_text", side_effect=OSError("db gone")):
+    with patch("apollo.tools.history.replay_steps_text", side_effect=OSError("db gone")):
         out = await ReplayStepsTool().execute(ctx=_ctx(), start_step=3)
     assert is_tool_failure(out)
     assert out == "replay_steps failed: db gone"
@@ -63,7 +63,7 @@ async def test_replay_steps_reader_exception_is_a_tool_failure():
 @pytest.mark.asyncio
 async def test_get_step_screenshot_exception_is_a_tool_failure():
     with patch(
-        "artemis.tools.history.load_step_screenshot",
+        "apollo.tools.history.load_step_screenshot",
         side_effect=FileNotFoundError("no screenshot for step 7"),
     ):
         out = await GetStepScreenshotTool().execute(ctx=_ctx(), step_number=7, which="post")

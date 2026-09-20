@@ -16,20 +16,20 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from artemis.agents.video_analyzer.video_analyzer import VideoAnalyzer
+from apollo.agents.video_analyzer.video_analyzer import VideoAnalyzer
 
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_video_analyzer_tools(artemis_context, mock_state, inputs_dir, tmp_path):
-    artemis_context.device.mobile_platform = "android"
-    artemis_context.adb_client = artemis_context.ui_adb_client
+async def test_video_analyzer_tools(apollo_context, mock_state, inputs_dir, tmp_path):
+    apollo_context.device.mobile_platform = "android"
+    apollo_context.adb_client = apollo_context.ui_adb_client
     # A leaked MagicMock video_analyzer config coerces every numeric setting to
     # 1 (float(MagicMock()) == 1.0), e.g. a 1s model-call timeout. None makes
     # VideoAnalyzer fall back to its real defaults.
-    artemis_context.agent_config.video_analyzer = None
+    apollo_context.agent_config.video_analyzer = None
 
-    agent = VideoAnalyzer(ctx=artemis_context)
+    agent = VideoAnalyzer(ctx=apollo_context)
 
     agent.local_files_to_cleanup = set()
     agent.local_dirs_to_cleanup = set()
@@ -68,12 +68,12 @@ async def test_video_analyzer_tools(artemis_context, mock_state, inputs_dir, tmp
     )
 
     import google.genai as genai
-    from artemis.config import settings
+    from apollo.config import settings
 
     agent.client = genai.Client(
         api_key=settings.GOOGLE_API_KEY.get_secret_value() if settings.GOOGLE_API_KEY else None
     )
-    artemis_context._genai_client = agent.client
+    apollo_context._genai_client = agent.client
 
     import shutil
     import uuid
@@ -103,7 +103,7 @@ async def test_video_analyzer_tools(artemis_context, mock_state, inputs_dir, tmp
     # A bare MagicMock attribute is truthy, which would trip the mock-driver
     # short-circuit in extract_segment_metadata and return a nonexistent path.
     mock_driver.is_mock = False
-    artemis_context._active_driver = mock_driver
+    apollo_context._active_driver = mock_driver
 
     # Screen-recording segments carry no audio track (render_timeline_clip maps
     # only the video stream), so real audio extraction can never succeed here.
@@ -113,11 +113,11 @@ async def test_video_analyzer_tools(artemis_context, mock_state, inputs_dir, tmp
 
     with (
         patch(
-            "artemis.controllers.unified_controller.get_active_session",
+            "apollo.controllers.unified_controller.get_active_session",
             return_value=mock_session,
         ),
         patch(
-            "artemis.agents.video_analyzer.video_analyzer.extract_audio_from_video",
+            "apollo.agents.video_analyzer.video_analyzer.extract_audio_from_video",
             AsyncMock(return_value=audio_copy),
         ),
     ):

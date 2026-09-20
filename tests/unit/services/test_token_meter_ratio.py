@@ -25,7 +25,7 @@ from uuid import uuid4
 
 from langchain_core.messages import AIMessage
 
-from artemis.services.token_meter import (
+from apollo.services.token_meter import (
     SessionTokenMeter,
     cached_ratio,
     format_session_summary,
@@ -105,7 +105,7 @@ def test_session_summary_logs_once_per_metered_session(caplog):
     assert "google:op: 1 calls, cached_ratio=0.000" in line
     assert "lens:visual: 1 calls, cached_ratio=0.900" in line
 
-    with caplog.at_level(logging.INFO, logger="artemis.services.token_meter"):
+    with caplog.at_level(logging.INFO, logger="apollo.services.token_meter"):
         summary = log_session_summary(session_id)
     assert summary is not None and summary["session_cached_ratio"] == 0.15
     assert any(line in record.getMessage() for record in caplog.records)

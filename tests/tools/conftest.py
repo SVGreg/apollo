@@ -15,8 +15,8 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from artemis.context import ArtemisContext
-from artemis.data_engine.engine import DataEngine
+from apollo.context import ApolloContext
+from apollo.data_engine.engine import DataEngine
 import pytest
 
 INPUTS_DIR = Path(__file__).parent / "inputs"
@@ -41,13 +41,13 @@ def mock_adb_client():
 
 
 @pytest.fixture
-def artemis_context(inputs_dir, mock_adb_client):
-    """Provides a ArtemisContext with loaded database and actual side-effects,
+def apollo_context(inputs_dir, mock_adb_client):
+    """Provides a ApolloContext with loaded database and actual side-effects,
 
     except the ADB connection is customized to read from fixtures instead of a
     real device.
     """
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
 
     ctx.execution_setup = MagicMock()
     ctx.execution_setup.traces_path = str(inputs_dir)
@@ -88,7 +88,7 @@ def artemis_context(inputs_dir, mock_adb_client):
 @pytest.fixture
 def mock_state(inputs_dir):
     """Provides a dummy graph State with realistic artifact paths for tools that need state injection."""
-    from artemis.graph.state import State
+    from apollo.graph.state import State
 
     state = MagicMock(spec=State)
     state.latest_screenshot = str(inputs_dir / "screenshot.jpg")

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Security regression tests for the Artemis console boundary.
+"""Security regression tests for the Apollo console boundary.
 
 Covers the invariants the no-auth security model depends on:
 - secrets never appear in HTTP responses,
@@ -30,7 +30,7 @@ from httpx import ASGITransport, AsyncClient
 from pydantic import SecretStr
 
 from apps.admin_console.server import app
-from artemis.config import TRACES_PATH, WORKSPACE_ROOT
+from apollo.config import TRACES_PATH, WORKSPACE_ROOT
 
 
 def _client(**transport_kwargs) -> AsyncClient:
@@ -46,7 +46,7 @@ def _client(**transport_kwargs) -> AsyncClient:
 
 @pytest.mark.asyncio
 async def test_credentials_endpoint_never_returns_key_material(monkeypatch):
-    from artemis.config import settings
+    from apollo.config import settings
 
     honeytoken = f"sk-honeytoken-{py_secrets.token_hex(16)}"
     monkeypatch.setattr(type(settings), "get_api_key", lambda self, provider: SecretStr(honeytoken))
@@ -81,7 +81,7 @@ async def test_server_status_omits_lifecycle_token_and_metadata():
 @pytest.mark.asyncio
 async def test_videos_endpoint_refuses_dotenv_and_non_video_files():
     async with _client() as ac:
-        for target in (".env", "pyproject.toml", "artemis/__init__.py"):
+        for target in (".env", "pyproject.toml", "apollo/__init__.py"):
             res = await ac.get(f"/videos/{target}")
             assert res.status_code in (403, 404), target
             assert "API_KEY" not in res.text

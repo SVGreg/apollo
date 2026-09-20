@@ -37,8 +37,8 @@ def main() -> int:
 
     lock = tomllib.loads((ROOT / "uv.lock").read_text(encoding="utf-8"))
     workspace_sources = {
-        "artemis": {"editable": "."},
-        "artemis-client": {"editable": "packages/artemis-client"},
+        "apollo": {"editable": "."},
+        "apollo-client": {"editable": "packages/apollo-client"},
     }
     for package in lock["package"]:
         label = f"uv.lock: {package['name']}=={package['version']}"

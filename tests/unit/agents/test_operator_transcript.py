@@ -32,19 +32,19 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from artemis.agents.operator.operator import OperatorNode
-from artemis.agents.operator.prompts import load_operator_prompts
-from artemis.agents.operator.prompts import (
+from apollo.agents.operator.operator import OperatorNode
+from apollo.agents.operator.prompts import load_operator_prompts
+from apollo.agents.operator.prompts import (
     PLAN_HISTORY_STATIC_POINTER,
     PLAN_HISTORY_TEMPLATE_SECTION,
     PromptBuilder,
     TemplatePromptComponent,
     render_transcript_static_system,
 )
-from artemis.config.agent import MemoryTranscriptConfig
-from artemis.context import ArtemisContext
-from artemis.memory.step_memory import StepMemoryService
-from artemis.memory.transcript import (
+from apollo.config.agent import MemoryTranscriptConfig
+from apollo.context import ApolloContext
+from apollo.memory.step_memory import StepMemoryService
+from apollo.memory.transcript import (
     EPHEMERAL_BLOCKS_KEY,
     EXECUTION_RESULT_MARKER,
     PLAN_RECITATION_MARKER,
@@ -109,7 +109,7 @@ def test_transcript_static_system_is_stable_and_carries_no_history():
 
 
 def _transcript_ctx():
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.execution_setup = None
     ctx.actuator = None
     ctx.data_engine = None
@@ -168,7 +168,7 @@ async def test_transcript_mode_two_turns_build_four_regions(tmp_path):
     captured: list = []
     mock_llm = _no_action_llm(captured)
 
-    with patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm):
         node = OperatorNode(ctx, transcript_config=MemoryTranscriptConfig(enabled=True))
 
         # Turn 1
@@ -233,12 +233,12 @@ async def test_transcript_tail_marks_per_turn_notices_ephemeral():
     """The hand-built tail carries the builder's ephemeral indices: per-turn
     notices are deleted by the scrub edge; header, plan recitation and the
     observation itself are not."""
-    from artemis.agents.operator.prompts import USER_GUIDANCE_MARKER
+    from apollo.agents.operator.prompts import USER_GUIDANCE_MARKER
 
     ctx = _transcript_ctx()
     captured: list = []
     mock_llm = _no_action_llm(captured)
-    with patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm):
         node = OperatorNode(ctx, transcript_config=MemoryTranscriptConfig(enabled=True))
         await node(
             _transcript_state(
@@ -280,7 +280,7 @@ async def test_transcript_actionless_turn_commits_without_validator_message():
     captured: list = []
     mock_llm = _no_action_llm(captured)
 
-    with patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm):
         node = OperatorNode(ctx, transcript_config=MemoryTranscriptConfig(enabled=True))
         await node(_transcript_state())
         # Planner-rejected turns clear structured_decisions: no validator ran.
@@ -317,7 +317,7 @@ async def test_transcript_cold_start_builds_restored_history_block(tmp_path):
     captured: list = []
     mock_llm = _no_action_llm(captured)
 
-    with patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm):
         node = OperatorNode(ctx, transcript_config=MemoryTranscriptConfig(enabled=True))
         await node(_transcript_state())
 
@@ -340,7 +340,7 @@ async def test_flag_off_keeps_legacy_two_message_build_and_no_ledger():
     captured: list = []
     mock_llm = _no_action_llm(captured)
 
-    with patch("artemis.agents.operator.operator.get_llm", return_value=mock_llm):
+    with patch("apollo.agents.operator.operator.get_llm", return_value=mock_llm):
         node = OperatorNode(ctx, transcript_config=MemoryTranscriptConfig(enabled=False))
         await node(_transcript_state())
 

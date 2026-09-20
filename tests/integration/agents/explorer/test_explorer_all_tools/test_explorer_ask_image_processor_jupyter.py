@@ -24,9 +24,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from langchain_core.messages import AIMessage
 import pytest
 
-from artemis.agents.image_processor.image_processor import ImageProcessor
-from artemis.config import settings
-from artemis.utils.python_executor import PythonExecutor
+from apollo.agents.image_processor.image_processor import ImageProcessor
+from apollo.config import settings
+from apollo.utils.python_executor import PythonExecutor
 from tests.integration.agents.explorer.test_explorer_all_tools.helpers import (
     create_mock_context,
     get_or_create_test_screenshot,
@@ -116,7 +116,7 @@ async def _run_scenario(test_name: str) -> None:
     # passed in as a literal path.
     image_processor_dir = outputs_dir / "images" / "image_processor"
     sample_code = f"""
-from artemis.utils.cv_canvas import ImageCanvas
+from apollo.utils.cv_canvas import ImageCanvas
 import glob
 from pathlib import Path
 
@@ -165,7 +165,7 @@ print("saved crop from", intermediate_dir)
     with (
         patch.object(PythonExecutor, "execute", wrapped_execute),
         patch(
-            "artemis.agents.image_processor.image_processor.get_llm",
+            "apollo.agents.image_processor.image_processor.get_llm",
             return_value=mock_llm,
         ),
     ):

@@ -14,7 +14,7 @@
 
 """Provider identity and Gemini capability table."""
 
-from artemis.llm.google import (
+from apollo.llm.google import (
     gemini_version,
     is_agentic_video_auto_eligible,
     is_gemini_model,
@@ -26,7 +26,7 @@ from artemis.llm.google import (
     supports_agentic_video,
     supports_thinking_level,
 )
-from artemis.llm.router import ModelProvider
+from apollo.llm.router import ModelProvider
 import pytest
 
 

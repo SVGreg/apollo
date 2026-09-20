@@ -175,7 +175,7 @@ def test_recover_orphaned_recording_returns_none_without_files(tmp_path):
 
 
 def test_resolve_video_segments_passes_through_session_offsets(tmp_path, monkeypatch):
-    folder = tmp_path / "artemis-traces" / "web_9_done"
+    folder = tmp_path / "apollo-traces" / "web_9_done"
     folder.mkdir(parents=True)
     (folder / "recording.mp4").write_bytes(b"seg0")
     (folder / "recording_001.mp4").write_bytes(b"seg1")
@@ -213,13 +213,13 @@ def test_resolve_video_segments_passes_through_session_offsets(tmp_path, monkeyp
     monkeypatch.setattr(media_module, "WORKSPACE_ROOT", tmp_path)
 
     segments = MediaService.resolve_video_segments(
-        "/videos/artemis-traces/web_9_done/recording.mp4"
+        "/videos/apollo-traces/web_9_done/recording.mp4"
     )
 
     assert [s["url"] for s in segments] == [
-        "/videos/artemis-traces/web_9_done/recording.mp4",
-        "/videos/artemis-traces/web_9_done/recording_001.mp4",
-        "/videos/artemis-traces/web_9_done/legacy.mp4",
+        "/videos/apollo-traces/web_9_done/recording.mp4",
+        "/videos/apollo-traces/web_9_done/recording_001.mp4",
+        "/videos/apollo-traces/web_9_done/legacy.mp4",
     ]
     assert [(s["start"], s["duration"]) for s in segments] == [
         (0.0, 10.0),

@@ -19,7 +19,7 @@ from unittest.mock import MagicMock, patch
 
 import psutil
 
-from artemis.runtime.process_probe import pid_is_alive
+from apollo.runtime.process_probe import pid_is_alive
 
 
 def test_own_pid_is_alive():

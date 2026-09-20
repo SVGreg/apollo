@@ -14,10 +14,10 @@
 
 """Consistency contract between the stdio ADB MCP server and the action manifest.
 
-``artemis/mcp/adb_server.py`` deliberately keeps its historical *pixel-space*
+``apollo/mcp/adb_server.py`` deliberately keeps its historical *pixel-space*
 contract for external MCP clients (absolute pixel coordinates, combined
 ``coordinates`` list parameters, ``KEYCODE_*`` vocabulary), so its FastMCP tools
-are hand-written rather than generated from ``artemis.mcp.action_specs``. This
+are hand-written rather than generated from ``apollo.mcp.action_specs``. This
 suite is the compensating contract:
 
 * **Fixture pin** -- the full generated schema of every adb_server tool is
@@ -39,7 +39,7 @@ from pathlib import Path
 
 import pytest
 
-from artemis.mcp.action_specs import ACTION_SPECS, ParamSpec
+from apollo.mcp.action_specs import ACTION_SPECS, ParamSpec
 
 FIXTURES = Path(__file__).resolve().parents[2] / "fixtures" / "action_surfaces"
 
@@ -104,7 +104,7 @@ def _wire_param(action: str, name: str) -> ParamSpec:
 
 
 async def _adb_server_tools() -> dict:
-    from artemis.mcp import adb_server
+    from apollo.mcp import adb_server
 
     tools = await adb_server.mcp.list_tools()
     return {t.name: t for t in tools}

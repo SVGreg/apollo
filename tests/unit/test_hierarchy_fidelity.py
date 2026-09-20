@@ -3,7 +3,7 @@
 Covers the host-side half of the UIAutomator parity work: negative bounds no
 longer lose an element's coordinates, hints and errors reach the element list
 the model reads, an empty helper answer degrades to UIAutomator2 in ``auto``
-mode, and the parity comparison used by ``artemis helper parity`` flags the
+mode, and the parity comparison used by ``apollo helper parity`` flags the
 regressions it exists for.
 """
 
@@ -13,12 +13,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from artemis.clients.accessibility_client import AccessibilityClient, HelperEmptyHierarchy
-from artemis.clients.screen_client_factory import FallbackScreenClient
-from artemis.clients.ui_automator_client import UIAutomatorClient, _parse_hierarchy_xml_to_elements
-from artemis.core.diagnostics.hierarchy_parity import compare_dumps
-from artemis.utils import ui_filter
-from artemis.utils.visualization import format_minimal_list_with_elements
+from apollo.clients.accessibility_client import AccessibilityClient, HelperEmptyHierarchy
+from apollo.clients.screen_client_factory import FallbackScreenClient
+from apollo.clients.ui_automator_client import UIAutomatorClient, _parse_hierarchy_xml_to_elements
+from apollo.core.diagnostics.hierarchy_parity import compare_dumps
+from apollo.utils import ui_filter
+from apollo.utils.visualization import format_minimal_list_with_elements
 
 
 def _node(**attrs: str) -> str:

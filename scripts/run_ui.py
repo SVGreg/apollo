@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Artemis UI Quick Launcher (run_ui.py)
+"""Apollo UI Quick Launcher (run_ui.py)
 
-Fastest and simplest way to launch the Artemis Web UI across all platforms:
+Fastest and simplest way to launch the Apollo Web UI across all platforms:
 - Automatically detects if the UI is already running and opens the browser directly.
 - Uses uv or an existing virtualenv.
 - Zero-configuration one-click start.
@@ -40,10 +40,10 @@ def is_port_in_use(port: int, host: str = "127.0.0.1") -> bool:
         return s.connect_ex((host, port)) == 0
 
 
-def is_artemis_ui_responsive(url: str, timeout: float = 1.0) -> bool:
-    """Check if Artemis UI server is responding on given URL."""
+def is_apollo_ui_responsive(url: str, timeout: float = 1.0) -> bool:
+    """Check if Apollo UI server is responding on given URL."""
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "Artemis-QuickLauncher/1.0"})
+        req = urllib.request.Request(url, headers={"User-Agent": "Apollo-QuickLauncher/1.0"})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.status in (200, 304)
     except Exception:
@@ -68,7 +68,7 @@ def find_python_executable() -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="✨ One-click launcher for Artemis Mobile Agent UI",
+        description="✨ One-click launcher for Apollo Mobile Agent UI",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("-p", "--port", type=int, default=8000, help="Port to run UI on")
@@ -89,12 +89,12 @@ def main() -> None:
         "-s",
         "--stop",
         action="store_true",
-        help="Stop running Artemis server on the specified port",
+        help="Stop running Apollo server on the specified port",
     )
     parser.add_argument(
         "--status",
         action="store_true",
-        help="Display status of running Artemis server on the specified port",
+        help="Display status of running Apollo server on the specified port",
     )
     args, unknown = parser.parse_known_args()
 
@@ -102,7 +102,7 @@ def main() -> None:
     if str(ROOT_DIR) not in sys.path:
         sys.path.insert(0, str(ROOT_DIR))
 
-    from artemis.runtime.server_lifecycle import get_server_status, stop_server
+    from apollo.runtime.server_lifecycle import get_server_status, stop_server
 
     def _arm_session_reconciler() -> None:
         # Entry-layer assembly: importing the admin console session repository
@@ -117,14 +117,14 @@ def main() -> None:
         st = get_server_status(args.port)
         if st["running"]:
             pid_info = f" (PID: {', '.join(map(str, st['pids']))})" if st["pids"] else ""
-            print(f"\033[1;32m● Artemis Server is RUNNING on port {args.port}{pid_info}\033[0m")
+            print(f"\033[1;32m● Apollo Server is RUNNING on port {args.port}{pid_info}\033[0m")
             print(f"  URL: {st['url']}")
         else:
-            print(f"\033[1;30m○ Artemis Server is STOPPED (Port {args.port} is free)\033[0m")
+            print(f"\033[1;30m○ Apollo Server is STOPPED (Port {args.port} is free)\033[0m")
         return
 
     if args.stop:
-        print(f"\033[1;33m🛑 Stopping Artemis server on port {args.port}...\033[0m")
+        print(f"\033[1;33m🛑 Stopping Apollo server on port {args.port}...\033[0m")
         _arm_session_reconciler()
         ok, msg, pids = stop_server(args.port)
         print(f"\033[1;32m✓ {msg}\033[0m")
@@ -134,7 +134,7 @@ def main() -> None:
     admin_url = f"http://localhost:{args.port}/admin"
 
     print("\033[1;36m" + "=" * 56 + "\033[0m")
-    print("\033[1;36m      ✨ Artemis Autonomous Mobile Agent UI          \033[0m")
+    print("\033[1;36m      ✨ Apollo Autonomous Mobile Agent UI          \033[0m")
     print("\033[1;36m" + "=" * 56 + "\033[0m\n")
 
     # Check if restart requested
@@ -149,8 +149,8 @@ def main() -> None:
 
     # Check if server is already running
     elif is_port_in_use(args.port):
-        if is_artemis_ui_responsive(ui_url):
-            print(f"\033[1;32m✓ Artemis UI is already running at:\033[0m \033[1;36m{ui_url}\033[0m")
+        if is_apollo_ui_responsive(ui_url):
+            print(f"\033[1;32m✓ Apollo UI is already running at:\033[0m \033[1;36m{ui_url}\033[0m")
             print(f"\033[1;35m🛠️ Admin Console:\033[0m \033[1;36m{admin_url}\033[0m\n")
 
             # In interactive terminal, allow user to restart or open browser
@@ -165,11 +165,11 @@ def main() -> None:
                     choice = "1"
 
                 if choice == "2":
-                    print(f"\n\033[1;33m🔄 Restarting Artemis server on port {args.port}...\033[0m")
+                    print(f"\n\033[1;33m🔄 Restarting Apollo server on port {args.port}...\033[0m")
                     _arm_session_reconciler()
                     stop_server(args.port)
                 elif choice == "3":
-                    print(f"\n\033[1;33m🛑 Stopping Artemis server on port {args.port}...\033[0m")
+                    print(f"\n\033[1;33m🛑 Stopping Apollo server on port {args.port}...\033[0m")
                     _arm_session_reconciler()
                     ok, msg, _ = stop_server(args.port)
                     print(f"\033[1;32m✓ {msg}\033[0m")
@@ -188,7 +188,7 @@ def main() -> None:
             print(f"\033[1;33m⚠️ Port {args.port} is in use by another process.\033[0m")
             print("Attempting to connect or start on specified port...")
 
-    # Choose execution engine: uv run artemis ui > direct python
+    # Choose execution engine: uv run apollo ui > direct python
     has_uv = (
         subprocess.run(
             ["which", "uv"] if os.name != "nt" else ["where", "uv"],
@@ -200,14 +200,14 @@ def main() -> None:
 
     cmd = []
     if has_uv and (ROOT_DIR / "pyproject.toml").exists():
-        # Launch via `python -m artemis` (not the `artemis` console-script shim) so the
-        # long-running server never locks .venv/Scripts/artemis.exe against reinstalls.
+        # Launch via `python -m apollo` (not the `apollo` console-script shim) so the
+        # long-running server never locks .venv/Scripts/apollo.exe against reinstalls.
         cmd = [
             "uv",
             "run",
             "python",
             "-m",
-            "artemis",
+            "apollo",
             "ui",
             "--port",
             str(args.port),
@@ -220,12 +220,12 @@ def main() -> None:
             cmd.append("--reload")
     else:
         python_bin = find_python_executable()
-        # Set PYTHONPATH so apps and artemis are importable
+        # Set PYTHONPATH so apps and apollo are importable
         env = os.environ.copy()
         env["PYTHONPATH"] = (
             f"{ROOT_DIR}{os.pathsep}{ROOT_DIR / 'apps'}{os.pathsep}{env.get('PYTHONPATH', '')}"
         )
-        cmd = [python_bin, "-m", "artemis", "ui", "--port", str(args.port), "--host", args.host]
+        cmd = [python_bin, "-m", "apollo", "ui", "--port", str(args.port), "--host", args.host]
         if args.no_open:
             cmd.append("--no-open")
         if args.reload:
@@ -235,7 +235,7 @@ def main() -> None:
         # Run the server
         subprocess.run(cmd, cwd=str(ROOT_DIR))
     except KeyboardInterrupt:
-        print("\n\033[1;33m🛑 Artemis UI server stopped.\033[0m")
+        print("\n\033[1;33m🛑 Apollo UI server stopped.\033[0m")
 
 
 if __name__ == "__main__":

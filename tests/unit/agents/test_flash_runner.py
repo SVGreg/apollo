@@ -20,18 +20,18 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 from langchain_core.messages import HumanMessage, ToolMessage
 
-from artemis.agents.explorer.constants import ASK_EXPLORER_DESCRIPTION
-from artemis.agents.flash.runner import FlashRunner
-from artemis.agents.validator.tool_declarations import (
+from apollo.agents.explorer.constants import ASK_EXPLORER_DESCRIPTION
+from apollo.agents.flash.runner import FlashRunner
+from apollo.agents.validator.tool_declarations import (
     ASK_EXPLORER_TOOL,
     ToolExecutionResult,
 )
-from artemis.context import ArtemisContext
+from apollo.context import ApolloContext
 
 
 @pytest.fixture
 def mock_context():
-    ctx = Mock(spec=ArtemisContext)
+    ctx = Mock(spec=ApolloContext)
     ctx.llm_config = Mock()
     mock_llm_cfg = Mock()
     mock_llm_cfg.model = "gemini-2.5-flash"
@@ -49,7 +49,7 @@ def mock_context():
 
 def test_flash_runner_tools_initialization(mock_context):
     """Verify FlashRunner gathers correct active tools."""
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="Test Open Settings")
         tools = runner._get_tools()
 
@@ -95,7 +95,7 @@ async def test_fallback_observation_renders_the_indexed_ui_list(mock_context, tm
     """After an action that produced no observation, the fallback capture must
     hand the next tail the same indexed minimal list the success path builds
     (never the raw element dict repr) and refresh the state like it."""
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="g")
     runner.controller = Mock()
     runner.controller.get_screen_data = AsyncMock(
@@ -115,7 +115,7 @@ async def test_fallback_observation_renders_the_indexed_ui_list(mock_context, tm
     state.latest_screenshot = "old.jpg"
     exec_result = _failed_click()
 
-    with patch("artemis.mcp.observation.get_temp_dir", return_value=tmp_path):
+    with patch("apollo.mcp.observation.get_temp_dir", return_value=tmp_path):
         post = await runner._capture_post_screenshot(
             exec_result, "click", frozenset({"click"}), state
         )
@@ -135,7 +135,7 @@ async def test_fallback_observation_renders_the_indexed_ui_list(mock_context, tm
 
 @pytest.mark.asyncio
 async def test_fallback_observation_is_skipped_for_non_action_tools(mock_context):
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="g")
     runner.controller = Mock()
     runner.controller.get_screen_data = AsyncMock(return_value=_screen([]))
@@ -156,7 +156,7 @@ async def test_fallback_observation_is_skipped_for_non_action_tools(mock_context
 @pytest.mark.asyncio
 async def test_fallback_observation_keeps_the_executors_ui_list(mock_context, tmp_path):
     """An action that reported a UI list but no screenshot keeps its own list."""
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="g")
     runner.controller = Mock()
     runner.controller.get_screen_data = AsyncMock(
@@ -170,7 +170,7 @@ async def test_fallback_observation_keeps_the_executors_ui_list(mock_context, tm
         ui_elements_text="[1] Text: 'Mine' | Bounds: [0,0][10,10]",
     )
 
-    with patch("artemis.mcp.observation.get_temp_dir", return_value=tmp_path):
+    with patch("apollo.mcp.observation.get_temp_dir", return_value=tmp_path):
         post = await runner._capture_post_screenshot(
             exec_result, "click", frozenset({"click"}), None
         )
@@ -181,7 +181,7 @@ async def test_fallback_observation_keeps_the_executors_ui_list(mock_context, tm
 
 @pytest.mark.asyncio
 async def test_fallback_observation_failure_is_contained(mock_context):
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="g")
     runner.controller = Mock()
     runner.controller.get_screen_data = AsyncMock(side_effect=RuntimeError("adb gone"))
@@ -199,8 +199,8 @@ async def test_fallback_observation_failure_is_contained(mock_context):
 def test_flash_runner_executor_follows_the_flash_explorer_tier(mock_context):
     """The executor is tagged as the Flash profile so ask_explorer follows flash_mode."""
     with (
-        patch("artemis.controllers.unified_controller.get_driver"),
-        patch("artemis.agents.flash.runner.McpActionExecutor") as executor_cls,
+        patch("apollo.controllers.unified_controller.get_driver"),
+        patch("apollo.agents.flash.runner.McpActionExecutor") as executor_cls,
     ):
         runner = FlashRunner(mock_context, goal="Test Open Settings")
 
@@ -211,7 +211,7 @@ def test_flash_runner_executor_follows_the_flash_explorer_tier(mock_context):
 
 def test_ask_explorer_declaration_is_tier_agnostic(mock_context):
     """Flash binds the shared ask_explorer contract: query + context_feedback, no tier."""
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="Test Open Settings")
         declaration = next(t for t in runner._get_tools() if t.name == "ask_explorer")
 
@@ -223,7 +223,7 @@ def test_ask_explorer_declaration_is_tier_agnostic(mock_context):
 
 def test_flash_runner_screenshot_pruning(mock_context):
     """Verify that earlier screenshot blocks are pruned, keeping only the latest."""
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="Test Pruning")
 
         messages = [
@@ -302,13 +302,13 @@ def _record(runner, name, args, metadata=None):
 def test_record_action_step_stamps_the_normalized_coordinate_space(mock_context):
     """Flash stores the model's own 0–1000 target verbatim, marked as
     normalized, so the agent-friendly view never re-normalizes it."""
-    from artemis.utils.coordinates import (
+    from apollo.utils.coordinates import (
         COORDINATE_SPACE_KEY,
         COORDINATE_SPACE_NORMALIZED,
         normalize_any_structure,
     )
 
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="g")
     recorded = _record(runner, "click", {"target": [320, 399]})
     assert recorded["coordinates"] == [320, 399]
@@ -321,9 +321,9 @@ def test_flash_records_render_in_the_ledger_with_their_arguments(mock_context):
     """The band-③ phrase reads the tool arguments Flash keeps under ``args``:
     app launches name the package, key presses the key, inputs the text,
     direction swipes the direction — never ``'None'``."""
-    from artemis.utils.task_tree import format_actions_clean
+    from apollo.utils.task_tree import format_actions_clean
 
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="g")
 
     launch = _record(runner, "manage_app", {"action": "launch", "app_name": "com.android.settings"})
@@ -354,9 +354,9 @@ def test_flash_records_the_executors_target_semantics(mock_context):
     and shaped by the executor into ``metadata.target_semantics``) is the only
     target semantics on record: top level, the shape Pro records, rendered as the
     action's label. Nothing is inferred when the executor hands back nothing."""
-    from artemis.utils.task_tree import format_actions_clean
+    from apollo.utils.task_tree import format_actions_clean
 
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="g")
 
     click_args = {"target": [320, 399], "target_description": "play button"}
@@ -393,9 +393,9 @@ def test_flash_records_an_index_target_as_the_resolved_point_with_observed_seman
     """An element index is not a coordinate: the record carries the normalized
     point the executor resolved it to, plus the element's observed fields in
     the shape Pro records (never a self-described label)."""
-    from artemis.utils.task_tree import format_actions_clean
+    from apollo.utils.task_tree import format_actions_clean
 
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="g")
 
     click = _record(
@@ -435,10 +435,10 @@ async def test_visual_lens_receives_the_recorded_action_shape(mock_context):
     """The lens gets the recorded action minus its verb (what the Pro
     summarizer hands it), so ``manage_app``'s own ``action`` argument can no
     longer overwrite the action name in the rendered phrase."""
-    from artemis.agents.flash.runner import _TurnRecord
-    from artemis.agents.flash.summarizer import VisualStepSummarizer
+    from apollo.agents.flash.runner import _TurnRecord
+    from apollo.agents.flash.summarizer import VisualStepSummarizer
 
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="g")
     runner.summarizer = Mock()
     runner.executor.execute = AsyncMock(
@@ -480,7 +480,7 @@ def test_extract_response_thinking_reads_only_thinking_blocks(mock_context):
     """``include_thoughts`` replies carry ``thinking`` blocks next to ``text``
     blocks; only the former are native thinking, and plain-string replies
     carry none."""
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="g")
 
     blocks = [
@@ -501,7 +501,7 @@ def test_extract_response_thinking_reads_only_thinking_blocks(mock_context):
 def test_record_action_step_persists_native_thinking(mock_context):
     from types import SimpleNamespace
 
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="g")
     runner.ctx.data_engine = Mock()
     runner.ctx.data_engine.current_step_id = None
@@ -533,7 +533,7 @@ def test_record_action_step_persists_native_thinking(mock_context):
 
 @pytest.mark.asyncio
 async def test_final_report_persists_native_thinking(mock_context):
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="g")
     runner.ctx.data_engine = Mock()
     runner.ctx.data_engine.current_step_id = None

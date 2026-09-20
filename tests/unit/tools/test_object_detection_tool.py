@@ -19,10 +19,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from langchain_core.messages import ToolMessage
 
-from artemis.context import ArtemisContext
-from artemis.graph.state import State
-from artemis.tools.base import ArtemisTool
-from artemis.tools.object_detection_tool import (
+from apollo.context import ApolloContext
+from apollo.graph.state import State
+from apollo.tools.base import ApolloTool
+from apollo.tools.object_detection_tool import (
     ObjectDetection,
     ObjectDetectionArgs,
     ObjectDetectionTool,
@@ -42,18 +42,18 @@ import pytest
 
 
 def test_object_detection_tool_subclass():
-    """Verify ObjectDetectionTool and OperatorObjectDetectionTool subclass ArtemisTool and register."""
-    assert issubclass(ObjectDetectionTool, ArtemisTool)
-    assert issubclass(ObjectDetection, ArtemisTool)
-    assert issubclass(ObjectDetectorTool, ArtemisTool)
-    assert issubclass(OperatorObjectDetectionTool, ArtemisTool)
+    """Verify ObjectDetectionTool and OperatorObjectDetectionTool subclass ApolloTool and register."""
+    assert issubclass(ObjectDetectionTool, ApolloTool)
+    assert issubclass(ObjectDetection, ApolloTool)
+    assert issubclass(ObjectDetectorTool, ApolloTool)
+    assert issubclass(OperatorObjectDetectionTool, ApolloTool)
     assert issubclass(OperatorObjectDetectionTool, ObjectDetectionTool)
-    assert issubclass(OperatorObjectDetection, ArtemisTool)
-    assert issubclass(OperatorObjectDetectorTool, ArtemisTool)
+    assert issubclass(OperatorObjectDetection, ApolloTool)
+    assert issubclass(OperatorObjectDetectorTool, ApolloTool)
 
-    assert isinstance(object_detection, ArtemisTool)
+    assert isinstance(object_detection, ApolloTool)
     assert isinstance(object_detection, ObjectDetectionTool)
-    assert isinstance(operator_object_detection, ArtemisTool)
+    assert isinstance(operator_object_detection, ApolloTool)
     assert isinstance(operator_object_detection, OperatorObjectDetectionTool)
 
     # Properties
@@ -83,7 +83,7 @@ def test_object_detection_tool_subclass():
 @pytest.mark.asyncio
 async def test_object_detection_direct_execution_success():
     """Verify direct async call to object_detection with image_path."""
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = None
 
     expected_result = {
@@ -92,7 +92,7 @@ async def test_object_detection_direct_execution_success():
     }
 
     with patch(
-        "artemis.tools.object_detection_tool._run_object_detection",
+        "apollo.tools.object_detection_tool._run_object_detection",
         AsyncMock(return_value=expected_result),
     ) as mock_run:
         result = await object_detection(
@@ -108,7 +108,7 @@ async def test_object_detection_direct_execution_success():
 @pytest.mark.asyncio
 async def test_operator_object_detection_direct_execution_with_state():
     """Verify operator_object_detection reads screenshot from state and returns a ToolMessage."""
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = None
 
     mock_state = MagicMock(spec=State)
@@ -120,7 +120,7 @@ async def test_operator_object_detection_direct_execution_with_state():
     }
 
     with patch(
-        "artemis.tools.object_detection_tool._run_object_detection",
+        "apollo.tools.object_detection_tool._run_object_detection",
         AsyncMock(return_value=expected_result),
     ) as mock_run:
         result = await operator_object_detection(
@@ -145,7 +145,7 @@ async def test_operator_object_detection_direct_execution_with_state():
 @pytest.mark.asyncio
 async def test_object_detection_no_image_error():
     """Verify error when no image path is given and no state screenshot is available."""
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = None
 
     result = await object_detection(
@@ -160,11 +160,11 @@ async def test_object_detection_no_image_error():
 @pytest.mark.asyncio
 async def test_object_detection_exception_handling():
     """Verify graceful handling when _run_object_detection raises an exception."""
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_ctx.data_engine = None
 
     with patch(
-        "artemis.tools.object_detection_tool._run_object_detection",
+        "apollo.tools.object_detection_tool._run_object_detection",
         AsyncMock(side_effect=RuntimeError("Model inference timeout")),
     ):
         result = await object_detection(
@@ -177,7 +177,7 @@ async def test_object_detection_exception_handling():
 
 def test_get_langchain_tools():
     """Verify LangChain BaseTool exports."""
-    mock_ctx = MagicMock(spec=ArtemisContext)
+    mock_ctx = MagicMock(spec=ApolloContext)
     tool = get_object_detector_tool(mock_ctx)
     op_tool = get_operator_object_detector_tool(mock_ctx)
 

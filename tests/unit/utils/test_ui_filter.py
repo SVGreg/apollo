@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from artemis.utils.ui_filter import (
+from apollo.utils.ui_filter import (
     _clip_bounds,
     _is_semantic_empty,
     filter_node,
@@ -334,7 +334,7 @@ def test_fixed_system_bars_clamping_and_discarding():
 
 
 def test_mutual_occlusion_warning_injection():
-    from artemis.utils.visualization import format_minimal_list_with_elements
+    from apollo.utils.visualization import format_minimal_list_with_elements
 
     # Simulate two overlapping non-ancestor interactive items with >= 50% overlap
     fused_xml = [

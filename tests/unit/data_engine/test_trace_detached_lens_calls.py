@@ -24,8 +24,8 @@ from unittest.mock import Mock
 from langchain_core.messages import AIMessage
 from langchain_core.outputs import ChatGeneration, LLMResult
 
-from artemis.data_engine.context_vars import CURRENT_NODE_NAME, CURRENT_TRACE_ID
-from artemis.data_engine.trace import DataEngineCallbackHandler, detached_trace
+from apollo.data_engine.context_vars import CURRENT_NODE_NAME, CURRENT_TRACE_ID
+from apollo.data_engine.trace import DataEngineCallbackHandler, detached_trace
 
 CAPSULE = '{"doing": "scrolling", "did": "swiped", "entry_state": "home"}'
 

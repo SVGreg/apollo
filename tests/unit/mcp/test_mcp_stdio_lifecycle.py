@@ -29,10 +29,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from artemis.clients import ui_automator_client
-from artemis.runtime.awake_lease import ScreenAwakeLease
-from artemis.runtime.awake_service import _run_awake_adb_command
-from artemis.utils.logger import get_logger
+from apollo.clients import ui_automator_client
+from apollo.runtime.awake_lease import ScreenAwakeLease
+from apollo.runtime.awake_service import _run_awake_adb_command
+from apollo.utils.logger import get_logger
 from mcp_server.utils import device_utils, env_utils
 
 
@@ -159,7 +159,7 @@ def test_mcp_stdio_handshake_immediate_input():
 
 def test_awake_service_adb_command_isolates_stdin():
     """Verify _run_awake_adb_command always sets stdin=subprocess.DEVNULL."""
-    with patch("artemis.runtime.awake_service.subprocess.run") as mock_run:
+    with patch("apollo.runtime.awake_service.subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         _run_awake_adb_command("test-dev-1", ["shell", "date"], "test command")
 
@@ -173,7 +173,7 @@ def test_awake_service_adb_command_isolates_stdin():
 def test_awake_lease_run_isolates_stdin():
     """Verify ScreenAwakeLease._run always sets stdin=subprocess.DEVNULL."""
     lease = ScreenAwakeLease("test-dev-1")
-    with patch("artemis.runtime.awake_lease.subprocess.run") as mock_run:
+    with patch("apollo.runtime.awake_lease.subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         lease._run(["shell", "date"], "test lease command")
 
@@ -205,13 +205,13 @@ def test_device_utils_isolates_stdin():
 
 def test_ui_automator_client_isolates_stdin():
     """Verify ui_automator_client helper commands isolate stdin."""
-    with patch("artemis.clients.ui_automator_client.subprocess.run") as mock_run:
+    with patch("apollo.clients.ui_automator_client.subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(returncode=0, stdout="package:com.test\n", stderr="")
         ui_automator_client._is_package_installed("dev-1", "com.test")
         assert mock_run.called
         assert mock_run.call_args.kwargs.get("stdin") == subprocess.DEVNULL
 
-    with patch("artemis.clients.ui_automator_client.subprocess.run") as mock_run:
+    with patch("apollo.clients.ui_automator_client.subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         ui_automator_client._uninstall_package("dev-1", "com.test")
         assert mock_run.called

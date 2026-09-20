@@ -14,8 +14,8 @@
 
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
-from artemis.context import ArtemisContext
-from artemis.tools.command_tool import (
+from apollo.context import ApolloContext
+from apollo.tools.command_tool import (
     get_adb_task_registry,
     get_manage_task_tool,
     get_run_adb_command_tool,
@@ -86,7 +86,7 @@ class MockProcess:
 
 @pytest.fixture
 def mock_ctx():
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.data_engine = None
     ctx.device = MagicMock()
     ctx.device.device_id = "test_device_1234"
@@ -133,14 +133,14 @@ async def test_run_command_persistent_env(mock_exec, mock_ctx):
 
     # 1. Set environment variable in persistent terminal
     mock_process_1 = MockProcess(
-        output_bytes=(b"===EXIT_CODE===0\n===ENV_START===\nARTEMIS_TEST_ENV=coffee\n"),
+        output_bytes=(b"===EXIT_CODE===0\n===ENV_START===\nAPOLLO_TEST_ENV=coffee\n"),
         exit_code=0,
     )
     mock_exec.return_value = mock_process_1
 
     res1 = await run_command.ainvoke(
         {
-            "CommandLine": "export ARTEMIS_TEST_ENV=coffee",
+            "CommandLine": "export APOLLO_TEST_ENV=coffee",
             "Cwd": "/data/local/tmp",
             "RunPersistent": True,
             "RequestedTerminalID": terminal_id,
@@ -150,18 +150,18 @@ async def test_run_command_persistent_env(mock_exec, mock_ctx):
     assert "completed with exit code 0" in res1
     envs = get_adb_task_registry(mock_ctx).persistent_envs
     assert terminal_id in envs
-    assert envs[terminal_id].get("ARTEMIS_TEST_ENV") == "coffee"
+    assert envs[terminal_id].get("APOLLO_TEST_ENV") == "coffee"
 
     # 2. Query environment variable in subsequent command on same terminal
     mock_process_2 = MockProcess(
-        output_bytes=b"coffee\n===EXIT_CODE===0\n===ENV_START===\nARTEMIS_TEST_ENV=coffee\n",
+        output_bytes=b"coffee\n===EXIT_CODE===0\n===ENV_START===\nAPOLLO_TEST_ENV=coffee\n",
         exit_code=0,
     )
     mock_exec.return_value = mock_process_2
 
     res2 = await run_command.ainvoke(
         {
-            "CommandLine": "echo $ARTEMIS_TEST_ENV",
+            "CommandLine": "echo $APOLLO_TEST_ENV",
             "Cwd": "/data/local/tmp",
             "RunPersistent": True,
             "RequestedTerminalID": terminal_id,
@@ -260,7 +260,7 @@ async def test_run_command_kill(mock_exec, mock_ctx):
     assert task_id not in registry.background
 
     # Refusals (unknown or already-finished task) are reported structurally.
-    from artemis.core.tool_failure import is_tool_failure
+    from apollo.core.tool_failure import is_tool_failure
 
     again = await manage_task.ainvoke({"Action": "kill", "TaskId": task_id})
     assert is_tool_failure(again)
@@ -375,7 +375,7 @@ async def test_run_command_empty_output_is_labelled(mock_exec, mock_ctx):
 
 
 @pytest.mark.asyncio
-@patch("artemis.agents.log_analyzer.output_analyzer.get_llm")
+@patch("apollo.agents.log_analyzer.output_analyzer.get_llm")
 async def test_analyze_task_output_tool(mock_get_llm, mock_ctx):
     # Set up mock LLM
     mock_llm = MagicMock()
@@ -387,7 +387,7 @@ async def test_analyze_task_output_tool(mock_get_llm, mock_ctx):
     mock_get_llm.return_value = mock_llm
 
     # Set up finished tasks logs cache manually
-    from artemis.tools.command_tool import (
+    from apollo.tools.command_tool import (
         _FINISHED_TASKS_LOGS,
         _register_finished_task,
         get_analyze_task_output_tool,
@@ -417,18 +417,18 @@ async def test_analyze_task_output_tool(mock_get_llm, mock_ctx):
 
 
 def test_run_adb_command_tool_subclass():
-    """Verify RunAdbCommandTool is a subclass of ArtemisTool."""
-    from artemis.tools.base import ArtemisTool
-    from artemis.tools.command_tool import (
+    """Verify RunAdbCommandTool is a subclass of ApolloTool."""
+    from apollo.tools.base import ApolloTool
+    from apollo.tools.command_tool import (
         RunAdbCommand,
         RunAdbCommandArgs,
         RunAdbCommandTool,
         run_adb_command,
     )
 
-    assert issubclass(RunAdbCommandTool, ArtemisTool)
-    assert issubclass(RunAdbCommand, ArtemisTool)
-    assert isinstance(run_adb_command, ArtemisTool)
+    assert issubclass(RunAdbCommandTool, ApolloTool)
+    assert issubclass(RunAdbCommand, ApolloTool)
+    assert isinstance(run_adb_command, ApolloTool)
     assert isinstance(run_adb_command, RunAdbCommandTool)
 
     assert run_adb_command.name == "run_adb_command"
@@ -444,8 +444,8 @@ def test_run_adb_command_tool_subclass():
 @pytest.mark.asyncio
 async def test_run_adb_command_tool_mock_driver_execute():
     """Verify RunAdbCommandTool.execute dispatches to MockDeviceDriver when ctx is None."""
-    from artemis.drivers.mock.mock_driver import MockDeviceDriver
-    from artemis.tools.command_tool import RunAdbCommandTool
+    from apollo.drivers.mock.mock_driver import MockDeviceDriver
+    from apollo.tools.command_tool import RunAdbCommandTool
 
     driver = MockDeviceDriver(width=1080, height=2400)
     tool_inst = RunAdbCommandTool()
@@ -460,18 +460,18 @@ async def test_run_adb_command_tool_mock_driver_execute():
 
 
 def test_manage_task_tool_subclass():
-    """Verify ManageTaskTool is a subclass of ArtemisTool."""
-    from artemis.tools.base import ArtemisTool
-    from artemis.tools.command_tool import (
+    """Verify ManageTaskTool is a subclass of ApolloTool."""
+    from apollo.tools.base import ApolloTool
+    from apollo.tools.command_tool import (
         ManageTask,
         ManageTaskArgs,
         ManageTaskTool,
         manage_task,
     )
 
-    assert issubclass(ManageTaskTool, ArtemisTool)
-    assert issubclass(ManageTask, ArtemisTool)
-    assert isinstance(manage_task, ArtemisTool)
+    assert issubclass(ManageTaskTool, ApolloTool)
+    assert issubclass(ManageTask, ApolloTool)
+    assert isinstance(manage_task, ApolloTool)
     assert isinstance(manage_task, ManageTaskTool)
 
     assert manage_task.name == "manage_task"
@@ -487,7 +487,7 @@ def test_manage_task_tool_subclass():
 @pytest.mark.asyncio
 async def test_manage_task_tool_direct_execute(mock_ctx):
     """Verify direct ManageTaskTool.execute execution."""
-    from artemis.tools.command_tool import (
+    from apollo.tools.command_tool import (
         BackgroundTask,
         manage_task,
     )
@@ -522,18 +522,18 @@ async def test_manage_task_tool_direct_execute(mock_ctx):
 
 
 def test_analyze_task_output_tool_subclass():
-    """Verify AnalyzeTaskOutputTool is a subclass of ArtemisTool."""
-    from artemis.tools.base import ArtemisTool
-    from artemis.tools.command_tool import (
+    """Verify AnalyzeTaskOutputTool is a subclass of ApolloTool."""
+    from apollo.tools.base import ApolloTool
+    from apollo.tools.command_tool import (
         AnalyzeTaskOutput,
         AnalyzeTaskOutputArgs,
         AnalyzeTaskOutputTool,
         analyze_task_output,
     )
 
-    assert issubclass(AnalyzeTaskOutputTool, ArtemisTool)
-    assert issubclass(AnalyzeTaskOutput, ArtemisTool)
-    assert isinstance(analyze_task_output, ArtemisTool)
+    assert issubclass(AnalyzeTaskOutputTool, ApolloTool)
+    assert issubclass(AnalyzeTaskOutput, ApolloTool)
+    assert isinstance(analyze_task_output, ApolloTool)
     assert isinstance(analyze_task_output, AnalyzeTaskOutputTool)
 
     assert analyze_task_output.name == "analyze_task_output"
@@ -548,10 +548,10 @@ def test_analyze_task_output_tool_subclass():
 
 
 @pytest.mark.asyncio
-@patch("artemis.agents.log_analyzer.output_analyzer.get_llm")
+@patch("apollo.agents.log_analyzer.output_analyzer.get_llm")
 async def test_analyze_task_output_tool_direct_execute(mock_get_llm, mock_ctx):
     """Verify direct AnalyzeTaskOutputTool.execute execution."""
-    from artemis.tools.command_tool import (
+    from apollo.tools.command_tool import (
         _FINISHED_TASKS_LOGS,
         _register_finished_task,
         analyze_task_output,
@@ -587,18 +587,18 @@ async def test_analyze_task_output_tool_direct_execute(mock_get_llm, mock_ctx):
 
 
 def test_run_short_adb_command_tool_subclass():
-    """Verify RunShortAdbCommandTool is a subclass of ArtemisTool."""
-    from artemis.tools.base import ArtemisTool
-    from artemis.tools.command_tool import (
+    """Verify RunShortAdbCommandTool is a subclass of ApolloTool."""
+    from apollo.tools.base import ApolloTool
+    from apollo.tools.command_tool import (
         RunShortAdbCommand,
         RunShortAdbCommandArgs,
         RunShortAdbCommandTool,
         run_short_adb_command,
     )
 
-    assert issubclass(RunShortAdbCommandTool, ArtemisTool)
-    assert issubclass(RunShortAdbCommand, ArtemisTool)
-    assert isinstance(run_short_adb_command, ArtemisTool)
+    assert issubclass(RunShortAdbCommandTool, ApolloTool)
+    assert issubclass(RunShortAdbCommand, ApolloTool)
+    assert isinstance(run_short_adb_command, ApolloTool)
     assert isinstance(run_short_adb_command, RunShortAdbCommandTool)
 
     assert run_short_adb_command.name == "run_short_adb_command"
@@ -614,8 +614,8 @@ def test_run_short_adb_command_tool_subclass():
 @pytest.mark.asyncio
 async def test_run_short_adb_command_tool_mock_driver_execute():
     """Verify RunShortAdbCommandTool.execute dispatches to MockDeviceDriver when ctx is None."""
-    from artemis.drivers.mock.mock_driver import MockDeviceDriver
-    from artemis.tools.command_tool import RunShortAdbCommandTool
+    from apollo.drivers.mock.mock_driver import MockDeviceDriver
+    from apollo.tools.command_tool import RunShortAdbCommandTool
 
     driver = MockDeviceDriver(width=1080, height=2400)
     tool_inst = RunShortAdbCommandTool()
@@ -660,13 +660,13 @@ async def test_persistent_reports_script_exit_code(mock_exec, mock_ctx):
 def test_build_phone_script_quotes_env_and_cwd():
     import shlex
 
-    from artemis.tools.command_tool import _build_phone_script
+    from apollo.tools.command_tool import _build_phone_script
 
     script = _build_phone_script("echo hi", "/sdcard/my dir", {"FOO": "it's"}, True)
     assert script.startswith("cd '/sdcard/my dir'\n")
     expected_export = "export FOO=" + shlex.quote("it's") + "\n"
     assert expected_export in script
-    assert "===EXIT_CODE===$_artemis_ec" in script
+    assert "===EXIT_CODE===$_apollo_ec" in script
     assert script.rstrip().endswith("env")
 
 
@@ -706,7 +706,7 @@ async def test_send_input_rejected_for_non_interactive_task(mock_exec, mock_ctx)
 @pytest.mark.asyncio
 @patch("asyncio.create_subprocess_exec")
 async def test_shutdown_kills_background_tasks_and_records_them(mock_exec, mock_ctx):
-    from artemis.tools.command_tool import shutdown_adb_background_tasks
+    from apollo.tools.command_tool import shutdown_adb_background_tasks
 
     mock_exec.return_value = MockProcess(output_bytes=b"", exit_code=0, delay=5.0)
     run_command = get_run_adb_command_tool(mock_ctx)
@@ -723,15 +723,15 @@ async def test_shutdown_kills_background_tasks_and_records_them(mock_exec, mock_
     # A second shutdown is a no-op.
     assert await shutdown_adb_background_tasks(mock_ctx) == 0
     # A context that never used ADB tools has no registry and is a no-op too.
-    fresh = MagicMock(spec=ArtemisContext)
+    fresh = MagicMock(spec=ApolloContext)
     assert await shutdown_adb_background_tasks(fresh) == 0
 
 
 def test_registry_is_per_context_and_notifications_do_not_leak():
-    from artemis.tools.command_tool import _register_finished_task
+    from apollo.tools.command_tool import _register_finished_task
 
-    ctx_a = MagicMock(spec=ArtemisContext)
-    ctx_b = MagicMock(spec=ArtemisContext)
+    ctx_a = MagicMock(spec=ApolloContext)
+    ctx_b = MagicMock(spec=ApolloContext)
     reg_a = get_adb_task_registry(ctx_a)
     reg_b = get_adb_task_registry(ctx_b)
     assert reg_a is not reg_b
@@ -765,15 +765,15 @@ async def test_sync_long_output_is_not_reannounced(mock_exec, mock_ctx):
 async def test_cloud_mode_command_has_hard_timeout(mock_ctx, monkeypatch):
     import time
 
-    monkeypatch.setenv("ARTEMIS_CLOUD_MODE", "1")
+    monkeypatch.setenv("APOLLO_CLOUD_MODE", "1")
     device = MagicMock()
     device.shell = MagicMock(side_effect=lambda _script: time.sleep(1.0) or "late")
-    with patch("artemis.tools.command_tool.get_adb_device", return_value=device):
+    with patch("apollo.tools.command_tool.get_adb_device", return_value=device):
         run_command = get_run_adb_command_tool(mock_ctx)
         res = await run_command.ainvoke({"CommandLine": "logcat", "WaitMsBeforeAsync": 100})
     assert "did not finish within" in res
 
     device.shell = MagicMock(return_value="fast\n")
-    with patch("artemis.tools.command_tool.get_adb_device", return_value=device):
+    with patch("apollo.tools.command_tool.get_adb_device", return_value=device):
         res = await run_command.ainvoke({"CommandLine": "echo fast", "WaitMsBeforeAsync": 500})
     assert "fast" in res

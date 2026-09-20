@@ -17,7 +17,7 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from artemis.agents.validator import precondition_pixel as pp
+from apollo.agents.validator import precondition_pixel as pp
 from langchain_core.messages import HumanMessage, SystemMessage
 
 _PNG = b"fake-image-bytes"

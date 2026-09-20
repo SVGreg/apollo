@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Preset Task Catalog & Dynamic Recommendation Engine for Artemis."""
+"""Preset Task Catalog & Dynamic Recommendation Engine for Apollo."""
 
 from typing import Any, Literal
 from pydantic import BaseModel, Field

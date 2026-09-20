@@ -28,11 +28,11 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 from langchain_core.messages import ToolMessage
 
-from artemis.agents.flash.runner import FlashRunner, _TurnRecord
-from artemis.context import ArtemisContext
-from artemis.graph.state import State
-from artemis.mcp.action_executor import McpActionExecutor, _ArgError
-from artemis.mcp.action_types import ActionResult, ObserveResult
+from apollo.agents.flash.runner import FlashRunner, _TurnRecord
+from apollo.context import ApolloContext
+from apollo.graph.state import State
+from apollo.mcp.action_executor import McpActionExecutor, _ArgError
+from apollo.mcp.action_types import ActionResult, ObserveResult
 
 
 def _el(index: int, text: str, cx: int, cy: int) -> dict:
@@ -84,7 +84,7 @@ class _FakeSession:
 
 @pytest.fixture
 def mock_context():
-    ctx = Mock(spec=ArtemisContext)
+    ctx = Mock(spec=ApolloContext)
     ctx.llm_config = Mock()
     llm_cfg = Mock()
     llm_cfg.model = "gemini-2.5-flash"
@@ -100,7 +100,7 @@ def mock_context():
 
 
 def _runner(mock_context, observations):
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="Open Wi-Fi and Display")
     runner.summarizer = None
     runner.executor._session = _FakeSession(observations)

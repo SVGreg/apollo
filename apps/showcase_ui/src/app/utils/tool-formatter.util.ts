@@ -315,7 +315,7 @@ export function getToolAgentName(tool: any): string | null {
 export function getUniqueGenericTools(tools: any[] | undefined): any[] {
   if (!tools) return [];
 
-  // Only Google GenAI SDK retries are observable. Artemis wrapper retries and
+  // Only Google GenAI SDK retries are observable. Apollo wrapper retries and
   // opaque provider retries must never be presented as provider internals.
   const retryTools = tools.filter(tool =>
     tool?.type === 'llm_call'
@@ -771,7 +771,7 @@ export function getCompressionLabel(tool: any): string {
 
 /**
  * Plain-language phases of one compress_history line. Mirrors
- * COMPRESSION_PHASES in artemis/memory/chunking.py: the backend writes
+ * COMPRESSION_PHASES in apollo/memory/chunking.py: the backend writes
  * `args.phase`; the trace `status` (running/success/failed) is left alone.
  */
 export type CompressionPhase = 'summarizing' | 'ready' | 'applied' | 'failed';
@@ -1279,7 +1279,7 @@ export function extractToolExtraParams(toolData: any, cache?: WeakMap<any, Actio
     if (v === null || v === undefined || v === '') continue;
 
     let valStr = String(v);
-    if (valStr.includes('object at 0x') || valStr.startsWith('<artemis.') || valStr.includes('<controller') || valStr.includes('<android_world')) continue;
+    if (valStr.includes('object at 0x') || valStr.startsWith('<apollo.') || valStr.includes('<controller') || valStr.includes('<android_world')) continue;
 
     if (typeof v === 'object') {
       try { valStr = JSON.stringify(v); } catch { valStr = String(v); }

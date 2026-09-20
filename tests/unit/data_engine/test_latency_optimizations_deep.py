@@ -21,16 +21,16 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from langchain_core.messages import HumanMessage
-from artemis.context import ArtemisContext
-from artemis.data_engine.engine import DataEngine
-from artemis.graph.state import State
-from artemis.utils.logger import DataEngineHandler
+from apollo.context import ApolloContext
+from apollo.data_engine.engine import DataEngine
+from apollo.graph.state import State
+from apollo.utils.logger import DataEngineHandler
 import pytest
 
 
 @pytest.fixture
-def mock_artemis_ctx(tmp_path):
-    mock_ctx = MagicMock(spec=ArtemisContext)
+def mock_apollo_ctx(tmp_path):
+    mock_ctx = MagicMock(spec=ApolloContext)
     mock_execution_setup = MagicMock()
     mock_execution_setup.traces_path = str(tmp_path)
     mock_ctx.execution_setup = mock_execution_setup
@@ -40,10 +40,10 @@ def mock_artemis_ctx(tmp_path):
 
 @pytest.mark.asyncio
 async def test_data_engine_handler_queue_buffering_and_background_worker(
-    mock_artemis_ctx,
+    mock_apollo_ctx,
 ):
     """Verify DataEngineHandler.emit buffers log records via in-memory queue without spawning OS threads per log line."""
-    engine = DataEngine(mock_artemis_ctx)
+    engine = DataEngine(mock_apollo_ctx)
     session_id = engine.start_session("Test Log Queue")
 
     handler = DataEngineHandler()
@@ -86,9 +86,9 @@ async def test_data_engine_handler_queue_buffering_and_background_worker(
 
 
 @pytest.mark.asyncio
-async def test_update_step_action_and_metadata_background_offloading(mock_artemis_ctx, tmp_path):
+async def test_update_step_action_and_metadata_background_offloading(mock_apollo_ctx, tmp_path):
     """Verify that update_step_* methods publish SSE events instantly in memory and offload SQLite & disk I/O to background."""
-    engine = DataEngine(mock_artemis_ctx)
+    engine = DataEngine(mock_apollo_ctx)
     session_id = engine.start_session("Test Step Offloading")
     step_id = engine.allocate_step_id()
 
@@ -143,10 +143,10 @@ async def test_update_step_action_and_metadata_background_offloading(mock_artemi
 
 @pytest.mark.asyncio
 async def test_record_step_background_image_and_step_persistence(
-    mock_artemis_ctx,
+    mock_apollo_ctx,
 ):
     """Verify record_step immediately calculates SHA-256 hashes and offloads get_or_create_image + create_step to background."""
-    engine = DataEngine(mock_artemis_ctx)
+    engine = DataEngine(mock_apollo_ctx)
     session_id = engine.start_session("Test Record Step Image Offloading")
     step_id = engine.allocate_step_id()
 
@@ -190,13 +190,13 @@ async def test_record_step_background_image_and_step_persistence(
 
 
 @pytest.mark.asyncio
-async def test_perception_node_async_offloading(mock_artemis_ctx, tmp_path):
+async def test_perception_node_async_offloading(mock_apollo_ctx, tmp_path):
     """Verify perception_node offloads injected_instruction reading/unlinking and get_or_create_image to background."""
-    from artemis.graph.perception import perception_node
+    from apollo.graph.perception import perception_node
 
-    engine = DataEngine(mock_artemis_ctx)
+    engine = DataEngine(mock_apollo_ctx)
     engine.start_session("Test Perception Node Offloading")
-    mock_artemis_ctx.data_engine = engine
+    mock_apollo_ctx.data_engine = engine
 
     # Create an injected_instruction.json file
     instruction_file = Path(engine.base_dir) / "injected_instruction.json"
@@ -214,10 +214,10 @@ async def test_perception_node_async_offloading(mock_artemis_ctx, tmp_path):
     mock_screen_data.height = 2400
 
     with (
-        patch("artemis.graph.perception.UnifiedMobileController") as mock_controller_cls,
-        patch("artemis.graph.perception.perform_ocr", new_callable=AsyncMock) as mock_ocr,
-        patch("artemis.graph.perception._detect_status_bar_height", return_value=0),
-        patch("artemis.graph.perception._should_skip_settling", return_value=True),
+        patch("apollo.graph.perception.UnifiedMobileController") as mock_controller_cls,
+        patch("apollo.graph.perception.perform_ocr", new_callable=AsyncMock) as mock_ocr,
+        patch("apollo.graph.perception._detect_status_bar_height", return_value=0),
+        patch("apollo.graph.perception._should_skip_settling", return_value=True),
     ):
         mock_controller = mock_controller_cls.return_value
         mock_controller.get_screen_data = AsyncMock(return_value=mock_screen_data)
@@ -230,7 +230,7 @@ async def test_perception_node_async_offloading(mock_artemis_ctx, tmp_path):
             structured_decisions=None,
         )
 
-        update = await perception_node(state, mock_artemis_ctx)
+        update = await perception_node(state, mock_apollo_ctx)
 
     # Verify perception_node returned expected update immediately
     assert update["injected_instruction"] == "Avoid clicking Ads"
@@ -256,7 +256,7 @@ async def test_perception_node_async_offloading(mock_artemis_ctx, tmp_path):
 async def test_ocr_api_persistent_http_client_singleton_and_tls_reuse():
     """Verify get_http_client returns a persistent singleton httpx.AsyncClient that reuses TLS connections across OCR calls."""
     import httpx
-    from artemis.utils import ocr_api
+    from apollo.utils import ocr_api
 
     # Reset singleton to test fresh creation & persistence
     ocr_api._HTTP_CLIENT = None
@@ -302,8 +302,8 @@ async def test_ocr_api_persistent_http_client_singleton_and_tls_reuse():
 async def test_ui_filter_and_ui_automator_client_pre_parsed_bounds_o1_lookup():
     """Verify XML parsing pre-populates parsed_bounds and _parse_bounds hits this cache in O(1) without regex matches."""
     import re
-    from artemis.clients.ui_automator_client import _parse_hierarchy_xml_to_elements
-    from artemis.utils.ui_filter import _parse_bounds
+    from apollo.clients.ui_automator_client import _parse_hierarchy_xml_to_elements
+    from apollo.utils.ui_filter import _parse_bounds
 
     # 1. Test ingestion pre-parsing in _parse_hierarchy_xml_to_elements
     xml_data = '<hierarchy><node text="Login Btn" bounds="[15,25][350,120]"/></hierarchy>'
@@ -341,15 +341,15 @@ async def test_ui_filter_and_ui_automator_client_pre_parsed_bounds_o1_lookup():
 
 @pytest.mark.asyncio
 async def test_validator_pre_execution_loop_reverted_to_exact_safety_contract(
-    mock_artemis_ctx, tmp_path
+    mock_apollo_ctx, tmp_path
 ):
     """Verify Validator pre-execution check runs VLM on XML failure, but retains XML error if VLM fails (reverted contract)."""
-    from artemis.agents.validator.validator import ValidatorNode, ValidationErrorCategory
+    from apollo.agents.validator.validator import ValidatorNode, ValidationErrorCategory
 
     # Set mock context properties required by tracing decorators
-    mock_artemis_ctx.data_engine = MagicMock()
+    mock_apollo_ctx.data_engine = MagicMock()
 
-    node = ValidatorNode(mock_artemis_ctx)
+    node = ValidatorNode(mock_apollo_ctx)
     # The Validator now talks to the in-process unified action session.
     session = MagicMock()
     session.started = True
@@ -377,7 +377,7 @@ async def test_validator_pre_execution_loop_reverted_to_exact_safety_contract(
 
     with (
         patch(
-            "artemis.agents.validator.validator.get_action_session",
+            "apollo.agents.validator.validator.get_action_session",
             AsyncMock(return_value=session),
         ),
         patch.object(
@@ -424,11 +424,11 @@ async def test_validator_pre_execution_loop_reverted_to_exact_safety_contract(
 
 
 @pytest.mark.asyncio
-async def test_record_step_pre_allocated_id_reset(mock_artemis_ctx):
+async def test_record_step_pre_allocated_id_reset(mock_apollo_ctx):
     """Verify that after record_step is called, the pre-allocated current_step_id is reset to None so subsequent steps generate distinct IDs."""
-    from artemis.data_engine.engine import DataEngine
+    from apollo.data_engine.engine import DataEngine
 
-    engine = DataEngine(mock_artemis_ctx)
+    engine = DataEngine(mock_apollo_ctx)
     engine.start_session("Pre-allocated ID Reset Test")
 
     # 1. Pre-allocate ID for step 1

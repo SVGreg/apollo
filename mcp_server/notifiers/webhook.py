@@ -32,7 +32,7 @@ class WebhookNotifier(BaseNotifier):
     ENV_VARS = [
         "OPENCLAW_WEBHOOK_URL",
         "MCP_NOTIFICATION_WEBHOOK",
-        "ARTEMIS_WEBHOOK_URL",
+        "APOLLO_WEBHOOK_URL",
     ]
 
     @property
@@ -63,7 +63,7 @@ class WebhookNotifier(BaseNotifier):
 
         data = {
             "event": event_type,
-            "title": title or f"Artemis Task {event_type.capitalize()}",
+            "title": title or f"Apollo Task {event_type.capitalize()}",
             "conversation_id": conversation_id,
             "message": message,
             "timestamp": time.time(),
@@ -75,7 +75,7 @@ class WebhookNotifier(BaseNotifier):
             req = urllib.request.Request(
                 url,
                 data=req_data,
-                headers={"Content-Type": "application/json", "User-Agent": "Artemis-MCP/3.0"},
+                headers={"Content-Type": "application/json", "User-Agent": "Apollo-MCP/3.0"},
                 method="POST",
             )
             with urllib.request.urlopen(req, timeout=5) as response:

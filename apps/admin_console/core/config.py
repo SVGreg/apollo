@@ -14,11 +14,11 @@
 
 """Admin Console configuration facade.
 
-All configuration and path management is centralized in `artemis.config`.
+All configuration and path management is centralized in `apollo.config`.
 This module re-exports common constants for full backward compatibility.
 """
 
-from artemis.config import (
+from apollo.config import (
     DB_PATH,
     IMAGES_DIR,
     PAUSE_FILE,

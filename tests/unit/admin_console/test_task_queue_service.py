@@ -24,21 +24,21 @@ import pytest
 from apps.admin_console.core.state import state
 from apps.admin_console.routers.tasks import get_status
 from apps.admin_console.services.task_queue_service import TaskQueueService, task_queue_service
-from artemis.runtime.device_lock import DeviceLockOwner
-from artemis.runtime.adb_endpoint import AdbEndpoint
+from apollo.runtime.device_lock import DeviceLockOwner
+from apollo.runtime.adb_endpoint import AdbEndpoint
 
 
 @pytest.fixture(autouse=True)
 def clean_state(tmp_path, monkeypatch):
     """Reset global state between tests."""
-    isolated_pause_file = tmp_path / ".artemis_paused"
+    isolated_pause_file = tmp_path / ".apollo_paused"
     # Redirect DeviceExecutionLock's lock/queue directory into tmp_path so that
-    # enqueue reservations never touch the real %TEMP%/artemis/device-locks dir
+    # enqueue reservations never touch the real %TEMP%/apollo/device-locks dir
     # (a live daemon merges those tickets into its /api/status queue view).
     isolated_lock_dir = tmp_path / "device-locks"
     isolated_lock_dir.mkdir(parents=True, exist_ok=True)
     monkeypatch.setattr(
-        "artemis.runtime.device_lock.get_temp_dir",
+        "apollo.runtime.device_lock.get_temp_dir",
         lambda _subfolder=None: isolated_lock_dir,
     )
     state_module = importlib.import_module("apps.admin_console.core.state")
@@ -47,9 +47,9 @@ def clean_state(tmp_path, monkeypatch):
     monkeypatch.setattr(queue_module, "PAUSE_FILE", isolated_pause_file)
     # The stop assertions below describe the legacy immediate kill; the graceful
     # cancel path has its own tests in test_graceful_stop_and_recovery.py.
-    monkeypatch.setenv("ARTEMIS_CANCEL_GRACE_SECONDS", "0")
+    monkeypatch.setenv("APOLLO_CANCEL_GRACE_SECONDS", "0")
     monkeypatch.setattr(
-        "artemis.runtime.cancel_requests.get_temp_dir",
+        "apollo.runtime.cancel_requests.get_temp_dir",
         lambda _subfolder=None: isolated_lock_dir,
     )
     state.clear_queue()
@@ -82,7 +82,7 @@ def clean_state(tmp_path, monkeypatch):
 
 
 def test_paused_error_reads_persisted_reason(tmp_path):
-    pause_file = tmp_path / ".artemis_paused"
+    pause_file = tmp_path / ".apollo_paused"
     pause_file.write_text("LLM Error: 503 UNAVAILABLE: model overloaded", encoding="utf-8")
 
     with patch("apps.admin_console.core.state.PAUSE_FILE", pause_file):
@@ -112,7 +112,7 @@ async def test_enqueued_task_keeps_its_adb_endpoint_snapshot():
             return_value=original,
         ),
         patch(
-            "artemis.runtime.device_pool.device_pool.select_device_async",
+            "apollo.runtime.device_pool.device_pool.select_device_async",
             return_value="emulator-5554",
         ),
     ):
@@ -230,7 +230,7 @@ async def test_queue_worker_execution_lifecycle():
         patch("apps.admin_console.services.task_queue_service.session_repo") as mock_repo,
         patch("apps.admin_console.services.task_queue_service.media_service"),
         patch(
-            "artemis.runtime.device_pool.device_pool.select_device_async",
+            "apollo.runtime.device_pool.device_pool.select_device_async",
             return_value="emulator-5554",
         ),
     ):
@@ -276,7 +276,7 @@ async def test_queue_worker_cmd_construction():
         patch("apps.admin_console.services.task_queue_service.session_repo") as mock_repo,
         patch("apps.admin_console.services.task_queue_service.media_service"),
         patch(
-            "artemis.runtime.device_pool.device_pool.select_device_async",
+            "apollo.runtime.device_pool.device_pool.select_device_async",
             return_value="emulator-5554",
         ),
     ):
@@ -317,14 +317,14 @@ async def test_queue_worker_cmd_construction():
         assert enqueue_result["tasks"][0]["verification_level"] == "checkpoints"
         assert enqueue_result["tasks"][0]["explorer_mode"] == "ultra"
         assert (
-            executed_kwargs[0]["env"]["ARTEMIS_DEVICE_QUEUE_TICKET"]
+            executed_kwargs[0]["env"]["APOLLO_DEVICE_QUEUE_TICKET"]
             == (enqueue_result["tasks"][0]["queue_ticket"])
         )
         endpoint = enqueue_result["tasks"][0]["adb_endpoint"]
         assert executed_kwargs[0]["env"]["ADB_HOST"] == endpoint["host"]
         assert executed_kwargs[0]["env"]["ADB_PORT"] == str(endpoint["port"])
         assert executed_kwargs[0]["env"]["ADB_SERVER_SOCKET"] == endpoint["socket"]
-        assert executed_kwargs[0]["env"]["ARTEMIS_ADB_ENDPOINT_ID"] == endpoint["identity"]
+        assert executed_kwargs[0]["env"]["APOLLO_ADB_ENDPOINT_ID"] == endpoint["identity"]
         if sys.platform == "win32":
             assert executed_kwargs[0]["creationflags"] == (
                 subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
@@ -445,7 +445,7 @@ def test_stop_tasks_terminates_external_global_owner_and_preserves_local_waiter(
         patch(
             "apps.admin_console.services.task_queue_service.session_repo.update_session_status"
         ) as update_status,
-        patch("artemis.runtime.trace_store.update_trace_status") as update_trace_status,
+        patch("apollo.runtime.trace_store.update_trace_status") as update_trace_status,
     ):
         assert task_queue_service.stop_tasks(clear_all=False) is True
 
@@ -461,7 +461,7 @@ def test_stop_tasks_terminates_external_global_owner_and_preserves_local_waiter(
     update_trace_status.assert_called_once_with(
         "mcp-session",
         "cancelled",
-        error="Task stopped from the Artemis frontend.",
+        error="Task stopped from the Apollo frontend.",
     )
 
 
@@ -594,7 +594,7 @@ async def test_cancel_task_triggers_next_pending_task():
         patch("apps.admin_console.services.task_queue_service.session_repo") as mock_repo,
         patch("apps.admin_console.services.task_queue_service.media_service"),
         patch(
-            "artemis.runtime.device_pool.device_pool.select_device_async",
+            "apollo.runtime.device_pool.device_pool.select_device_async",
             return_value="emulator-5554",
         ),
     ):
@@ -645,7 +645,7 @@ async def test_immediate_cancel_ignores_stale_ipc_and_runs_next_task():
         patch("apps.admin_console.services.task_queue_service.session_repo") as mock_repo,
         patch("apps.admin_console.services.task_queue_service.media_service"),
         patch(
-            "artemis.runtime.device_pool.device_pool.select_device_async",
+            "apollo.runtime.device_pool.device_pool.select_device_async",
             return_value="emulator-5554",
         ),
     ):
@@ -713,7 +713,7 @@ async def test_wait_for_worker_process_watchdog_handles_reaped_process():
 def test_darwin_terminate_process_tree_preserves_direct_child_for_asyncio():
     """Verify darwin terminate_process_tree does not pass direct children to psutil.wait_procs."""
     import os
-    from artemis.platform.darwin import DarwinPlatformProcess
+    from apollo.platform.darwin import DarwinPlatformProcess
 
     process = DarwinPlatformProcess()
     current_pid = os.getpid()
@@ -784,7 +784,7 @@ async def test_queue_worker_notifies_conversation():
         patch("mcp_server.notifiers.notify") as mock_notify,
         patch("apps.admin_console.services.task_queue_service.session_repo") as mock_repo,
         patch(
-            "artemis.runtime.device_pool.device_pool.try_list_devices_async",
+            "apollo.runtime.device_pool.device_pool.try_list_devices_async",
             new=AsyncMock(return_value=[]),
         ),
     ):
@@ -859,7 +859,7 @@ def test_stop_tasks_by_session_id_targets_correct_task_among_multiple():
         patch(
             "apps.admin_console.services.task_queue_service.session_repo.update_session_status"
         ) as update_status,
-        patch("artemis.runtime.trace_store.update_trace_status") as update_trace,
+        patch("apollo.runtime.trace_store.update_trace_status") as update_trace,
     ):
         # Explicitly stop session-b
         assert task_queue_service.stop_tasks(clear_all=False, session_id="session-b") is True
@@ -873,7 +873,7 @@ def test_stop_tasks_by_session_id_targets_correct_task_among_multiple():
         update_trace.assert_called_once_with(
             "session-b",
             "cancelled",
-            error="Task stopped from the Artemis frontend.",
+            error="Task stopped from the Apollo frontend.",
         )
 
 
@@ -1094,7 +1094,7 @@ async def test_enqueue_tasks_debounces_rapid_identical_submissions():
             return_value="ticket-456",
         ),
         patch(
-            "artemis.runtime.device_pool.device_pool.try_list_devices_async",
+            "apollo.runtime.device_pool.device_pool.try_list_devices_async",
             new=AsyncMock(return_value=[]),
         ),
         patch.object(TaskQueueService, "ensure_worker_running"),

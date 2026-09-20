@@ -19,15 +19,15 @@ import subprocess
 
 import pytest
 
-from artemis.config import settings
-from artemis.core.diagnostics.adb_server_connection import (
+from apollo.config import settings
+from apollo.core.diagnostics.adb_server_connection import (
     AdbServerConnectionManager,
     AdbServerEndpoint,
     InvalidAdbServerEndpoint,
     adb_server_connection,
 )
-from artemis.core.diagnostics.engine import ReadinessEngine
-from artemis.runtime.adb_endpoint import ADB_ENDPOINT_ID_ENV, AdbSession
+from apollo.core.diagnostics.engine import ReadinessEngine
+from apollo.runtime.adb_endpoint import ADB_ENDPOINT_ID_ENV, AdbSession
 
 
 @pytest.mark.parametrize(
@@ -168,7 +168,7 @@ async def test_probe_never_activates_reachable_endpoint(monkeypatch):
 async def test_default_resolver_uses_the_shared_toolchain(monkeypatch):
     captured: dict[str, object] = {}
     monkeypatch.setattr(
-        "artemis.core.diagnostics.adb_server_connection.toolchain.resolve",
+        "apollo.core.diagnostics.adb_server_connection.toolchain.resolve",
         lambda name: "sdk-platform-tools-adb" if name == "adb" else None,
     )
 

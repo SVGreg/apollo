@@ -17,8 +17,8 @@
 import pytest
 from pydantic import ValidationError
 
-from artemis.graph.state import State
-from artemis.graph.visibility import (
+from apollo.graph.state import State
+from apollo.graph.visibility import (
     NODE_VISIBILITY,
     StateView,
     VisibilityError,
@@ -98,13 +98,13 @@ def test_check_update_flags_undeclared_write():
 
 
 def test_strict_state_is_identity_when_disabled(monkeypatch):
-    monkeypatch.delenv("ARTEMIS_STRICT_STATE", raising=False)
+    monkeypatch.delenv("APOLLO_STRICT_STATE", raising=False)
     state = State.initial("g")
     assert strict_state(state, "operator") is state
 
 
 def test_strict_state_wraps_when_enabled(monkeypatch):
-    monkeypatch.setenv("ARTEMIS_STRICT_STATE", "1")
+    monkeypatch.setenv("APOLLO_STRICT_STATE", "1")
     state = State.initial("g")
     view = strict_state(state, "operator")
     assert isinstance(view, StateView)

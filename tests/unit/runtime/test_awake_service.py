@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 
-from artemis.runtime.awake_service import (
+from apollo.runtime.awake_service import (
     AWAKE_STRATEGY_HEARTBEAT,
     AWAKE_STRATEGY_USB,
     ScreenAwakeService,
@@ -13,8 +13,8 @@ def completed(stdout="", returncode=0, stderr=""):
     return MagicMock(returncode=returncode, stdout=stdout, stderr=stderr)
 
 
-@patch("artemis.runtime.awake_service.ScreenAwakeLease")
-@patch("artemis.runtime.awake_service.subprocess.run")
+@patch("apollo.runtime.awake_service.ScreenAwakeLease")
+@patch("apollo.runtime.awake_service.subprocess.run")
 def test_usb_policy_is_primary_when_android_reports_it_active(mock_run, lease_type):
     mock_run.side_effect = [
         completed(),
@@ -37,8 +37,8 @@ def test_usb_policy_is_primary_when_android_reports_it_active(mock_run, lease_ty
     assert not any("KEYCODE_UNKNOWN" in command for command in commands)
 
 
-@patch("artemis.runtime.awake_service.ScreenAwakeLease")
-@patch("artemis.runtime.awake_service.subprocess.run")
+@patch("apollo.runtime.awake_service.ScreenAwakeLease")
+@patch("apollo.runtime.awake_service.subprocess.run")
 def test_inactive_usb_policy_falls_back_to_effective_host_heartbeat(mock_run, _lease_type):
     mock_run.side_effect = [
         completed(),
@@ -54,17 +54,17 @@ def test_inactive_usb_policy_falls_back_to_effective_host_heartbeat(mock_run, _l
     assert mock_run.call_args_list[-1].args[0][-1] == "KEYCODE_UNKNOWN"
 
 
-@patch.dict("os.environ", {"ARTEMIS_KEEP_DEVICE_AWAKE": "false"})
-@patch("artemis.runtime.awake_service.subprocess.run")
+@patch.dict("os.environ", {"APOLLO_KEEP_DEVICE_AWAKE": "false"})
+@patch("apollo.runtime.awake_service.subprocess.run")
 def test_awake_strategy_can_be_disabled(mock_run):
     assert _configure_usb_stay_awake("device-123") is None
     mock_run.assert_not_called()
 
 
-@patch("artemis.runtime.awake_service.threading.Thread")
-@patch("artemis.runtime.awake_service.threading.Event")
+@patch("apollo.runtime.awake_service.threading.Thread")
+@patch("apollo.runtime.awake_service.threading.Event")
 @patch(
-    "artemis.runtime.awake_service._configure_usb_stay_awake",
+    "apollo.runtime.awake_service._configure_usb_stay_awake",
     return_value=AWAKE_STRATEGY_HEARTBEAT,
 )
 def test_host_heartbeat_lives_until_host_shutdown(configure, event_type, thread_type):
@@ -86,11 +86,11 @@ def test_host_heartbeat_lives_until_host_shutdown(configure, event_type, thread_
     thread.join.assert_called_once_with(timeout=2.0)
 
 
-@patch("artemis.runtime.awake_service._run_awake_adb_command")
-@patch("artemis.runtime.awake_service.threading.Thread")
-@patch("artemis.runtime.awake_service.threading.Event")
+@patch("apollo.runtime.awake_service._run_awake_adb_command")
+@patch("apollo.runtime.awake_service.threading.Thread")
+@patch("apollo.runtime.awake_service.threading.Event")
 @patch(
-    "artemis.runtime.awake_service._configure_usb_stay_awake",
+    "apollo.runtime.awake_service._configure_usb_stay_awake",
     return_value=AWAKE_STRATEGY_HEARTBEAT,
 )
 def test_heartbeat_loop_uses_verified_user_activity_key(
@@ -111,11 +111,11 @@ def test_heartbeat_loop_uses_verified_user_activity_key(
     )
 
 
-@patch("artemis.runtime.awake_service.threading.Thread")
-@patch("artemis.runtime.awake_service.threading.Event")
-@patch("artemis.runtime.awake_service._discover_connected_device_ids")
+@patch("apollo.runtime.awake_service.threading.Thread")
+@patch("apollo.runtime.awake_service.threading.Event")
+@patch("apollo.runtime.awake_service._discover_connected_device_ids")
 @patch(
-    "artemis.runtime.awake_service._configure_usb_stay_awake",
+    "apollo.runtime.awake_service._configure_usb_stay_awake",
     return_value=AWAKE_STRATEGY_USB,
 )
 def test_service_monitor_enrolls_a_device_attached_after_start(
@@ -135,10 +135,10 @@ def test_service_monitor_enrolls_a_device_attached_after_start(
     assert service.device_ids == ("device-late",)
 
 
-@patch("artemis.runtime.awake_service.threading.Thread")
-@patch("artemis.runtime.awake_service.threading.Event")
+@patch("apollo.runtime.awake_service.threading.Thread")
+@patch("apollo.runtime.awake_service.threading.Event")
 @patch(
-    "artemis.runtime.awake_service._configure_usb_stay_awake",
+    "apollo.runtime.awake_service._configure_usb_stay_awake",
     return_value=AWAKE_STRATEGY_HEARTBEAT,
 )
 def test_disconnect_reconciliation_stops_heartbeat_and_allows_reenrollment(
@@ -159,8 +159,8 @@ def test_disconnect_reconciliation_stops_heartbeat_and_allows_reenrollment(
     assert configure.call_count == 2
 
 
-@patch("artemis.runtime.device_pool.device_pool.get_claimed_serials")
-@patch("artemis.runtime.awake_service.AdbClient")
+@patch("apollo.runtime.device_pool.device_pool.get_claimed_serials")
+@patch("apollo.runtime.awake_service.AdbClient")
 def test_discovery_keeps_only_pool_claimed_devices(adb_client, claimed):
     """The pool manages two devices while the ADB server lists three: only the
     two claimed devices are kept awake; the unrelated one is left untouched."""
@@ -175,10 +175,10 @@ def test_discovery_keeps_only_pool_claimed_devices(adb_client, claimed):
 
 
 @patch(
-    "artemis.runtime.device_pool.device_pool.get_claimed_serials",
+    "apollo.runtime.device_pool.device_pool.get_claimed_serials",
     return_value=set(),
 )
-@patch("artemis.runtime.awake_service.AdbClient")
+@patch("apollo.runtime.awake_service.AdbClient")
 def test_discovery_returns_nothing_when_pool_claims_no_device(adb_client, _claimed):
     adb_client.return_value.device_list.return_value = [
         MagicMock(serial="device-1"),

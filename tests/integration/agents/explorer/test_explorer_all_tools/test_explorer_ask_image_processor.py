@@ -18,7 +18,7 @@ import logging
 from pathlib import Path
 import sys
 from unittest.mock import AsyncMock, MagicMock, patch
-from artemis.agents.explorer.explorer import Explorer
+from apollo.agents.explorer.explorer import Explorer
 from tests.integration.agents.explorer.test_explorer_all_tools.helpers import (
     create_mock_context,
     create_mock_state,
@@ -84,7 +84,7 @@ async def test_explorer_ask_image_processor_tool():
     logger.addHandler(handler)
 
     # Attach the main agent logger to capture internal step logs
-    agent_logger = logging.getLogger("artemis.agents.explorer")
+    agent_logger = logging.getLogger("apollo.agents.explorer")
     agent_logger.setLevel(logging.INFO)
     agent_logger.addHandler(handler)
 
@@ -95,7 +95,7 @@ async def test_explorer_ask_image_processor_tool():
     if not outputs_dir.exists():
         outputs_dir.mkdir(parents=True, exist_ok=True)
 
-    from artemis.config import settings
+    from apollo.config import settings
 
     settings.TRACES_PATH = outputs_dir
 
@@ -190,11 +190,11 @@ async def test_explorer_ask_image_processor_tool():
 
     with (
         patch(
-            "artemis.agents.explorer.explorer.genai.Client",
+            "apollo.agents.explorer.explorer.genai.Client",
             return_value=mock_client,
         ),
         patch(
-            "artemis.agents.explorer.perception_tools.ImageProcessor",
+            "apollo.agents.explorer.perception_tools.ImageProcessor",
             return_value=mock_image_processor_instance,
         ),
     ):
@@ -289,7 +289,7 @@ if __name__ == "__main__":
 def test_cv_canvas_annotations(tmp_path):
     import numpy as np
     import cv2
-    from artemis.utils.cv_canvas import ImageCanvas
+    from apollo.utils.cv_canvas import ImageCanvas
 
     # Create a dummy image
     img_dir = tmp_path / "images"

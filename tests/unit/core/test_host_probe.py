@@ -20,9 +20,9 @@ import sys
 
 import pytest
 
-from artemis.core.diagnostics import IntegrationHostProbe, ReadinessEngine
-from artemis.core.diagnostics.probes import host_probe
-from artemis.core.diagnostics.schema import ProbeCategory, ProbeStatus
+from apollo.core.diagnostics import IntegrationHostProbe, ReadinessEngine
+from apollo.core.diagnostics.probes import host_probe
+from apollo.core.diagnostics.schema import ProbeCategory, ProbeStatus
 
 
 #: Environment keys / prefixes any IDE might export; scrubbed so the developer's
@@ -58,18 +58,18 @@ def host_env(tmp_path, monkeypatch, clean_ide_env):
     venv_python.write_bytes(b"")
     traces = tmp_path / "traces"
 
-    monkeypatch.setattr("artemis.config.paths.ROOT_DIR", tmp_path)
-    monkeypatch.setattr("artemis.config.paths.get_env_file", lambda: tmp_path / ".env")
-    monkeypatch.setattr("artemis.config.paths.get_default_traces_path", lambda: traces)
-    monkeypatch.setattr("artemis.config.paths.is_source_checkout", lambda: True)
+    monkeypatch.setattr("apollo.config.paths.ROOT_DIR", tmp_path)
+    monkeypatch.setattr("apollo.config.paths.get_env_file", lambda: tmp_path / ".env")
+    monkeypatch.setattr("apollo.config.paths.get_default_traces_path", lambda: traces)
+    monkeypatch.setattr("apollo.config.paths.is_source_checkout", lambda: True)
     monkeypatch.setattr(sys, "executable", str(venv_python))
 
-    monkeypatch.setattr("artemis.runtime.daemon_client.is_standalone_forced", lambda: False)
-    monkeypatch.setattr("artemis.runtime.daemon_client.is_artemis_daemon", lambda: True)
+    monkeypatch.setattr("apollo.runtime.daemon_client.is_standalone_forced", lambda: False)
+    monkeypatch.setattr("apollo.runtime.daemon_client.is_apollo_daemon", lambda: True)
     monkeypatch.setattr(
-        "artemis.runtime.daemon_client.daemon_log_path", lambda: tmp_path / "daemon.log"
+        "apollo.runtime.daemon_client.daemon_log_path", lambda: tmp_path / "daemon.log"
     )
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.is_port_in_use", lambda *a, **k: True)
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.is_port_in_use", lambda *a, **k: True)
     return tmp_path
 
 
@@ -111,7 +111,7 @@ async def test_consistent_host_passes(host_env):
 
 @pytest.mark.asyncio
 async def test_daemon_port_held_by_other_process_warns(host_env, monkeypatch):
-    monkeypatch.setattr("artemis.runtime.daemon_client.is_artemis_daemon", lambda: False)
+    monkeypatch.setattr("apollo.runtime.daemon_client.is_apollo_daemon", lambda: False)
 
     result = await IntegrationHostProbe().probe()
 
@@ -120,13 +120,13 @@ async def test_daemon_port_held_by_other_process_warns(host_env, monkeypatch):
     assert result.metadata["daemon"]["port_held_by_other_process"] is True
     assert "port 8000 is held" in result.description.lower()
     port_fix = next(a for a in result.actions if a.label == "Free the Daemon Port")
-    assert "ARTEMIS_DAEMON_PORT" in port_fix.payload
+    assert "APOLLO_DAEMON_PORT" in port_fix.payload
 
 
 @pytest.mark.asyncio
 async def test_daemon_not_running_and_port_free_is_informational(host_env, monkeypatch):
-    monkeypatch.setattr("artemis.runtime.daemon_client.is_artemis_daemon", lambda: False)
-    monkeypatch.setattr("artemis.runtime.server_lifecycle.is_port_in_use", lambda *a, **k: False)
+    monkeypatch.setattr("apollo.runtime.daemon_client.is_apollo_daemon", lambda: False)
+    monkeypatch.setattr("apollo.runtime.server_lifecycle.is_port_in_use", lambda *a, **k: False)
 
     result = await IntegrationHostProbe().probe()
 
@@ -138,8 +138,8 @@ async def test_daemon_not_running_and_port_free_is_informational(host_env, monke
 
 @pytest.mark.asyncio
 async def test_standalone_mode_skips_daemon_probe(host_env, monkeypatch):
-    monkeypatch.setattr("artemis.runtime.daemon_client.is_standalone_forced", lambda: True)
-    monkeypatch.setattr("artemis.runtime.daemon_client.is_artemis_daemon", lambda: False)
+    monkeypatch.setattr("apollo.runtime.daemon_client.is_standalone_forced", lambda: True)
+    monkeypatch.setattr("apollo.runtime.daemon_client.is_apollo_daemon", lambda: False)
 
     result = await IntegrationHostProbe().probe()
 
@@ -147,7 +147,7 @@ async def test_standalone_mode_skips_daemon_probe(host_env, monkeypatch):
     assert result.metadata["daemon"]["standalone_forced"] is True
     assert result.metadata["daemon"]["port_held_by_other_process"] is False
     auto = next(a for a in result.actions if a.label == "Daemon Auto-Start")
-    assert "ARTEMIS_STANDALONE" in auto.payload
+    assert "APOLLO_STANDALONE" in auto.payload
 
 
 @pytest.mark.asyncio
@@ -166,7 +166,7 @@ async def test_interpreter_mismatch_warns_and_points_at_installer(host_env, monk
     regen = next(a for a in result.actions if a.label == "Regenerate MCP Config")
     assert regen.action_type == "hint"
     assert "ask the user which ide" in regen.payload.lower()
-    assert "uv run artemis mcp --install <client>" in regen.payload
+    assert "uv run apollo mcp --install <client>" in regen.payload
     for name in host_probe.MCP_CLIENT_NAMES:
         assert name in regen.payload
     assert next(a for a in result.actions if a.label == "Interpreter Mismatch")
@@ -187,7 +187,7 @@ async def test_interpreter_mismatch_emits_runnable_install_for_detected_client(
     assert result.metadata["mcp_client"] == "claude"
     regen = next(a for a in result.actions if a.action_type == "command")
     assert regen.label == "Regenerate MCP Config"
-    assert regen.payload == "uv run artemis mcp --install claude"
+    assert regen.payload == "uv run apollo mcp --install claude"
     assert "<client>" not in regen.payload
 
 
@@ -268,7 +268,7 @@ def test_detect_mcp_client_specific_host_beats_generic_vscode(clean_ide_env, var
 def test_mcp_install_actions_shapes():
     (cmd,) = host_probe.mcp_install_actions("antigravity")
     assert cmd.action_type == "command"
-    assert cmd.payload == "uv run artemis mcp --install antigravity"
+    assert cmd.payload == "uv run apollo mcp --install antigravity"
 
     (hint,) = host_probe.mcp_install_actions(None)
     assert hint.action_type == "hint"
@@ -293,7 +293,7 @@ async def test_missing_venv_warns_with_uv_sync(host_env, monkeypatch):
 @pytest.mark.asyncio
 async def test_unwritable_traces_dir_fails_even_with_other_warnings(host_env, monkeypatch):
     monkeypatch.setattr(host_probe, "directory_is_writable", lambda _p: (False, "denied"))
-    monkeypatch.setattr("artemis.runtime.daemon_client.is_artemis_daemon", lambda: False)
+    monkeypatch.setattr("apollo.runtime.daemon_client.is_apollo_daemon", lambda: False)
 
     result = await IntegrationHostProbe().probe()
 
@@ -303,7 +303,7 @@ async def test_unwritable_traces_dir_fails_even_with_other_warnings(host_env, mo
     assert result.metadata["traces_dir_writable"] is False
     assert result.metadata["traces_dir_error"] == "denied"
     assert result.actions[0].label == "Fix Traces Directory"
-    assert "ARTEMIS_TRACES_DIR" in result.actions[0].payload
+    assert "APOLLO_TRACES_DIR" in result.actions[0].payload
     # The port problem is still reported alongside the blocking failure.
     assert "port 8000 is held" in result.description.lower()
 
@@ -324,7 +324,7 @@ async def test_wheel_install_without_venv_is_not_a_venv_warning(host_env, monkey
     host_probe.project_venv_python(host_env).unlink()
     system_python = host_env / "system-python.exe"
     monkeypatch.setattr(sys, "executable", str(system_python))
-    monkeypatch.setattr("artemis.config.paths.is_source_checkout", lambda: False)
+    monkeypatch.setattr("apollo.config.paths.is_source_checkout", lambda: False)
 
     result = await IntegrationHostProbe().probe()
 
@@ -347,7 +347,7 @@ async def test_wheel_install_ignores_stray_venv_next_to_site_packages(host_env, 
     other = host_env / "other-python.exe"
     other.write_bytes(b"")
     monkeypatch.setattr(sys, "executable", str(other))
-    monkeypatch.setattr("artemis.config.paths.is_source_checkout", lambda: False)
+    monkeypatch.setattr("apollo.config.paths.is_source_checkout", lambda: False)
 
     result = await IntegrationHostProbe().probe()
 
@@ -361,7 +361,7 @@ async def test_wheel_install_ignores_stray_venv_next_to_site_packages(host_env, 
 async def test_source_checkout_without_venv_still_warns_with_uv_sync(host_env, monkeypatch):
     host_probe.project_venv_python(host_env).unlink()
     monkeypatch.setattr(sys, "executable", str(host_env / "system-python.exe"))
-    monkeypatch.setattr("artemis.config.paths.is_source_checkout", lambda: True)
+    monkeypatch.setattr("apollo.config.paths.is_source_checkout", lambda: True)
 
     result = await IntegrationHostProbe().probe()
 
@@ -380,8 +380,8 @@ async def test_traces_path_creation_error_becomes_fail_not_crash(host_env, monke
     def denied():
         raise PermissionError(13, "Permission denied", str(host_env / "traces"))
 
-    monkeypatch.setattr("artemis.config.paths.get_default_traces_path", denied)
-    monkeypatch.setenv("ARTEMIS_TRACES_DIR", str(host_env / "ro" / "traces"))
+    monkeypatch.setattr("apollo.config.paths.get_default_traces_path", denied)
+    monkeypatch.setenv("APOLLO_TRACES_DIR", str(host_env / "ro" / "traces"))
 
     result = await IntegrationHostProbe().probe()
 
@@ -395,22 +395,22 @@ async def test_traces_path_creation_error_becomes_fail_not_crash(host_env, monke
     assert Path(meta["traces_dir"]) == host_env / "ro" / "traces"
     assert not (host_env / "ro").exists()
     assert result.actions[0].label == "Fix Traces Directory"
-    assert "ARTEMIS_TRACES_DIR" in result.actions[0].payload
+    assert "APOLLO_TRACES_DIR" in result.actions[0].payload
     assert "not writable" in result.description
 
 
 def test_intended_traces_path_mirrors_selection_without_mkdir(tmp_path, monkeypatch):
-    monkeypatch.setattr("artemis.config.paths.ROOT_DIR", tmp_path)
-    monkeypatch.delenv("ARTEMIS_TRACES_DIR", raising=False)
+    monkeypatch.setattr("apollo.config.paths.ROOT_DIR", tmp_path)
+    monkeypatch.delenv("APOLLO_TRACES_DIR", raising=False)
 
-    monkeypatch.setattr("artemis.config.paths._use_user_app_dir", lambda: False)
+    monkeypatch.setattr("apollo.config.paths._use_user_app_dir", lambda: False)
     assert host_probe.intended_traces_path() == tmp_path / "traces"
 
-    monkeypatch.setattr("artemis.config.paths._use_user_app_dir", lambda: True)
-    monkeypatch.setattr("artemis.config.paths.get_app_dir", lambda: tmp_path / "app")
+    monkeypatch.setattr("apollo.config.paths._use_user_app_dir", lambda: True)
+    monkeypatch.setattr("apollo.config.paths.get_app_dir", lambda: tmp_path / "app")
     assert host_probe.intended_traces_path() == tmp_path / "app" / "traces"
 
-    monkeypatch.setenv("ARTEMIS_TRACES_DIR", str(tmp_path / "env-traces"))
+    monkeypatch.setenv("APOLLO_TRACES_DIR", str(tmp_path / "env-traces"))
     assert host_probe.intended_traces_path() == tmp_path / "env-traces"
 
     assert not (tmp_path / "traces").exists()
@@ -447,8 +447,8 @@ class _FakeResponse:
         (404, b"", False),
     ],
 )
-def test_is_artemis_daemon_requires_the_server_status_shape(monkeypatch, status, body, expected):
-    from artemis.runtime import daemon_client
+def test_is_apollo_daemon_requires_the_server_status_shape(monkeypatch, status, body, expected):
+    from apollo.runtime import daemon_client
 
     seen: dict[str, str] = {}
 
@@ -457,15 +457,15 @@ def test_is_artemis_daemon_requires_the_server_status_shape(monkeypatch, status,
         return _FakeResponse(status, body)
 
     monkeypatch.setattr(daemon_client.urllib.request, "urlopen", fake_urlopen)
-    assert daemon_client.is_artemis_daemon("127.0.0.1", 8000) is expected
+    assert daemon_client.is_apollo_daemon("127.0.0.1", 8000) is expected
     assert seen["url"] == "http://127.0.0.1:8000/api/system/server-status"
 
 
-def test_is_artemis_daemon_is_false_when_nothing_listens(monkeypatch):
-    from artemis.runtime import daemon_client
+def test_is_apollo_daemon_is_false_when_nothing_listens(monkeypatch):
+    from apollo.runtime import daemon_client
 
     def refuse(req, timeout):
         raise ConnectionRefusedError()
 
     monkeypatch.setattr(daemon_client.urllib.request, "urlopen", refuse)
-    assert daemon_client.is_artemis_daemon("127.0.0.1", 8000) is False
+    assert daemon_client.is_apollo_daemon("127.0.0.1", 8000) is False

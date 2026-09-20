@@ -25,7 +25,7 @@ import { extractStepReplayFrames } from '../utils/action-formatter.util';
 import { persistedStreamToSegments } from '../utils/stream-aggregator.util';
 export type { Session, ModelInfo, TaskQueueItem, AgentStatusResponse, StepItemData, StepReplayFrame, LLMStreamResetEventData, StreamResetNotice };
 
-const SESSION_CACHE_KEY = 'artemis.sessions.v1';
+const SESSION_CACHE_KEY = 'apollo.sessions.v1';
 
 export interface VideoSegment {
   url: string;

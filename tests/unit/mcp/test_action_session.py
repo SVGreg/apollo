@@ -18,9 +18,9 @@ import asyncio
 
 import pytest
 
-from artemis.mcp.action_server import build_action_server
-from artemis.mcp.action_session import ActionSession, get_action_session
-from artemis.mcp.actuators import MockActuator
+from apollo.mcp.action_server import build_action_server
+from apollo.mcp.action_session import ActionSession, get_action_session
+from apollo.mcp.actuators import MockActuator
 
 pytestmark = pytest.mark.asyncio
 

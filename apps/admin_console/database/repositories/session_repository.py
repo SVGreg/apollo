@@ -19,7 +19,7 @@ import sqlite3
 import time
 from typing import Any
 
-from artemis.runtime import trace_store
+from apollo.runtime import trace_store
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ class SessionRepository:
             pid_int = int(pid)
         except (TypeError, ValueError):
             return False
-        from artemis.runtime.process_probe import pid_is_alive
+        from apollo.runtime.process_probe import pid_is_alive
 
         return pid_is_alive(pid_int)
 
@@ -311,7 +311,7 @@ class SessionRepository:
         the profile and Pro tuning the run was started with, read from the
         session's stored ``device_info``.
         """
-        from artemis.services.token_meter import (
+        from apollo.services.token_meter import (
             OPERATOR_CONTEXT_WINDOW_TOKENS,
             OPERATOR_NODE_NAMES,
         )
@@ -559,6 +559,6 @@ session_repo = SessionRepository()
 # letting it import this application-layer module (inverted dependency): any
 # process that loads the admin console DB layer -- the server itself, or an
 # entry point stopping one -- thereby arms stop_server()'s post-kill cleanup.
-from artemis.runtime.server_lifecycle import register_session_reconciler  # noqa: E402
+from apollo.runtime.server_lifecycle import register_session_reconciler  # noqa: E402
 
 register_session_reconciler(session_repo.reconcile_orphaned_sessions)

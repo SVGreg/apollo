@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 
-from artemis.runtime.supervisor import ProcessSupervisor
+from apollo.runtime.supervisor import ProcessSupervisor
 
 
 def test_verified_termination_rejects_reused_pid():

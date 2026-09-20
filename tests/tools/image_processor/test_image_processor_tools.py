@@ -12,19 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from artemis.tools.image_processor_tool import get_ask_image_processor_tool
+from apollo.tools.image_processor_tool import get_ask_image_processor_tool
 import pytest
 
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_ask_image_processor_tool(artemis_context, mock_state):
+async def test_ask_image_processor_tool(apollo_context, mock_state):
     """Tests the ask_image_processor tool as a blackbox.
 
     Allows actual side effects and full lifecycle execution (including real LLM
     API calls). Uses shared pytest fixtures for realistic context.
     """
-    tool = get_ask_image_processor_tool(artemis_context)
+    tool = get_ask_image_processor_tool(apollo_context)
 
     # Passing a simple visual reasoning instruction.
     # The tool will use target_image_id="img_0" corresponding to the artifact in mock_state.

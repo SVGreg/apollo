@@ -16,7 +16,7 @@ import json
 from unittest.mock import MagicMock, patch
 import pytest
 
-from artemis.runtime.daemon_client import (
+from apollo.runtime.daemon_client import (
     ensure_daemon_running,
     is_daemon_running,
     is_standalone_forced,
@@ -26,16 +26,16 @@ from artemis.runtime.daemon_client import (
 
 
 def test_is_standalone_forced(monkeypatch):
-    monkeypatch.delenv("ARTEMIS_STANDALONE", raising=False)
+    monkeypatch.delenv("APOLLO_STANDALONE", raising=False)
     assert is_standalone_forced() is False
 
-    monkeypatch.setenv("ARTEMIS_STANDALONE", "1")
+    monkeypatch.setenv("APOLLO_STANDALONE", "1")
     assert is_standalone_forced() is True
 
-    monkeypatch.setenv("ARTEMIS_STANDALONE", "true")
+    monkeypatch.setenv("APOLLO_STANDALONE", "true")
     assert is_standalone_forced() is True
 
-    monkeypatch.setenv("ARTEMIS_STANDALONE", "0")
+    monkeypatch.setenv("APOLLO_STANDALONE", "0")
     assert is_standalone_forced() is False
 
 
@@ -61,7 +61,7 @@ def test_spawn_daemon(tmp_path):
     with (
         patch("subprocess.Popen", return_value=mock_proc) as mock_popen,
         patch(
-            "artemis.runtime.daemon_client.daemon_log_path",
+            "apollo.runtime.daemon_client.daemon_log_path",
             return_value=tmp_path / "daemon-8000.log",
         ),
     ):
@@ -69,7 +69,7 @@ def test_spawn_daemon(tmp_path):
         assert proc is mock_proc
         assert mock_popen.called
         # The daemon must launch via `python -m`, never through the console-script
-        # shim (a resident artemis.exe would block uv sync reinstalls on Windows).
+        # shim (a resident apollo.exe would block uv sync reinstalls on Windows).
         cmd = mock_popen.call_args.args[0]
         assert cmd[0] == sys.executable
         assert cmd[1:3] == ["-m", "apps.admin_console.server"]
@@ -77,14 +77,14 @@ def test_spawn_daemon(tmp_path):
 
 
 def test_ensure_daemon_running_when_already_active():
-    with patch("artemis.runtime.daemon_client.is_daemon_running", return_value=True):
+    with patch("apollo.runtime.daemon_client.is_daemon_running", return_value=True):
         ok, base_url = ensure_daemon_running(host="127.0.0.1", port=8000)
         assert ok is True
         assert base_url == "http://127.0.0.1:8000"
 
 
 def test_ensure_daemon_running_standalone_override(monkeypatch):
-    monkeypatch.setenv("ARTEMIS_STANDALONE", "1")
+    monkeypatch.setenv("APOLLO_STANDALONE", "1")
     ok, base_url = ensure_daemon_running()
     assert ok is False
     assert base_url is None
@@ -92,8 +92,8 @@ def test_ensure_daemon_running_standalone_override(monkeypatch):
 
 def test_ensure_daemon_running_auto_spawns():
     with (
-        patch("artemis.runtime.daemon_client.is_daemon_running", side_effect=[False, True]),
-        patch("artemis.runtime.daemon_client.spawn_daemon") as mock_spawn,
+        patch("apollo.runtime.daemon_client.is_daemon_running", side_effect=[False, True]),
+        patch("apollo.runtime.daemon_client.spawn_daemon") as mock_spawn,
     ):
         ok, base_url = ensure_daemon_running(timeout=1.0, wait_ready=True)
         assert ok is True
@@ -164,7 +164,7 @@ def test_submit_task_to_daemon_pro_tuning_defaults_to_null():
 
 
 def test_submit_batch_to_daemon_forwards_pro_tuning_knobs():
-    from artemis.runtime.daemon_client import submit_batch_to_daemon
+    from apollo.runtime.daemon_client import submit_batch_to_daemon
 
     mock_resp = _daemon_ok_response(
         b'{"status": "queued", "tasks": [{"session_id": "a"}, {"session_id": "b"}]}'
@@ -184,7 +184,7 @@ def test_submit_batch_to_daemon_forwards_pro_tuning_knobs():
 
 
 def test_stop_task_on_daemon():
-    from artemis.runtime.daemon_client import stop_task_on_daemon
+    from apollo.runtime.daemon_client import stop_task_on_daemon
 
     mock_resp = MagicMock()
     mock_resp.status = 200

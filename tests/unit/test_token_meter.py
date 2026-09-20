@@ -19,7 +19,7 @@ from uuid import uuid4
 
 from langchain_core.messages import AIMessage
 
-from artemis.services.token_meter import (
+from apollo.services.token_meter import (
     SessionTokenMeter,
     extract_usage,
     get_meter,
@@ -176,7 +176,7 @@ def test_record_llm_usage_tags_the_traced_node():
     """Each usage trace names the traced node that issued the call so the
     session usage endpoint can pick the executor's (Operator/FlashRunner)
     prompt size out as the live context."""
-    from artemis.data_engine.context_vars import CURRENT_NODE_NAME
+    from apollo.data_engine.context_vars import CURRENT_NODE_NAME
 
     engine = Mock()
     engine.current_session_id = uuid4()

@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Comprehensive End-to-End Test for Artemis Multi-Port System.
+"""Comprehensive End-to-End Test for Apollo Multi-Port System.
 
 Verifies end-to-end functionality across all entry points and ports:
 1. Configuration & Default Model (gemini-3.5-flash-lite)
 2. Daemon Server API & Multi-Device Discovery (/api/devices, /api/status)
 3. Multi-Device Detection (Physical phone + Android Emulator)
 4. MCP Server Tools (mobile_get_device_state, mobile_run_task, mobile_manage_task)
-5. Python SDK (ArtemisClient with device targeting & concurrency modes)
-6. CLI Entry Points (artemis run, batch, status)
+5. Python SDK (ApolloClient with device targeting & concurrency modes)
+6. CLI Entry Points (apollo run, batch, status)
 7. Device Execution Lock Isolation (Multi-device concurrent execution)
 """
 
@@ -34,14 +34,14 @@ import urllib.request
 from pathlib import Path
 import pytest
 
-from artemis.config import (
+from apollo.config import (
     DEFAULT_MODEL,
     ROOT_DIR,
     Settings,
     settings,
     get_config_path,
 )
-from artemis.runtime.daemon_client import (
+from apollo.runtime.daemon_client import (
     ensure_daemon_running,
     get_daemon_session,
     get_daemon_status,
@@ -49,33 +49,33 @@ from artemis.runtime.daemon_client import (
     submit_task_to_daemon,
     stop_task_on_daemon,
 )
-from artemis.runtime.device_lock import DeviceExecutionLock
-from artemis.runtime.device_pool import device_pool
-from artemis.interfaces.sdk.client import ArtemisClient, ConcurrencyMode
+from apollo.runtime.device_lock import DeviceExecutionLock
+from apollo.runtime.device_pool import device_pool
+from apollo.interfaces.sdk.client import ApolloClient, ConcurrencyMode
 from mcp_server.tools.device_state import mobile_get_device_state
 from mcp_server.tools.task_runner import mobile_run_task
 from mcp_server.tools.task_manager import mobile_manage_task
-from artemis.runtime import trace_store
+from apollo.runtime import trace_store
 
 
 @pytest.fixture(scope="module", autouse=True)
 def ensure_daemon():
-    """Ensure Artemis Daemon is running for E2E tests."""
-    assert ensure_daemon_running(wait_ready=True), "Artemis Daemon failed to start"
+    """Ensure Apollo Daemon is running for E2E tests."""
+    assert ensure_daemon_running(wait_ready=True), "Apollo Daemon failed to start"
     yield
 
 
 def test_01_default_model_configured():
     """Verify default model configuration loads properly across config and router."""
     assert DEFAULT_MODEL is not None
-    cfg_path = get_config_path("artemis.jsonc")
+    cfg_path = get_config_path("apollo.jsonc")
     assert cfg_path.exists()
     content = cfg_path.read_text(encoding="utf-8")
     assert "default" in content
 
     # Check Settings pydantic model
     s = Settings()
-    assert s.ARTEMIS_DEFAULT_MODEL is not None
+    assert s.APOLLO_DEFAULT_MODEL is not None
 
 
 def test_02_daemon_device_discovery_sees_phone_and_emulator():
@@ -159,7 +159,7 @@ def test_04_mcp_run_and_manage_task_via_daemon():
 
 
 def test_05_sdk_client_targeting_and_concurrency():
-    """Verify Python SDK ArtemisClient correctly targets specific devices."""
+    """Verify Python SDK ApolloClient correctly targets specific devices."""
     devices = device_pool.list_devices()
     emulator_serial = next((d.serial for d in devices if d.is_emulator), None)
     phone_serial = next((d.serial for d in devices if not d.is_emulator), None)
@@ -167,11 +167,11 @@ def test_05_sdk_client_targeting_and_concurrency():
     assert emulator_serial, "Emulator serial required"
     assert phone_serial, "Phone serial required"
 
-    client_emu = ArtemisClient(device_id=emulator_serial, concurrency_mode="per_device")
+    client_emu = ApolloClient(device_id=emulator_serial, concurrency_mode="per_device")
     assert client_emu.device_serial == emulator_serial
     assert client_emu.concurrency_mode == "per_device"
 
-    client_phone = ArtemisClient(device_id=phone_serial, concurrency_mode="per_device")
+    client_phone = ApolloClient(device_id=phone_serial, concurrency_mode="per_device")
     assert client_phone.device_serial == phone_serial
 
     # Verify multi-device lock independence
@@ -194,24 +194,24 @@ def test_05_sdk_client_targeting_and_concurrency():
 
 def test_06_cli_daemon_and_standalone_options():
     """Verify CLI commands properly expose and route through Daemon or standalone."""
-    # artemis status
+    # apollo status
     res = subprocess.run(
-        [sys.executable, "-m", "artemis.main", "status"], capture_output=True, text=True
+        [sys.executable, "-m", "apollo.main", "status"], capture_output=True, text=True
     )
     assert res.returncode == 0
     assert "online" in res.stdout.lower() or "running" in res.stdout.lower()
 
-    # artemis run --help exposes --standalone and --device
+    # apollo run --help exposes --standalone and --device
     res_run = subprocess.run(
-        [sys.executable, "-m", "artemis.main", "run", "--help"], capture_output=True, text=True
+        [sys.executable, "-m", "apollo.main", "run", "--help"], capture_output=True, text=True
     )
     assert res_run.returncode == 0
     assert "--standalone" in res_run.stdout
     assert "--device" in res_run.stdout
 
-    # artemis batch --help exposes --standalone
+    # apollo batch --help exposes --standalone
     res_batch = subprocess.run(
-        [sys.executable, "-m", "artemis.main", "batch", "--help"], capture_output=True, text=True
+        [sys.executable, "-m", "apollo.main", "batch", "--help"], capture_output=True, text=True
     )
     assert res_batch.returncode == 0
     assert "--standalone" in res_batch.stdout

@@ -32,18 +32,18 @@ from unittest.mock import AsyncMock, Mock, PropertyMock, patch
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
-from artemis.agents.flash.runner import _FINAL_TURN_WARNING, FlashRunner, _TurnRecord
-from artemis.agents.operator.prompts import (
+from apollo.agents.flash.runner import _FINAL_TURN_WARNING, FlashRunner, _TurnRecord
+from apollo.agents.operator.prompts import (
     REASONING_REMINDER,
     USER_GUIDANCE_MARKER,
     UserGuidance,
     render_user_guidance,
     render_user_instruction,
 )
-from artemis.agents.validator.tool_declarations import ToolExecutionResult
-from artemis.context import ArtemisContext
-from artemis.graph.state import State
-from artemis.memory.transcript import (
+from apollo.agents.validator.tool_declarations import ToolExecutionResult
+from apollo.context import ApolloContext
+from apollo.graph.state import State
+from apollo.memory.transcript import (
     EPHEMERAL_BLOCKS_KEY,
     EXECUTION_RESULT_MARKER,
     PRO_UI_LIST_MARKER,
@@ -58,7 +58,7 @@ FAILED_RESULT_RE = re.compile(
 
 @pytest.fixture
 def mock_context():
-    ctx = Mock(spec=ArtemisContext)
+    ctx = Mock(spec=ApolloContext)
     ctx.llm_config = Mock()
     mock_llm_cfg = Mock()
     mock_llm_cfg.model = "gemini-2.5-flash"
@@ -79,7 +79,7 @@ def mock_context():
 
 
 def test_video_analyzer_bound_only_when_recording_tools_enabled(mock_context):
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         mock_context.execution_setup = Mock()
         mock_context.execution_setup.video_recording_tools_enabled = True
         names = [t.name for t in FlashRunner(mock_context, goal="g")._get_tools()]
@@ -100,7 +100,7 @@ HISTORY_TOOLS = {"search_history", "replay_steps", "get_step_screenshot"}
 
 
 def test_history_tools_bound_only_with_a_data_engine_session(mock_context):
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         # No DataEngine: nothing to read, the tools stay out (as in Pro).
         names = [t.name for t in FlashRunner(mock_context, goal="g")._get_tools()]
         assert not (HISTORY_TOOLS & set(names))
@@ -110,7 +110,7 @@ def test_history_tools_bound_only_with_a_data_engine_session(mock_context):
         assert "search_history" not in prompt and "replay_steps" not in prompt
 
         mock_context.data_engine = Mock()
-        with patch("artemis.tools.history._recall_config", return_value=None):
+        with patch("apollo.tools.history._recall_config", return_value=None):
             runner = FlashRunner(mock_context, goal="g")
             tools = runner._get_tools()
         names = [t.name for t in tools]
@@ -136,10 +136,10 @@ def test_history_tools_bound_only_with_a_data_engine_session(mock_context):
 def test_search_history_alone_follows_the_recall_config_gate(mock_context):
     from types import SimpleNamespace
 
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         mock_context.data_engine = Mock()
         with patch(
-            "artemis.tools.history._recall_config",
+            "apollo.tools.history._recall_config",
             return_value=SimpleNamespace(enabled=False),
         ):
             names = [t.name for t in FlashRunner(mock_context, goal="g")._get_tools()]
@@ -148,7 +148,7 @@ def test_search_history_alone_follows_the_recall_config_gate(mock_context):
 
 
 def test_video_analyzer_prompt_segment_follows_availability(mock_context):
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="g")
         mock_context.execution_setup = Mock()
         mock_context.execution_setup.video_recording_tools_enabled = True
@@ -169,10 +169,10 @@ def test_video_analyzer_prompt_segment_follows_availability(mock_context):
 
 
 def test_turn_limit_semantics(mock_context):
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         assert FlashRunner(mock_context, goal="g", max_turns=0).turn_limit is None
         assert FlashRunner(mock_context, goal="g", max_turns=7).turn_limit == 7
-        with patch("artemis.agents.flash.runner.load_agent_config", side_effect=RuntimeError):
+        with patch("apollo.agents.flash.runner.load_agent_config", side_effect=RuntimeError):
             assert FlashRunner(mock_context, goal="g").turn_limit is None
 
 
@@ -185,7 +185,7 @@ def test_observation_tail_has_pro_shape(mock_context):
     """The objective lives in the system prompt only; the tail opens with the
     observation header on turn 1 exactly as on every later turn, and carries
     no reminder unless the previous turn was silent."""
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="Open Settings")
         ledger = TranscriptLedger()
 
@@ -226,7 +226,7 @@ def test_per_turn_notices_are_marked_ephemeral(mock_context):
     reasoning reminder are only meaningful for the turn they were built for:
     every one of them is flagged ephemeral (by block index) so the scrub edge
     drops them before the message freezes; the observation blocks never are."""
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="Open Settings")
     ledger = TranscriptLedger()
     guidance = render_user_guidance("stop", release_loop=False, has_plan=False)
@@ -259,7 +259,7 @@ def test_injected_instruction_body_outlives_its_wrapper(mock_context):
     vanished after one turn because the whole guidance block was ephemeral.
     Now the wrapper is ephemeral and the verbatim body is a regular block, so
     it stays in the active window until the turn is chunked."""
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="g")
     ledger = TranscriptLedger()
     guidance = render_user_guidance(
@@ -301,7 +301,7 @@ def test_injected_instruction_body_outlives_its_wrapper(mock_context):
 
 
 def test_reasoning_reminder_follows_a_silent_turn_only(mock_context):
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="g")
     ledger = TranscriptLedger()
 
@@ -338,7 +338,7 @@ async def test_injected_instruction_splits_verbatim_text_from_operator_notice(
     mock_context.data_engine = Mock()
     mock_context.data_engine.base_dir = str(tmp_path)
 
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         runner = FlashRunner(mock_context, goal="Log in")
         instruction, notice = await runner._read_injected_instruction()
 
@@ -354,7 +354,7 @@ async def test_injected_instruction_splits_verbatim_text_from_operator_notice(
     assert "REAL-TIME INJECTED" not in notice.wrapper and "You MUST" not in notice.wrapper
     assert not (tmp_path / "injected_instruction.json").exists()
 
-    with patch("artemis.controllers.unified_controller.get_driver"):
+    with patch("apollo.controllers.unified_controller.get_driver"):
         assert await runner._read_injected_instruction() == (None, None)
 
 
@@ -430,9 +430,9 @@ async def test_run_builds_prompt_from_ledger_with_session_offsets(mock_context):
         _report(explanation="ok"),
     ]
     with (
-        patch("artemis.controllers.unified_controller.get_driver"),
+        patch("apollo.controllers.unified_controller.get_driver"),
         patch(
-            "artemis.agents.flash.runner.capture_screenshot_and_parse_ui",
+            "apollo.agents.flash.runner.capture_screenshot_and_parse_ui",
             AsyncMock(return_value=_INITIAL_OBSERVATION),
         ),
     ):
@@ -493,9 +493,9 @@ async def test_run_failed_action_turn_ends_with_the_error_result(mock_context):
         _report(),
     ]
     with (
-        patch("artemis.controllers.unified_controller.get_driver"),
+        patch("apollo.controllers.unified_controller.get_driver"),
         patch(
-            "artemis.agents.flash.runner.capture_screenshot_and_parse_ui",
+            "apollo.agents.flash.runner.capture_screenshot_and_parse_ui",
             AsyncMock(return_value=_INITIAL_OBSERVATION),
         ),
     ):
@@ -540,9 +540,9 @@ async def test_run_reminds_after_a_silent_turn_without_a_bounce(mock_context):
         _report(),
     ]
     with (
-        patch("artemis.controllers.unified_controller.get_driver"),
+        patch("apollo.controllers.unified_controller.get_driver"),
         patch(
-            "artemis.agents.flash.runner.capture_screenshot_and_parse_ui",
+            "apollo.agents.flash.runner.capture_screenshot_and_parse_ui",
             AsyncMock(return_value=_INITIAL_OBSERVATION),
         ),
         patch.object(TranscriptLedger, "last_turn_silent", new_callable=PropertyMock) as silent,
@@ -573,9 +573,9 @@ async def test_run_calibrates_the_ledger_only_from_measured_usage(mock_context):
     )
     responses = [measured, _report()]
     with (
-        patch("artemis.controllers.unified_controller.get_driver"),
+        patch("apollo.controllers.unified_controller.get_driver"),
         patch(
-            "artemis.agents.flash.runner.capture_screenshot_and_parse_ui",
+            "apollo.agents.flash.runner.capture_screenshot_and_parse_ui",
             AsyncMock(return_value=_INITIAL_OBSERVATION),
         ),
         patch.object(TranscriptLedger, "record_prompt_tokens") as record,
@@ -594,9 +594,9 @@ async def test_run_calibrates_the_ledger_only_from_measured_usage(mock_context):
 async def test_run_final_turn_restricts_tools_and_fails_without_report(mock_context):
     responses = [AIMessage(content="I give up.", tool_calls=[])]
     with (
-        patch("artemis.controllers.unified_controller.get_driver"),
+        patch("apollo.controllers.unified_controller.get_driver"),
         patch(
-            "artemis.agents.flash.runner.capture_screenshot_and_parse_ui",
+            "apollo.agents.flash.runner.capture_screenshot_and_parse_ui",
             AsyncMock(return_value=_INITIAL_OBSERVATION),
         ),
     ):
@@ -614,9 +614,9 @@ async def test_run_final_turn_restricts_tools_and_fails_without_report(mock_cont
 async def test_run_no_tool_call_turn_is_nudged_not_terminated(mock_context):
     responses = [AIMessage(content="thinking only", tool_calls=[]), _report()]
     with (
-        patch("artemis.controllers.unified_controller.get_driver"),
+        patch("apollo.controllers.unified_controller.get_driver"),
         patch(
-            "artemis.agents.flash.runner.capture_screenshot_and_parse_ui",
+            "apollo.agents.flash.runner.capture_screenshot_and_parse_ui",
             AsyncMock(return_value=_INITIAL_OBSERVATION),
         ),
     ):

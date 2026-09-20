@@ -15,7 +15,7 @@
 from langchain_core.tools import BaseTool
 import pytest
 
-from artemis.mcp.action_specs import OPERATOR_SHELL_ORDER, operator_shell_tool
+from apollo.mcp.action_specs import OPERATOR_SHELL_ORDER, operator_shell_tool
 
 
 @pytest.mark.asyncio

@@ -14,8 +14,8 @@ import sys
 import pytest
 from rich.console import Console
 
-from artemis.interfaces.cli.commands import ui
-from artemis.interfaces.cli.commands.ui import (
+from apollo.interfaces.cli.commands import ui
+from apollo.interfaces.cli.commands.ui import (
     _npm_install_required,
     _resolve_npm_executable,
     _run_build_step,

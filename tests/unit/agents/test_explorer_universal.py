@@ -20,16 +20,16 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 from langchain_core.messages import AIMessage
 
-from artemis.agents.explorer.explorer import Explorer
-from artemis.agents.explorer.tool_declarations import UNIVERSAL_EXPLORER_TOOLS
-from artemis.config import settings
-from artemis.context import ArtemisContext
-from artemis.graph.state import State
+from apollo.agents.explorer.explorer import Explorer
+from apollo.agents.explorer.tool_declarations import UNIVERSAL_EXPLORER_TOOLS
+from apollo.config import settings
+from apollo.context import ApolloContext
+from apollo.graph.state import State
 
 
 @pytest.fixture
 def mock_context(tmp_path):
-    ctx = Mock(spec=ArtemisContext)
+    ctx = Mock(spec=ApolloContext)
     ctx.llm_config = Mock()
     mock_llm_cfg = Mock()
     mock_llm_cfg.model = "claude-3-7-sonnet"
@@ -104,7 +104,7 @@ async def test_run_universal_explorer_success(mock_context, tmp_path):
     mock_llm.bind_tools.return_value = mock_bound
 
     with patch(
-        "artemis.agents.explorer.universal_runner.get_llm",
+        "apollo.agents.explorer.universal_runner.get_llm",
         return_value=mock_llm,
     ):
         mock_state = Mock(spec=State)

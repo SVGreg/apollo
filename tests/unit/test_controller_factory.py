@@ -14,18 +14,18 @@
 
 from unittest.mock import MagicMock, patch
 
-from artemis.context import ArtemisContext
-from artemis.controllers.controller_factory import get_controller
-from artemis.controllers.unified_controller import UnifiedMobileController
+from apollo.context import ApolloContext
+from apollo.controllers.controller_factory import get_controller
+from apollo.controllers.unified_controller import UnifiedMobileController
 
 
 def test_get_controller_reuses_context_scoped_controller():
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx._mobile_controller = None
     controller = object.__new__(UnifiedMobileController)
 
     with patch(
-        "artemis.controllers.controller_factory.create_device_controller",
+        "apollo.controllers.controller_factory.create_device_controller",
         return_value=controller,
     ) as create:
         assert get_controller(ctx) is controller

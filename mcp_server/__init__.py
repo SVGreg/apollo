@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Universal Model Context Protocol (MCP) Server for ARTEMIS."""
+"""Universal Model Context Protocol (MCP) Server for APOLLO."""
 
 from mcp_server.base import mcp
 from mcp_server.server import main

@@ -14,10 +14,10 @@
 
 from unittest.mock import MagicMock, patch
 
-from artemis.context import ArtemisContext
-from artemis.graph.state import State
-from artemis.tools.base import ArtemisTool
-from artemis.tools.scratchpad import (
+from apollo.context import ApolloContext
+from apollo.graph.state import State
+from apollo.tools.base import ApolloTool
+from apollo.tools.scratchpad import (
     ReadNote,
     ReadNoteArgs,
     ReadNoteTool,
@@ -26,24 +26,24 @@ from artemis.tools.scratchpad import (
     read_note,
     read_note_wrapper,
 )
-from artemis.utils.notes import save_note_content
+from apollo.utils.notes import save_note_content
 from langchain_core.messages import ToolMessage
 import pytest
 
 
 @pytest.fixture
 def mock_ctx(tmp_path):
-    ctx = MagicMock(spec=ArtemisContext)
+    ctx = MagicMock(spec=ApolloContext)
     ctx.data_engine = MagicMock()
     ctx.data_engine.base_dir = str(tmp_path)
     return ctx
 
 
 def test_read_note_tool_subclass():
-    """Verify ReadNoteTool is a subclass of ArtemisTool."""
-    assert issubclass(ReadNoteTool, ArtemisTool)
-    assert issubclass(ReadNote, ArtemisTool)
-    assert isinstance(read_note, ArtemisTool)
+    """Verify ReadNoteTool is a subclass of ApolloTool."""
+    assert issubclass(ReadNoteTool, ApolloTool)
+    assert issubclass(ReadNote, ApolloTool)
+    assert isinstance(read_note, ApolloTool)
     assert isinstance(read_note, ReadNoteTool)
 
     assert read_note.name == "read_note"
@@ -131,7 +131,7 @@ async def test_read_note_not_found(mock_ctx):
 async def test_read_note_other_error(mock_ctx):
     """Verify error handling for unexpected exceptions."""
     with patch(
-        "artemis.tools.scratchpad.read_note_content",
+        "apollo.tools.scratchpad.read_note_content",
         side_effect=ValueError("Corrupted data"),
     ):
         result = await read_note.execute(ctx=mock_ctx, key="bad_note")

@@ -26,7 +26,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
 
 echo -e "${BOLD}${CYAN}======================================================${NC}"
-echo -e "${BOLD}${CYAN}      ✨ Artemis Autonomous Mobile Agent UI          ${NC}"
+echo -e "${BOLD}${CYAN}      ✨ Apollo Autonomous Mobile Agent UI          ${NC}"
 echo -e "${BOLD}${CYAN}======================================================${NC}"
 echo ""
 
@@ -369,7 +369,7 @@ fi
 
 # 7. Optionally configure MCP for detected AI IDEs
 echo ""
-echo -e "   ${CYAN}🔌 Would you like to configure ARTEMIS MCP & testing rules for your AI IDEs?${NC}"
+echo -e "   ${CYAN}🔌 Would you like to configure APOLLO MCP & testing rules for your AI IDEs?${NC}"
 echo -e "      (Supported: Antigravity, Cursor, Claude Code/Desktop, Codex, OpenClaw, Windsurf)"
 if [ -t 0 ]; then
     read -r -p "      Install MCP configuration & rules now? [Y/n]: " INSTALL_MCP
@@ -380,14 +380,14 @@ fi
 
 if [[ "${INSTALL_MCP}" =~ ^[Yy]$ ]]; then
     echo -e "   ${CYAN}Installing MCP server configuration & testing rules...${NC}"
-    if uv run artemis mcp --install all; then
+    if uv run apollo mcp --install all; then
         echo -e "   ${GREEN}✔ MCP configuration and rules installed successfully.${NC}"
-        echo -e "   ${CYAN}💡 Tip: You can update or re-install anytime with: ${BOLD}uv run artemis mcp --install all${NC}"
+        echo -e "   ${CYAN}💡 Tip: You can update or re-install anytime with: ${BOLD}uv run apollo mcp --install all${NC}"
     else
-        echo -e "   ${YELLOW}⚠ MCP installation failed. Review the error above and retry with: ${BOLD}uv run artemis mcp --install all${NC}"
+        echo -e "   ${YELLOW}⚠ MCP installation failed. Review the error above and retry with: ${BOLD}uv run apollo mcp --install all${NC}"
     fi
 else
-    echo -e "   ${YELLOW}⏭️  Skipped. You can install MCP anytime later with: ${BOLD}uv run artemis mcp --install all${NC}"
+    echo -e "   ${YELLOW}⏭️  Skipped. You can install MCP anytime later with: ${BOLD}uv run apollo mcp --install all${NC}"
 fi
 echo ""
 
@@ -397,7 +397,7 @@ if [ -n "${SSH_CONNECTION:-}" ] || [ -n "${SSH_CLIENT:-}" ] || [ -n "${SSH_TTY:-
     IS_REMOTE=true
 fi
 
-echo -e "   ${GREEN}🚀 Launching Artemis Showcase UI & Admin Console...${NC}"
+echo -e "   ${GREEN}🚀 Launching Apollo Showcase UI & Admin Console...${NC}"
 
 OPEN_FLAG="--open"
 if [ "${IS_REMOTE}" = true ]; then
@@ -418,6 +418,6 @@ if command -v adb >/dev/null 2>&1; then
     (unset ADB_SERVER_SOCKET; adb start-server >/dev/null 2>&1 || true)
 fi
 
-# Launch via `python -m artemis` (not the `artemis` console-script shim) so the
-# long-running server never pins .venv/Scripts/artemis[.exe] against reinstalls.
-exec uv run python -m artemis ui "${OPEN_FLAG}" "$@"
+# Launch via `python -m apollo` (not the `apollo` console-script shim) so the
+# long-running server never pins .venv/Scripts/apollo[.exe] against reinstalls.
+exec uv run python -m apollo ui "${OPEN_FLAG}" "$@"

@@ -38,7 +38,7 @@ class ModelService:
         provider = "google"
         model_id = "gemini-3.7-flash"
         try:
-            from artemis.config import parse_llm_config
+            from apollo.config import parse_llm_config
 
             llm_cfg = parse_llm_config()
             if llm_cfg and llm_cfg.operator:
@@ -75,7 +75,7 @@ class ModelService:
             "name": arch_name,
             "id": model_id,
             "provider": provider,
-            "architecture": f"ARTEMIS {arch_name}",
+            "architecture": f"APOLLO {arch_name}",
         }
 
     @staticmethod
@@ -85,7 +85,7 @@ class ModelService:
         running_profile: str | None = None,
         agent_names: list[str] | None = None,
     ) -> str | None:
-        """Resolve the Artemis agent architecture profile ('flash' or 'pro') for a session."""
+        """Resolve the Apollo agent architecture profile ('flash' or 'pro') for a session."""
         sess_profile = None
         d_info_raw = row_dict.get("device_info")
         if d_info_raw:
