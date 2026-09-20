@@ -74,6 +74,17 @@ Exit criteria (1a): 4 built-in-app Flash tasks pass with `--verification-level f
 runs one of them (platform-neutral, expected to work once Flash does); `uv run pytest` green with a
 normalizer test over the 6 saved fixtures.
 
+Status 2026-09-20: **done.** Flash tasks passing on iPhone 17 Pro (iOS 26.2) with Claude Sonnet 5
+(default) / Opus 5 / Gemini 3.8 Flash: Settings › General › About lookup, Accessibility › Bold Text
+toggle, Reminders add, Contacts add, Safari example.com, Calendar event (wheel pickers). Findings:
+the simulator's Settings has **no Airplane Mode / Wi-Fi / Bluetooth / Cellular rows** (task
+dropped); Opus 5's safety classifier occasionally returns `stop_reason: refusal` on ordinary
+Settings screens — server-side `fallbacks: "default"` is now sent for Opus 5 and the Flash loop
+treats a refusal (or 5 empty responses) as terminal instead of looping; Artemis labelled every
+screenshot `image/jpeg` (WDA returns PNG) — fixed with a sniffing `image_data_url` helper;
+lightweight nodes hard-coded `get_google_llm` — now provider-inferred. `APOLLO_LLM_PRESET=<preset>`
+switches the whole config between providers for testing. Pro profile: not yet run.
+
 ### Phase 1b — usable interfaces on simulators (weeks 3–4)
 
 Goal: the same task can be launched from the web console, from Claude Code, and checked with

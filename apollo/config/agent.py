@@ -1064,6 +1064,26 @@ def resolve_explorer_version(
     )
 
 
+def _apply_llm_preset_to_agent(data: dict) -> None:
+    """With APOLLO_LLM_PRESET set, point the light background models (step summarizer,
+    memory chunking) at the preset's fallback model so they follow the provider switch."""
+    import os
+
+    name = os.environ.get("APOLLO_LLM_PRESET", "").strip()
+    presets = data.get("presets") or {}
+    if not name or name not in presets:
+        return
+    preset = presets[name]
+    light_model = (preset.get("fallback") or {}).get("model") or preset.get("model")
+    agent = data.get("agent") or {}
+    flash_ss = (agent.get("flash") or {}).get("step_summarizer")
+    if isinstance(flash_ss, dict) and "model" in flash_ss:
+        flash_ss["model"] = light_model
+    chunking = (agent.get("memory") or {}).get("chunking")
+    if isinstance(chunking, dict) and "model" in chunking:
+        chunking["model"] = light_model
+
+
 def load_agent_config(
     config_path: Path | None = None,
 ) -> AgentGlobalConfig:
@@ -1091,6 +1111,7 @@ def load_agent_config(
         with open(resolved_path, encoding="utf-8") as f:
             data = load_jsonc(f)
             if isinstance(data, dict) and "agent" in data:
+                _apply_llm_preset_to_agent(data)
                 return AgentGlobalConfig.model_validate(data["agent"])
             return AgentGlobalConfig.model_validate(data)
     except Exception as e:

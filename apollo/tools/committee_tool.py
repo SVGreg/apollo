@@ -15,6 +15,7 @@
 
 """Committee tool for multi-agent deliberation and failure recovery."""
 
+from apollo.utils.image_data_url import image_data_url
 import asyncio
 import base64
 import json
@@ -283,7 +284,7 @@ async def _execute_committee(
                 human_content.append(
                     {
                         "type": "image_url",
-                        "image_url": {"url": f"data:image/jpeg;base64,{screenshot_b64}"},
+                        "image_url": {"url": image_data_url(screenshot_b64)},
                     }
                 )
 
@@ -377,7 +378,7 @@ async def _execute_committee(
             final_human_content.append(
                 {
                     "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{screenshot_b64}"},
+                    "image_url": {"url": image_data_url(screenshot_b64)},
                 }
             )
 

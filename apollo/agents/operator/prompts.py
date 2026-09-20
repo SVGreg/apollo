@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from apollo.utils.image_data_url import image_data_url
 import base64
 from functools import lru_cache
 import io
@@ -384,7 +385,7 @@ class ObservationPromptComponent(PromptComponent):
         builder.add_human_content(
             {
                 "type": "image_url",
-                "image_url": {"url": f"data:image/jpeg;base64,{latest_screenshot_b64}"},
+                "image_url": {"url": image_data_url(latest_screenshot_b64)},
             }
         )
         builder.add_human_content(f"--- Visible UI Elements ---\n{minimal_list}")

@@ -195,6 +195,23 @@ def _patch_langchain_google_genai():
         logger.warning(f"Could not patch ChatGoogleGenerativeAI._process_tool_config: {e}")
 
 
+def _supports_adaptive_thinking(model_name: str) -> bool:
+    """Adaptive thinking exists on Opus 4.6+, Sonnet 4.6+, Sonnet 5, Opus 5 and Fable.
+    Haiku (all versions) and the 4.5-and-older generation reject it with a 400."""
+    name = (model_name or "").lower()
+    if "haiku" in name:
+        return False
+    if any(tag in name for tag in ("-4-5", "-4-1", "-4-0", "-3-", "claude-3")):
+        return False
+    return True
+
+
+def _supports_server_fallbacks(model_name: str) -> bool:
+    """`fallbacks` is accepted on Opus 5 and the Fable/Mythos family."""
+    name = (model_name or "").lower()
+    return "opus-5" in name or "fable" in name or "mythos" in name
+
+
 class ModelFactory:
     """Unified factory for instantiating and caching LangChain chat models across providers."""
 
@@ -317,17 +334,42 @@ class ModelFactory:
             )
             kwargs = {
                 "model": endpoint.model_name,
-                "temperature": endpoint.temperature,
                 "api_key": api_key,
                 "timeout": endpoint.timeout_seconds,
+                # langchain-anthropic defaults to 1024 output tokens, far too little for
+                # an Operator turn that carries reasoning plus a tool call.
+                "max_tokens": endpoint.max_tokens or 16000,
             }
-            budget = endpoint.thinking_budget
-            if not budget and endpoint.reasoning_effort:
-                effort_map = {"low": 2048, "medium": 8192, "high": 32768}
-                budget = effort_map.get(endpoint.reasoning_effort.lower())
-            if budget:
-                kwargs["thinking"] = {"type": "enabled", "budget_tokens": budget}
+            if endpoint.thinking_budget:
+                # Explicit budget: pre-4.6 models only (rejected with 400 on Opus 4.7+).
+                kwargs["thinking"] = {"type": "enabled", "budget_tokens": endpoint.thinking_budget}
                 kwargs["temperature"] = 1.0
+            elif _supports_adaptive_thinking(endpoint.model_name):
+                # Opus 4.6+ / Sonnet 4.6+ / Sonnet 5 / Fable: adaptive thinking; depth comes
+                # from output_config.effort. `thinking_level` is the config's provider-neutral knob.
+                thinking: dict[str, str] = {"type": "adaptive"}
+                if endpoint.include_thoughts:
+                    thinking["display"] = "summarized"
+                kwargs["thinking"] = thinking
+                effort = (endpoint.reasoning_effort or endpoint.thinking_level or "").lower()
+                if effort in ("low", "medium", "high", "xhigh", "max"):
+                    kwargs["output_config"] = {"effort": effort}
+                # No `temperature`: sampling parameters are rejected (400) on Opus 4.7+ / Sonnet 5.
+                if _supports_server_fallbacks(endpoint.model_name):
+                    # Safety-classifier declines (stop_reason "refusal") are re-run server-side
+                    # on a fallback model instead of ending the agent's turn empty.
+                    kwargs["betas"] = ["server-side-fallback-2026-07-01"]
+                    kwargs["model_kwargs"] = {"fallbacks": "default"}
+            else:
+                # Haiku 4.5 and older: no adaptive thinking. A reasoning effort maps to
+                # the legacy token budget these models still accept.
+                kwargs["temperature"] = endpoint.temperature
+                if endpoint.reasoning_effort:
+                    effort_map = {"low": 2048, "medium": 8192, "high": 32768}
+                    budget = effort_map.get(endpoint.reasoning_effort.lower())
+                    if budget:
+                        kwargs["thinking"] = {"type": "enabled", "budget_tokens": budget}
+                        kwargs["temperature"] = 1.0
             return ChatAnthropic(**{k: v for k, v in kwargs.items() if v is not None})
 
         elif provider == ModelProvider.OPENROUTER:

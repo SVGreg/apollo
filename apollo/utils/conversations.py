@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from apollo.utils.image_data_url import image_data_url
 from typing import TypeGuard
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
@@ -34,12 +35,16 @@ def is_tool_for_name(tool_message: ToolMessage, name: str) -> bool:
 
 
 def get_screenshot_message_for_llm(screenshot_base64: str):
-    prefix = "" if screenshot_base64.startswith("data:image") else "data:image/jpeg;base64,"
+    url = (
+        screenshot_base64
+        if screenshot_base64.startswith("data:image")
+        else image_data_url(screenshot_base64)
+    )
     return HumanMessage(
         content=[
             {
                 "type": "image_url",
-                "image_url": {"url": f"{prefix}{screenshot_base64}"},
+                "image_url": {"url": url},
             }
         ]
     )

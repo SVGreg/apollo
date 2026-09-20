@@ -23,6 +23,8 @@ step's *raw* stored action (physical pixels), never from the normalized twin.
 
 from __future__ import annotations
 
+from apollo.utils.image_data_url import image_data_url
+
 import base64
 from dataclasses import dataclass
 from pathlib import Path
@@ -65,7 +67,7 @@ class ScreenshotResult:
         encoded = base64.b64encode(self.image_bytes).decode("utf-8")
         return [
             {"type": "text", "text": self.description},
-            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{encoded}"}},
+            {"type": "image_url", "image_url": {"url": image_data_url(encoded)}},
         ]
 
 

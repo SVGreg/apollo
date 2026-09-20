@@ -31,6 +31,8 @@ The release decision is computed by the caller from the verdicts
 
 from __future__ import annotations
 
+from apollo.utils.image_data_url import image_data_url
+
 import asyncio
 import json
 import re
@@ -842,7 +844,7 @@ async def run_final_check(
         content.append(
             {
                 "type": "image_url",
-                "image_url": {"url": f"data:image/jpeg;base64,{screenshot_b64}"},
+                "image_url": {"url": image_data_url(screenshot_b64)},
             }
         )
 

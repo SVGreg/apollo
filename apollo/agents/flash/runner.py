@@ -37,6 +37,7 @@ The verbatim body of a user instruction is the exception: it stays in the
 active window until its turn is chunked, whose user lines then carry it on.
 """
 
+from apollo.utils.image_data_url import image_data_url
 import asyncio
 import base64
 from dataclasses import dataclass, field
@@ -83,7 +84,7 @@ from apollo.memory.transcript import PRO_UI_LIST_MARKER, TranscriptLedger, mark_
 from apollo.services.llm import (
     RobustChatModelWrapper,
     acomplete,
-    get_google_llm,
+    get_llm_for_model,
     get_llm,
     invoke_llm_with_timeout_message,
 )
@@ -98,6 +99,7 @@ from apollo.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+_MAX_EMPTY_RESPONSES = 5
 _NO_TOOL_CALL_NOTICE = (
     "You did not call any tools last turn. Please make progress by calling an"
     " action tool or 'report_task_status'."
@@ -284,7 +286,7 @@ class FlashRunner:
         except Exception as e:
             logger.warning(f"Failed to get operator LLM from config, using default: {e}")
 
-            return RobustChatModelWrapper(get_google_llm(model_name="gemini-2.5-flash"), self.ctx)
+            return RobustChatModelWrapper(get_llm_for_model("claude-sonnet-5"), self.ctx)
 
     def _render_system_prompt(self, tools_declaration: list) -> str:
         """Renders the system prompt from the flash_runner.md template.
@@ -369,9 +371,7 @@ class FlashRunner:
         if img_bytes:
             img_b64 = base64.b64encode(img_bytes).decode("utf-8")
             blocks.append({"type": "text", "text": "--- Current Screenshot ---"})
-            blocks.append(
-                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}}
-            )
+            blocks.append({"type": "image_url", "image_url": {"url": image_data_url(img_b64)}})
         if xml_list:
             blocks.append({"type": "text", "text": f"{PRO_UI_LIST_MARKER}\n{xml_list}"})
         ephemeral: list[int] = []
@@ -1050,6 +1050,8 @@ class FlashRunner:
         ledger, img_bytes, xml_list = await self._prepare_conversation(state, tools_declaration)
 
         turns = 0
+
+        empty_streak = 0
         action_sequence = 0
         final_report = None
         current_pre_screenshot_bytes = img_bytes
@@ -1128,6 +1130,37 @@ class FlashRunner:
                     f"FlashRunner received response without tool calls at turn {turns}:"
                     f" {raw_text[:100]}..."
                 )
+                metadata = getattr(response, "response_metadata", None) or {}
+                stop_reason = metadata.get("stop_reason") or metadata.get("finish_reason")
+                if not raw_text:
+                    logger.warning(
+                        f"Empty model response (stop_reason={stop_reason!r}): "
+                        f"content={str(getattr(response, 'content', None))[:300]}"
+                    )
+                    empty_streak += 1
+                else:
+                    empty_streak = 0
+                if stop_reason == "refusal":
+                    # A safety-classifier decline returns no content; retrying the same
+                    # screen only repeats it, so end the task with a clear reason.
+                    details = metadata.get("stop_details") or {}
+                    final_report = {
+                        "status": "failed",
+                        "explanation": (
+                            "The model declined to continue on this screen (provider refusal"
+                            f"{', ' + str(details) if details else ''}). Stopping."
+                        ),
+                    }
+                    break
+                if empty_streak >= _MAX_EMPTY_RESPONSES:
+                    final_report = {
+                        "status": "failed",
+                        "explanation": (
+                            f"The model returned {empty_streak} consecutive empty responses; "
+                            "the reactive loop stopped."
+                        ),
+                    }
+                    break
                 if is_final:
                     final_report = {"status": "failed", "explanation": raw_text}
                     break

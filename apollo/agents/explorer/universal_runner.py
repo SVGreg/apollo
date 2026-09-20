@@ -18,6 +18,7 @@ Split out of ``apollo.agents.explorer.explorer``: the ``_run_universal``
 reasoning loop, packaged as a mixin consumed by ``Explorer``.
 """
 
+from apollo.utils.image_data_url import image_data_url
 import asyncio
 import base64
 import json
@@ -172,7 +173,7 @@ class UniversalRunnerMixin:
             },
             {
                 "type": "image_url",
-                "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"},
+                "image_url": {"url": image_data_url(img_b64)},
             },
         ]
 
@@ -266,9 +267,7 @@ class UniversalRunnerMixin:
                 continue
             if tool_name not in tool_names:
                 tool_names.append(tool_name)
-            blocks.append(
-                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}}
-            )
+            blocks.append({"type": "image_url", "image_url": {"url": image_data_url(img_b64)}})
         if not blocks:
             return None
         header = {

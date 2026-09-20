@@ -5,19 +5,25 @@ Apollo is an autonomous, natural-language iOS automation framework: a fork of
 iOS Simulators and physical iPhones/iPads driven through WebDriverAgent, `xcrun simctl` and
 `go-ios`.
 
-> **Status: Phase 0 (bootstrap).** The Artemis agent core, CLI, MCP server, SDK and web console
-> are imported and renamed; the iOS driver does not exist yet. Today the only runnable target is
-> the in-memory mock driver. See [`docs/development-plan.md`](docs/development-plan.md) for the
-> roadmap and [`docs/technical-design.md`](docs/technical-design.md) for the design.
+> **Status: Phase 1a (simulator thin slice).** `apollo run` drives a booted iOS Simulator through
+> WebDriverAgent with the Flash profile. Web console, MCP install and `apollo doctor` are next
+> (Phase 1b). See [`docs/development-plan.md`](docs/development-plan.md) for the roadmap and
+> [`docs/technical-design.md`](docs/technical-design.md) for the design.
 
 ## What works today
 
 ```sh
 uv sync --dev
-APOLLO_MOCK_DRIVER=1 APOLLO_FAKE_LLM=1 uv run apollo run "Open Settings" --profile flash --standalone --device-serial mock-device
+cp .env.example .env            # ANTHROPIC_API_KEY=… (default) or GOOGLE_API_KEY=…
+xcrun simctl boot "iPhone 17 Pro"
+uv run apollo run "Open Settings, go to General > About and tell me the iOS version" \
+    --profile flash --standalone --device-serial <simulator-udid> --verification-level final
 ```
 
-That exercises the Flash agent loop, trace store and CLI without a device or an LLM key.
+WebDriverAgent (pinned v16.12.9) is downloaded, installed and launched on the simulator
+automatically. Models come from `config/apollo.jsonc` (default Claude Sonnet 5; presets for Opus,
+Gemini, OpenAI); `APOLLO_LLM_PRESET=gemini-flagship` switches provider for one run. Without any
+key, `make smoke-mock` runs the loop against the in-memory mock driver.
 
 Requirements: macOS with Xcode 26.x, [`uv`](https://docs.astral.sh/uv/) (Python 3.12 is pinned in
 `.python-version` and downloaded by `uv`).

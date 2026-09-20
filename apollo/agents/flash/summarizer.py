@@ -25,6 +25,7 @@ frame, the ``flash_summarizer.md`` neutral-wording contract, and versioned
 ``summary_status`` writes to the DataEngine.
 """
 
+from apollo.utils.image_data_url import image_data_url
 import asyncio
 import base64
 from pathlib import Path
@@ -36,7 +37,7 @@ from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
 from apollo.context import ApolloContext
 from apollo.memory.step_memory import JobKey, StepMemoryService
-from apollo.services.llm import RobustChatModelWrapper, get_google_llm, get_llm
+from apollo.services.llm import RobustChatModelWrapper, get_llm_for_model, get_llm
 from apollo.services.token_meter import record_llm_usage
 from apollo.utils.logger import get_logger
 from apollo.utils.task_tree import format_actions_clean
@@ -166,11 +167,11 @@ class VisualStepSummarizer(StepMemoryService):
         self._model_name = target_model
         try:
             if model_name:
-                self._llm = get_google_llm(model_name=target_model, temperature=0.0)
+                self._llm = get_llm_for_model(target_model, temperature=0.0)
             else:
                 self._llm = get_llm(ctx, name="summarizer", is_utils=True)
         except Exception:
-            self._llm = get_google_llm(model_name=target_model, temperature=0.0)
+            self._llm = get_llm_for_model(target_model, temperature=0.0)
         try:
             configured = getattr(self._llm, "model", None) or getattr(self._llm, "model_name", None)
             if isinstance(configured, str) and configured:
@@ -341,7 +342,7 @@ class VisualStepSummarizer(StepMemoryService):
         """Meter one raw-model lens call as an ``llm_usage`` trace, best-effort.
 
         Gateway-wrapped models already meter at the wrapper exit; only the raw
-        ``get_google_llm`` bypass needs explicit metering here. Lens prompts
+        ``get_llm_for_model`` bypass needs explicit metering here. Lens prompts
         are tiny and must not overwrite the session's ``last_prompt_tokens``
         (the compaction thresholds' live context base), hence
         ``update_last_prompt=False``.
@@ -430,7 +431,7 @@ class VisualStepSummarizer(StepMemoryService):
                     }
                 )
                 content_blocks.append(
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64_pre}"}}
+                    {"type": "image_url", "image_url": {"url": image_data_url(b64_pre)}}
                 )
 
             if post_bytes:
@@ -449,7 +450,7 @@ class VisualStepSummarizer(StepMemoryService):
                 content_blocks.append(
                     {
                         "type": "image_url",
-                        "image_url": {"url": f"data:image/jpeg;base64,{b64_post}"},
+                        "image_url": {"url": image_data_url(b64_post)},
                     }
                 )
 

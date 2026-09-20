@@ -14,6 +14,7 @@
 
 """Universal Multi-Model Image Processor for Apollo."""
 
+from apollo.utils.image_data_url import image_data_url
 import base64
 import json
 from pathlib import Path
@@ -118,7 +119,7 @@ class ImageProcessor:
                     {"type": "text", "text": "Here is the target image. Begin writing your code."},
                     {
                         "type": "image_url",
-                        "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"},
+                        "image_url": {"url": image_data_url(img_b64)},
                     },
                 ]
             ),
@@ -186,9 +187,7 @@ class ImageProcessor:
                                     image_blocks.append(
                                         {
                                             "type": "image_url",
-                                            "image_url": {
-                                                "url": f"data:image/jpeg;base64,{b64_data}"
-                                            },
+                                            "image_url": {"url": image_data_url(b64_data)},
                                         }
                                     )
                                     image_blocks.append({"type": "text", "text": f"\n{label}\n"})

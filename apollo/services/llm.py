@@ -906,6 +906,37 @@ async def invoke_llm_with_timeout_message[T](
         await asyncio.gather(waiter_task, return_exceptions=True)
 
 
+def infer_provider_from_model(model_name: str) -> ModelProvider:
+    """Best-effort provider from a bare model id (config nodes name models without a provider)."""
+    name = (model_name or "").lower()
+    if name.startswith("claude"):
+        return ModelProvider.ANTHROPIC
+    if name.startswith(("gpt-", "o1", "o3", "o4")):
+        return ModelProvider.OPENAI
+    if name.startswith("grok"):
+        return ModelProvider.XAI
+    return ModelProvider.GOOGLE
+
+
+def get_llm_for_model(
+    model_name: str,
+    temperature: float | None = None,
+    timeout: float | None = None,
+) -> BaseChatModel:
+    """Chat model for a bare model id, choosing the provider from the name.
+
+    Replaces hard-coded ``get_google_llm`` fallbacks so a Claude/OpenAI default
+    configuration does not route lightweight nodes to Gemini.
+    """
+    ep = ModelEndpoint(
+        provider=infer_provider_from_model(model_name),
+        model_name=model_name,
+        temperature=temperature or 0.0,
+        timeout_seconds=timeout or 60.0,
+    )
+    return ModelFactory.create_model(ep)
+
+
 # Backward compatible factory functions delegating to ModelFactory
 def get_google_llm(
     model_name: str = "gemini-3.8-flash",

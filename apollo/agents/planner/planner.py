@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from apollo.utils.image_data_url import image_data_url
 import base64
 import json
 from pathlib import Path
@@ -300,7 +301,7 @@ class PlannerNode:
             human_message_content.append(
                 {
                     "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{screenshot_b64}"},
+                    "image_url": {"url": image_data_url(screenshot_b64)},
                 }
             )
         messages = [

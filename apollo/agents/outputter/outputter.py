@@ -15,6 +15,7 @@
 # Portions of this file are derived from mobile-use (https://github.com/minitap-ai/mobile-use)
 # Copyright 2025-2026 Minitap, Inc. Licensed under the Apache License 2.0.
 
+from apollo.utils.image_data_url import image_data_url
 import json
 from pathlib import Path
 
@@ -213,7 +214,7 @@ async def outputter(
         human_message_content.append(
             {
                 "type": "image_url",
-                "image_url": {"url": f"data:image/jpeg;base64,{screenshot_b64}"},
+                "image_url": {"url": image_data_url(screenshot_b64)},
             }
         )
 

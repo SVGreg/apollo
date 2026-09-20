@@ -24,6 +24,7 @@ is injected by the facade so that tests patching
 ``apollo.agents.validator.validator.get_llm`` keep working.
 """
 
+from apollo.utils.image_data_url import image_data_url
 import asyncio
 import base64
 from pathlib import Path
@@ -120,12 +121,12 @@ def _build_messages(
         {"type": "text", "text": "[Image 1 (Reference)]"},
         {
             "type": "image_url",
-            "image_url": {"url": f"data:image/jpeg;base64,{orig_b64}"},
+            "image_url": {"url": image_data_url(orig_b64)},
         },
         {"type": "text", "text": "[Image 2 (Current State)]"},
         {
             "type": "image_url",
-            "image_url": {"url": f"data:image/jpeg;base64,{live_b64}"},
+            "image_url": {"url": image_data_url(live_b64)},
         },
     ]
     if state:

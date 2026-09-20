@@ -14,6 +14,7 @@
 
 """LLM provider, model hierarchy, fallback chaining, and configuration loaders."""
 
+import json
 import os
 from pathlib import Path
 from typing import Any, Literal
@@ -228,6 +229,47 @@ class LLMConfig(BaseModel):
         return value
 
 
+ENV_APOLLO_LLM_PRESET = "APOLLO_LLM_PRESET"
+
+
+def _apply_preset_override(config_dict: dict) -> dict:
+    """``APOLLO_LLM_PRESET=<name>`` swaps the ``default`` block for one of the config's
+    ``presets`` (e.g. ``gemini-flagship``, ``anthropic-sonnet``) without editing the file.
+
+    Node overrides that pin a model of another provider (hopper, step summarizer,
+    chunking) are dropped so they inherit the preset's provider."""
+    name = os.environ.get(ENV_APOLLO_LLM_PRESET, "").strip()
+    if not name:
+        return config_dict
+    presets = config_dict.get("presets") or {}
+    if name not in presets:
+        raise ValueError(
+            f"{ENV_APOLLO_LLM_PRESET}={name!r} is not defined; available: {sorted(presets)}"
+        )
+    preset = dict(presets[name])
+    current_default = config_dict.get("default") or {}
+    preset.setdefault("thinking_level", current_default.get("thinking_level"))
+    config_dict = dict(config_dict)
+    config_dict["default"] = preset
+    provider = preset.get("provider")
+    nodes = dict(config_dict.get("nodes") or {})
+    for node_name, node_cfg in list(nodes.items()):
+        if (
+            isinstance(node_cfg, dict)
+            and "model" in node_cfg
+            and node_cfg.get("provider", provider) != provider
+        ):
+            nodes[node_name] = {
+                k: v for k, v in node_cfg.items() if k not in ("model", "fallback", "provider")
+            }
+        elif isinstance(node_cfg, dict) and "model" in node_cfg and "provider" not in node_cfg:
+            # Bare model name of the previous provider: let it inherit the preset.
+            nodes[node_name] = {k: v for k, v in node_cfg.items() if k not in ("model", "fallback")}
+    config_dict["nodes"] = nodes
+    logger.info(f"LLM preset override: {name} ({preset.get('provider')}/{preset.get('model')})")
+    return config_dict
+
+
 def _expand_default_into_nodes(config_dict: dict) -> dict:
     """Expand unified config format with 'default' and 'nodes' into full LLMConfig schema."""
     if "planner" in config_dict and "utils" in config_dict:
@@ -311,6 +353,7 @@ def parse_llm_config() -> LLMConfig:
     try:
         with open(config_path, encoding="utf-8") as f:
             config_dict = load_jsonc(f)
+            config_dict = _apply_preset_override(config_dict)
             expanded_dict = _expand_default_into_nodes(config_dict)
             return LLMConfig.model_validate(expanded_dict)
     except Exception as e:

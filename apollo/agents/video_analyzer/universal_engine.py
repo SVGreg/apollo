@@ -21,6 +21,7 @@ semaphores, retry helper, ...) are looked up late through the facade module so
 keep working.
 """
 
+from apollo.utils.image_data_url import image_data_url
 import asyncio
 import base64
 import glob
@@ -159,7 +160,7 @@ async def _build_universal_user_blocks(
         user_blocks.append(
             {
                 "type": "image_url",
-                "image_url": {"url": f"data:image/jpeg;base64,{b64_str}"},
+                "image_url": {"url": image_data_url(b64_str)},
             }
         )
 

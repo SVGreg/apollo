@@ -28,6 +28,7 @@ The Explorer tier (flash / pro / ultra) is a user setting resolved from
 configuration; it is never part of the tool contract shown to agents.
 """
 
+from apollo.utils.image_data_url import image_data_url
 import base64
 from dataclasses import dataclass, field
 import glob
@@ -480,7 +481,7 @@ def render_operator_blocks(
         return text
     return [
         {"type": "text", "text": text},
-        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}},
+        {"type": "image_url", "image_url": {"url": image_data_url(img_b64)}},
     ]
 
 

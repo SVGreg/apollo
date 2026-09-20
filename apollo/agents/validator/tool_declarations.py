@@ -19,6 +19,7 @@ Execution itself lives in :class:`apollo.mcp.action_executor.McpActionExecutor`
 result envelope, the observation helpers both use, and the tool declarations.
 """
 
+from apollo.utils.image_data_url import image_data_url
 import base64
 import json
 from typing import Any, Literal
@@ -79,7 +80,7 @@ class ToolExecutionResult(BaseModel):
             content_blocks.append(
                 {
                     "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{b64_img}"},
+                    "image_url": {"url": image_data_url(b64_img)},
                 }
             )
         return ToolMessage(

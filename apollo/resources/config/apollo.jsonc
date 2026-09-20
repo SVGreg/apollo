@@ -7,12 +7,12 @@
   // 1. Global Default Model (Applied to all sub-agents unless overridden below)
   // ------------------------------------------------------------------------------
   "default": {
-    "provider": "google",
-    "model": "gemini-3.8-flash",
+    "provider": "anthropic",
+    "model": "claude-sonnet-5",
     "thinking_level": "medium",
     "fallback": {
-      "provider": "google",
-      "model": "gemini-3.7-flash",
+      "provider": "anthropic",
+      "model": "claude-opus-5",
       "thinking_level": "medium"
     }
   },
@@ -21,6 +21,16 @@
   // 2. Ready-to-Use Presets (Switch easily in code or CLI)
   // ------------------------------------------------------------------------------
   "presets": {
+    "anthropic-opus": {
+      "provider": "anthropic",
+      "model": "claude-opus-5",
+      "fallback": { "provider": "anthropic", "model": "claude-sonnet-5" }
+    },
+    "anthropic-sonnet": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "fallback": { "provider": "anthropic", "model": "claude-haiku-4-5" }
+    },
     "gemini-flagship": {
       "provider": "google",
       "model": "gemini-3.8-flash",
@@ -74,13 +84,9 @@
     // CRITICAL REQUIREMENT: Standard LLMs (including standard Gemini Flash, GPT-4o, Claude 3.7) lack sub-pixel spatial coordinate fine-tuning.
     // To achieve accurate [x, y] point and bounding box localization, this node MUST use specialized Gemini ER (Embodied Reasoning / Robotics) models:
     // e.g., "gemini-robotics-er-2-preview". Non-ER models will fail spatial coordinate detection.
-    "object_detector": {
-      "model": "gemini-robotics-er-2-preview",
-      "fallback": {
-        "provider": "google",
-        "model": "gemini-robotics-er-2-preview"
-      }
-    },
+    // Inherits the default (vision-capable) model. With a GOOGLE_API_KEY, Gemini's
+    // dedicated detector is stronger: {"provider": "google", "model": "gemini-robotics-er-2-preview"}
+    "object_detector": {},
 
     // 🔍 Explorer: Deep element grounding and multi-candidate visual search
     // NOTE:
@@ -95,10 +101,10 @@
 
     // 🔽 Hopper: Fast lightweight package name locator
     "hopper": {
-      "model": "gemini-3.5-flash-lite",
+      "model": "claude-haiku-4-5",
       "fallback": {
-        "provider": "google",
-        "model": "gemini-3.1-flash-lite"
+        "provider": "anthropic",
+        "model": "claude-sonnet-5"
       }
     },
 
@@ -145,7 +151,7 @@
       // replacing images only after strictly objective, high-density summaries are ready.
       "step_summarizer": {
         "enabled": true, // Whether background step summarization is active
-        "model": "gemini-3.5-flash-lite", // Lightweight model for fast background inference
+        "model": "claude-haiku-4-5", // Lightweight model for fast background inference
         "prune_history_xml": true // Prune outdated heavy XML trees from historical steps
       }
     },
@@ -246,7 +252,7 @@
         // call each); milestone closes are exempt, the hard line waives it.
         "min_steps": 3,
         "target_source_tokens": 2000,
-        "model": "gemini-3.8-flash",
+        "model": "claude-sonnet-5",
         "max_chunks": 8
         // "max_eras": 8 // independent era cap; omitted = follows max_chunks
       },
