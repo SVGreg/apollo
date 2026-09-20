@@ -119,6 +119,7 @@ def _prop(tool, name: str) -> dict:
 # --- Fixture pin -----------------------------------------------------------------------
 
 
+@pytest.mark.android  # Android tooling (adb/uiautomator2); replaced in Apollo Phase 1
 @pytest.mark.asyncio
 async def test_adb_server_manifest_matches_fixture():
     expected = json.loads((FIXTURES / "adb_server_manifest.json").read_text(encoding="utf-8"))

@@ -157,6 +157,7 @@ def test_mcp_stdio_handshake_immediate_input():
             p.kill()
 
 
+@pytest.mark.android  # Android tooling (adb/uiautomator2); replaced in Apollo Phase 1
 def test_awake_service_adb_command_isolates_stdin():
     """Verify _run_awake_adb_command always sets stdin=subprocess.DEVNULL."""
     with patch("apollo.runtime.awake_service.subprocess.run") as mock_run:
@@ -170,6 +171,7 @@ def test_awake_service_adb_command_isolates_stdin():
         )
 
 
+@pytest.mark.android  # Android tooling (adb/uiautomator2); replaced in Apollo Phase 1
 def test_awake_lease_run_isolates_stdin():
     """Verify ScreenAwakeLease._run always sets stdin=subprocess.DEVNULL."""
     lease = ScreenAwakeLease("test-dev-1")
@@ -203,6 +205,7 @@ def test_device_utils_isolates_stdin():
         assert mock_run.call_args.kwargs.get("stdin") == subprocess.DEVNULL
 
 
+@pytest.mark.android  # Android tooling (adb/uiautomator2); replaced in Apollo Phase 1
 def test_ui_automator_client_isolates_stdin():
     """Verify ui_automator_client helper commands isolate stdin."""
     with patch("apollo.clients.ui_automator_client.subprocess.run") as mock_run:

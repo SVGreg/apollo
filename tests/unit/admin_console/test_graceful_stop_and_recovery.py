@@ -46,9 +46,7 @@ def isolated(tmp_path, monkeypatch):
     lock_dir = tmp_path / "device-locks"
     lock_dir.mkdir()
     monkeypatch.setattr(cancel_requests, "get_temp_dir", lambda _subfolder=None: marker_dir)
-    monkeypatch.setattr(
-        "apollo.runtime.device_lock.get_temp_dir", lambda _subfolder=None: lock_dir
-    )
+    monkeypatch.setattr("apollo.runtime.device_lock.get_temp_dir", lambda _subfolder=None: lock_dir)
     monkeypatch.setenv("APOLLO_CANCEL_GRACE_SECONDS", "5")
     for task in list(TaskQueueService._forced_stop_tasks):
         task.cancel()

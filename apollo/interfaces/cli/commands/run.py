@@ -20,7 +20,10 @@ from pathlib import Path
 from shutil import which
 from typing import Annotated
 
-from adbutils import AdbClient
+try:
+    from adbutils import AdbClient
+except ImportError:  # Android tooling is optional in Apollo
+    AdbClient = None
 from langchain_core.callbacks.base import Callbacks
 from apollo.config import checker_overrides_for_level, initialize_llm_config, settings
 from apollo.utils.startup_progress import publish_startup_progress

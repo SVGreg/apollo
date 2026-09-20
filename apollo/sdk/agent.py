@@ -36,7 +36,10 @@ from types import NoneType
 from typing import Any, TypeVar, overload
 import uuid
 
-from adbutils import AdbClient
+try:
+    from adbutils import AdbClient
+except ImportError:  # Android tooling is optional in Apollo
+    AdbClient = Any
 from dotenv import load_dotenv
 from google import genai
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -213,7 +216,11 @@ class Agent:
         retry_wait_seconds: int = 5,
     ):
 
-        if os.environ.get("APOLLO_CLOUD_MODE") != "1" and not which("adb"):
+        # APOLLO_MOCK_DRIVER=1 runs the agent loop against the in-memory
+        # MockDeviceDriver; no device bridge or platform tooling is needed.
+        mock_mode = os.environ.get("APOLLO_MOCK_DRIVER") == "1"
+
+        if os.environ.get("APOLLO_CLOUD_MODE") != "1" and not mock_mode and not which("adb"):
             raise ExecutableNotFoundError("adb")
 
         if self._initialized:
@@ -221,7 +228,10 @@ class Agent:
             return True
 
         # Get first available device ID
-        if os.environ.get("APOLLO_CLOUD_MODE") == "1":
+        if mock_mode:
+            device_id = self._config.device_id or "mock-device"
+            platform = DevicePlatform.MOCK
+        elif os.environ.get("APOLLO_CLOUD_MODE") == "1":
             device_id = os.environ.get("ADB_DEVICE_SERIAL", "cloud_device")
             platform = DevicePlatform.ANDROID
         elif not self._config.device_id or not self._config.device_platform:
@@ -241,7 +251,10 @@ class Agent:
         publish_startup_progress(
             "device_check", "Checking the Android device", session_id=self._session_id
         )
-        if os.environ.get("APOLLO_CLOUD_MODE") != "1":
+        if mock_mode:
+            self._adb_client = None
+            self._ui_adb_client = None
+        elif os.environ.get("APOLLO_CLOUD_MODE") != "1":
             self._init_clients(
                 device_id=device_id,
                 platform=platform,
@@ -642,7 +655,10 @@ class Agent:
                 # finishing.
                 self._prepare_tracing(task=task, context=context)
                 self._prepare_output_files(task=task)
-                if os.environ.get("APOLLO_CLOUD_MODE") != "1":
+                if (
+                    os.environ.get("APOLLO_CLOUD_MODE") != "1"
+                    and os.environ.get("APOLLO_MOCK_DRIVER") != "1"
+                ):
                     if self._ui_adb_client is not None:
                         await self._connect_screen_client(context, str(sess_id))
                     await self._ensure_device_unlocked()

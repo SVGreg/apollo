@@ -7,12 +7,14 @@ from apollo.runtime.awake_service import (
     _configure_usb_stay_awake,
     _discover_connected_device_ids,
 )
+import pytest
 
 
 def completed(stdout="", returncode=0, stderr=""):
     return MagicMock(returncode=returncode, stdout=stdout, stderr=stderr)
 
 
+@pytest.mark.android  # Android tooling (adb/uiautomator2); replaced in Apollo Phase 1
 @patch("apollo.runtime.awake_service.ScreenAwakeLease")
 @patch("apollo.runtime.awake_service.subprocess.run")
 def test_usb_policy_is_primary_when_android_reports_it_active(mock_run, lease_type):
@@ -37,6 +39,7 @@ def test_usb_policy_is_primary_when_android_reports_it_active(mock_run, lease_ty
     assert not any("KEYCODE_UNKNOWN" in command for command in commands)
 
 
+@pytest.mark.android  # Android tooling (adb/uiautomator2); replaced in Apollo Phase 1
 @patch("apollo.runtime.awake_service.ScreenAwakeLease")
 @patch("apollo.runtime.awake_service.subprocess.run")
 def test_inactive_usb_policy_falls_back_to_effective_host_heartbeat(mock_run, _lease_type):

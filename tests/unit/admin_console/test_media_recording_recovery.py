@@ -212,9 +212,7 @@ def test_resolve_video_segments_passes_through_session_offsets(tmp_path, monkeyp
     (folder / "legacy.mp4").write_bytes(b"legacy")
     monkeypatch.setattr(media_module, "WORKSPACE_ROOT", tmp_path)
 
-    segments = MediaService.resolve_video_segments(
-        "/videos/apollo-traces/web_9_done/recording.mp4"
-    )
+    segments = MediaService.resolve_video_segments("/videos/apollo-traces/web_9_done/recording.mp4")
 
     assert [s["url"] for s in segments] == [
         "/videos/apollo-traces/web_9_done/recording.mp4",

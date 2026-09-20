@@ -22,7 +22,10 @@ import subprocess
 import threading
 from typing import Iterable
 
-from adbutils import AdbClient
+try:
+    from adbutils import AdbClient
+except ImportError:  # Android tooling is optional in Apollo
+    AdbClient = None
 
 from apollo.config import settings
 from apollo.runtime.adb_endpoint import adb_command

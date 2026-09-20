@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from unittest.mock import AsyncMock, Mock, patch
-from adbutils import AdbClient
 from langchain_core.messages import AIMessage, ToolMessage
 from apollo.agents.diagnoser.diagnoser import Diagnoser
 from apollo.context import ApolloContext
@@ -25,6 +24,8 @@ import pytest
 @pytest.fixture(scope="session", autouse=True)
 def ensure_device_connected():
     try:
+        from adbutils import AdbClient
+
         client = AdbClient()
         if not client.device_list():
             pytest.skip("No active Android device/emulator found. Skipping diagnostic tool tests.")

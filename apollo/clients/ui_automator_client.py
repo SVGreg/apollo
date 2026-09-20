@@ -32,7 +32,11 @@ import xml.etree.ElementTree as ET
 
 from PIL import Image
 from pydantic import BaseModel
-import uiautomator2 as u2
+
+try:
+    import uiautomator2 as u2
+except ImportError:  # Android tooling is optional in Apollo
+    u2 = None
 
 from apollo.runtime.adb_endpoint import adb_command
 from apollo.runtime.awake_service import ensure_device_awake

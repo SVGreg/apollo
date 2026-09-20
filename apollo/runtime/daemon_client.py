@@ -149,9 +149,7 @@ def spawn_daemon(
 
     try:
         proc = subprocess.Popen(cmd, **kwargs)
-        logger.info(
-            f"Spawned Apollo Daemon in background (PID {proc.pid}) at http://{host}:{port}"
-        )
+        logger.info(f"Spawned Apollo Daemon in background (PID {proc.pid}) at http://{host}:{port}")
         return proc
     except Exception as exc:
         logger.warning(f"Could not auto-spawn Apollo Daemon: {exc}")

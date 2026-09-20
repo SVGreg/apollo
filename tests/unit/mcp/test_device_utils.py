@@ -4,8 +4,10 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 from mcp_server.utils import device_utils
+import pytest
 
 
+@pytest.mark.android  # Android tooling (adb/uiautomator2); replaced in Apollo Phase 1
 def test_ensure_emulator_uses_windows_creation_flags(monkeypatch) -> None:
     popen = MagicMock()
     monkeypatch.setattr(device_utils.sys, "platform", "win32")

@@ -580,9 +580,7 @@ class DataEngine:
                 except ValueError:
                     pass
         else:
-            env_session_id = os.getenv("APOLLO_CLOUD_SESSION_ID") or os.getenv(
-                "APOLLO_SESSION_ID"
-            )
+            env_session_id = os.getenv("APOLLO_CLOUD_SESSION_ID") or os.getenv("APOLLO_SESSION_ID")
             if env_session_id:
                 try:
                     session_id = UUID(env_session_id)

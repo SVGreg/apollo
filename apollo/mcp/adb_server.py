@@ -26,7 +26,10 @@ if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
 # pylint: disable=wrong-import-position
-from adbutils import AdbClient
+try:
+    from adbutils import AdbClient
+except ImportError:  # Android tooling is optional in Apollo
+    AdbClient = None
 from mcp.server.fastmcp import Context, FastMCP
 
 logger = logging.getLogger(__name__)

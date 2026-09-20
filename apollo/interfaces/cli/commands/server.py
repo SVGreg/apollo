@@ -131,9 +131,7 @@ def web_proxy_command(
     port: Annotated[int, typer.Option("--port", "-p", help="Local port to bind.")] = 8080,
     target: Annotated[
         str,
-        typer.Option(
-            "--target", "-t", help="Target Apollo Cloud URL.", envvar="APOLLO_CLOUD_URL"
-        ),
+        typer.Option("--target", "-t", help="Target Apollo Cloud URL.", envvar="APOLLO_CLOUD_URL"),
     ] = "http://127.0.0.1:8000",
 ) -> None:
     """Start the local authenticated proxy for APOLLO Cloud Web Dashboard."""

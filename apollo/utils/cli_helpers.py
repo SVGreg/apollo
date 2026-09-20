@@ -14,7 +14,12 @@
 
 import sys
 
-from adbutils import AdbClient
+from typing import Any
+
+try:
+    from adbutils import AdbClient
+except ImportError:  # Android tooling is optional in Apollo
+    AdbClient = Any
 from rich.console import Console
 
 

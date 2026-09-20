@@ -44,9 +44,6 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "jinja2>=3.1.5",
     "typing-extensions>=4.12.0",
-    # Android Automation & Device Subsystem
-    "adbutils>=2.12.0",
-    "uiautomator2>=3.5.0",
     # CLI & Rich Terminal UI
     "typer>=0.12.0",
     "rich>=13.7.0",
@@ -77,6 +74,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# NOTE: no `fb-idb` extra — every fb-idb release pins protobuf>=7.35, which is
+# incompatible with google-cloud-aiplatform (<7). idb is driven via its CLI
+# (`idb ... --json`) instead; see docs/spikes.md.
 dev = [
     "ruff>=0.15.2",
     "pytest>=8.4.1",
@@ -85,6 +85,7 @@ dev = [
     "syrupy>=4.0.0",
     "pyright>=1.1.389",
     "pre-commit>=3.5.0",
+    "respx>=0.22.0",
 ]
 
 [project.scripts]
@@ -255,5 +256,6 @@ dev = [
     "pytest-cov>=5.0.0",
     "pyright>=1.1.389",
     "pre-commit>=3.5.0",
+    "respx>=0.22.0",
 ]
 

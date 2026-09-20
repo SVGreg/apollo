@@ -17,7 +17,10 @@
 import os
 from typing import TYPE_CHECKING
 
-from adbutils import AdbClient
+try:
+    from adbutils import AdbClient
+except ImportError:  # Android tooling is optional in Apollo
+    AdbClient = None
 
 from apollo.config import settings
 from apollo.drivers.android.adb_driver import AndroidAdbDriver

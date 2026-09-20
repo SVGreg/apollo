@@ -70,6 +70,8 @@ class DevicePlatform(StrEnum):
     """Mobile device platform enumeration."""
 
     ANDROID = "android"
+    IOS = "ios"
+    MOCK = "mock"
 
 
 class DeviceContext(BaseModel):

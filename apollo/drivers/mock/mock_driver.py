@@ -70,7 +70,13 @@ class MockDeviceDriver(BaseDeviceDriver):
             screenshot_bytes=self._mock_bytes,
             screenshot_base64=self._mock_b64,
             ui_hierarchy_xml=self._mock_xml,
-            ui_elements=[{"text": "Settings", "bounds": [0, 0, self._width, 100]}],
+            ui_elements=[
+                {
+                    "text": "Settings",
+                    "class": "android.widget.TextView",
+                    "bounds": f"[0,0][{self._width},100]",
+                }
+            ],
             width=self._width,
             height=self._height,
             platform="mock",

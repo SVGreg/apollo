@@ -305,6 +305,7 @@ async def test_submission_probe_fails_closed_when_lock_state_is_unknown(monkeypa
     assert result.status == ProbeStatus.WARN
 
 
+@pytest.mark.android  # Android tooling (adb/uiautomator2); replaced in Apollo Phase 1
 @pytest.mark.asyncio
 async def test_submission_probe_falls_back_to_unlocked_device(monkeypatch):
     """When the first device is locked but a second device is unlocked, submission probe falls back."""

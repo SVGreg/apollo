@@ -20,7 +20,10 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any, Literal
 
-from adbutils import AdbClient, AdbDevice
+try:
+    from adbutils import AdbClient, AdbDevice
+except ImportError:  # Android tooling is optional in Apollo
+    AdbClient = AdbDevice = Any
 from apollo.clients.ui_automator_client import (
     UIAutomatorClient,
     _parse_hierarchy_xml_to_elements,

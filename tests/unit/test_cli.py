@@ -184,9 +184,7 @@ def test_cli_mcp_generate_config_antigravity():
     result = runner.invoke(app, ["mcp", "--generate-config", "antigravity"])
     assert result.exit_code == 0
     assert "mcpServers" in result.output
-    server_config = _get_config_snippet("antigravity", "python", "/project")["mcpServers"][
-        "apollo"
-    ]
+    server_config = _get_config_snippet("antigravity", "python", "/project")["mcpServers"]["apollo"]
     assert server_config["disabledTools"] == []
     assert "tools" not in server_config
 

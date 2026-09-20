@@ -432,9 +432,7 @@ async def test_locate_forwards_a_programmatic_version_pin():
     explorer_patch, instance = _explorer_returning(json.dumps({"candidates": []}))
     with (
         explorer_patch,
-        patch(
-            "apollo.tools.explorer_tool.resolve_explorer_version", return_value="pro"
-        ) as resolve,
+        patch("apollo.tools.explorer_tool.resolve_explorer_version", return_value="pro") as resolve,
     ):
         await locate(ctx, state, "q", version="pro", agent_name="flash")
     resolve.assert_called_once_with(ctx, explicit_version="pro", agent_or_profile_name="flash")

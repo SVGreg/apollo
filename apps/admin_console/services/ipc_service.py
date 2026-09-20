@@ -39,11 +39,7 @@ class IPCService:
         if isinstance(val, (bool, int, float)):
             return val
         if isinstance(val, str):
-            if (
-                "object at 0x" in val
-                or val.startswith("<apollo.")
-                or val.startswith("<controller")
-            ):
+            if "object at 0x" in val or val.startswith("<apollo.") or val.startswith("<controller"):
                 return None
             return val
         if isinstance(val, dict):
