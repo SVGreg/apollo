@@ -51,11 +51,7 @@ STANDARD_PATHS=(
     "/usr/local/sbin"
     "${HOME}/.local/bin"
     "${HOME}/.local/share/node/bin"
-    "${HOME}/.local/share/platform-tools"
-    "${HOME}/.local/share/scrcpy"
     "${HOME}/.cargo/bin"
-    "${HOME}/Library/Android/sdk/platform-tools"
-    "${HOME}/Android/Sdk/platform-tools"
 )
 for p in "${STANDARD_PATHS[@]}"; do
     if [ -d "${p}" ] && [[ ":${PATH}:" != *":${p}:"* ]]; then
@@ -141,169 +137,92 @@ echo -e "${BOLD}1. Detecting Operating System & Environment...${NC}"
 echo -e "   Platform: ${BLUE}${OS_TYPE}${NC} (${ARCH_TYPE})"
 echo -e "   Root Dir: ${DIM}${ROOT_DIR}${NC}"
 
-# Function to install system toolchains (ADB, FFmpeg, scrcpy)
+# Function to install the iOS toolchain (Xcode CLT, simulator runtime, ffmpeg, go-ios, optional idb)
 install_system_packages() {
-    echo -e "\n${BOLD}2. Checking System Toolchains (ADB, FFmpeg, scrcpy)...${NC}"
+    echo -e "\n${BOLD}2. Checking iOS toolchain...${NC}"
 
-    local need_adb=false
-    local need_ffmpeg=false
-    local need_scrcpy=false
-
-    if ! has_cmd adb; then
-        for candidate in \
-            "${ANDROID_HOME:-}/platform-tools" \
-            "${ANDROID_SDK_ROOT:-}/platform-tools" \
-            "${HOME}/Library/Android/sdk/platform-tools" \
-            "${HOME}/Android/Sdk/platform-tools" \
-            "${HOME}/.local/share/platform-tools" \
-            "/opt/homebrew/bin" \
-            "/usr/local/bin"; do
-            if [ -n "${candidate}" ] && [ -x "${candidate}/adb" ]; then
-                export PATH="${candidate}:${PATH}"
-                break
-            fi
-        done
+    if [ "$(uname -s)" != "Darwin" ]; then
+        echo -e "   ${RED}✗ Apollo drives iOS Simulators and devices and requires macOS with Xcode.${NC}"
+        echo -e "   ${YELLOW}  Linux/Windows devices-only mode via go-ios is not supported in v1.${NC}"
+        exit 1
     fi
 
-    if ! has_cmd adb; then need_adb=true; fi
-    if ! has_cmd ffmpeg; then need_ffmpeg=true; fi
-    if ! has_cmd scrcpy; then need_scrcpy=true; fi
-
-    if [ "${need_adb}" = false ] && [ "${need_ffmpeg}" = false ] && [ "${need_scrcpy}" = false ]; then
-        echo -e "   ${GREEN}✓ All core system tools are already installed.${NC}"
-        if has_cmd adb; then
-            (unset ADB_SERVER_SOCKET; adb start-server >/dev/null 2>&1 || true)
-        fi
-        return 0
+    # Xcode + Command Line Tools
+    if ! xcode-select -p >/dev/null 2>&1; then
+        echo -e "   ${YELLOW}⚡ Xcode Command Line Tools not found. Launching installer...${NC}"
+        xcode-select --install >/dev/null 2>&1 || true
+        echo -e "   ${RED}✗ Re-run this script after the Command Line Tools finish installing.${NC}"
+        exit 1
+    fi
+    if ! xcrun simctl list runtimes >/dev/null 2>&1; then
+        echo -e "   ${RED}✗ 'xcrun simctl' failed. Install Xcode 26.x from the App Store, open it once,${NC}"
+        echo -e "     ${RED}accept the license (sudo xcodebuild -license accept) and select it:${NC}"
+        echo -e "     ${CYAN}sudo xcode-select -s /Applications/Xcode.app${NC}"
+        exit 1
+    fi
+    XCODE_VER="$(xcodebuild -version 2>/dev/null | head -1 || echo 'Xcode ?')"
+    echo -e "   ${GREEN}✓ ${XCODE_VER} with Command Line Tools${NC}"
+    if ! xcrun simctl list runtimes 2>/dev/null | grep -q "iOS"; then
+        echo -e "   ${YELLOW}⚠ No iOS simulator runtime installed. Run: xcodebuild -downloadPlatform iOS${NC}"
     fi
 
-    echo -e "   ${YELLOW}! Missing toolchains detected:${NC}"
-    [ "${need_adb}" = true ] && echo -e "     • [ADB] Android Debug Bridge"
-    [ "${need_ffmpeg}" = true ] && echo -e "     • [FFmpeg] Video encoding/trimming framework"
-    [ "${need_scrcpy}" = true ] && echo -e "     • [scrcpy] Real-time Android screen mirroring"
-
-    echo -e "   Attempting automated installation..."
-
-    if [ "${OS_TYPE}" = "Darwin" ]; then
-        # Ensure Homebrew environment variables to prevent hanging
-        export HOMEBREW_NO_AUTO_UPDATE=1
-        export HOMEBREW_NO_INSTALL_CLEANUP=1
-        export HOMEBREW_NO_ENV_HINTS=1
-
-        if ! has_cmd brew; then
-            if [ -x "/opt/homebrew/bin/brew" ]; then
-                eval "$(/opt/homebrew/bin/brew shellenv)"
-            elif [ -x "/usr/local/bin/brew" ]; then
-                eval "$(/usr/local/bin/brew shellenv)"
-            fi
+    # Homebrew (for ffmpeg / idb)
+    export HOMEBREW_NO_AUTO_UPDATE=1
+    export HOMEBREW_NO_INSTALL_CLEANUP=1
+    export HOMEBREW_NO_ENV_HINTS=1
+    if ! has_cmd brew; then
+        if [ -x "/opt/homebrew/bin/brew" ]; then
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+        elif [ -x "/usr/local/bin/brew" ]; then
+            eval "$(/usr/local/bin/brew shellenv)"
         fi
+    fi
 
+    # ffmpeg — recording from the WDA MJPEG stream and trace video compilation
+    if ! has_cmd ffmpeg; then
         if has_cmd brew; then
-            echo -e "   ${CYAN}Detected Homebrew ($(brew --version | head -n1)). Installing missing components...${NC}"
-            if [ "${need_adb}" = true ]; then
-                echo -e "   📦 Installing ${BOLD}android-platform-tools${NC}..."
-                brew install --cask android-platform-tools || brew install android-platform-tools || true
-            fi
-            if [ "${need_ffmpeg}" = true ]; then
-                echo -e "   📦 Installing ${BOLD}ffmpeg${NC}..."
-                brew install ffmpeg || true
-            fi
-            if [ "${need_scrcpy}" = true ]; then
-                echo -e "   📦 Installing ${BOLD}scrcpy${NC}..."
-                brew install scrcpy || true
-            fi
-        else
-            echo -e "   ${YELLOW}⚠ Homebrew not found. Please install Homebrew or install tools manually:${NC}"
-            echo -e "     /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
-            echo -e "     brew install --cask android-platform-tools && brew install ffmpeg scrcpy"
-        fi
-
-    elif [ "${OS_TYPE}" = "Linux" ]; then
-        local PKGS=()
-        [ "${need_adb}" = true ] && PKGS+=("adb")
-        [ "${need_ffmpeg}" = true ] && PKGS+=("ffmpeg")
-        [ "${need_scrcpy}" = true ] && PKGS+=("scrcpy")
-
-        if request_sudo "install missing system components (${PKGS[*]})"; then
-            local SUDO_PREFIX=""
-            if [ "$(id -u)" -ne 0 ]; then
-                SUDO_PREFIX="sudo"
-            fi
-
-            if has_cmd apt-get; then
-                echo -e "   ${CYAN}Detected Debian/Ubuntu (apt-get). Installing missing packages...${NC}"
-                DEBIAN_FRONTEND=noninteractive ${SUDO_PREFIX} apt-get -o DPkg::Lock::Timeout=3 -o Acquire::http::Timeout=3 -o Acquire::https::Timeout=3 install -y "${PKGS[@]}" 2>/dev/null || true
-            elif has_cmd dnf; then
-                echo -e "   ${CYAN}Detected Fedora/RHEL (dnf). Installing packages...${NC}"
-                local DNF_PKGS=()
-                [ "${need_adb}" = true ] && DNF_PKGS+=("android-tools")
-                [ "${need_ffmpeg}" = true ] && DNF_PKGS+=("ffmpeg")
-                [ "${need_scrcpy}" = true ] && DNF_PKGS+=("scrcpy")
-                ${SUDO_PREFIX} dnf install -y "${DNF_PKGS[@]}" 2>/dev/null || true
-            elif has_cmd pacman; then
-                echo -e "   ${CYAN}Detected Arch Linux (pacman). Installing packages...${NC}"
-                local PAC_PKGS=()
-                [ "${need_adb}" = true ] && PAC_PKGS+=("android-tools")
-                [ "${need_ffmpeg}" = true ] && PAC_PKGS+=("ffmpeg")
-                [ "${need_scrcpy}" = true ] && PAC_PKGS+=("scrcpy")
-                ${SUDO_PREFIX} pacman -S --noconfirm "${PAC_PKGS[@]}" 2>/dev/null || true
-            fi
-        fi
-
-        # Fallback: if scrcpy is still missing, install official precompiled portable scrcpy in user space
-        if ! has_cmd scrcpy; then
-            local SCRCPY_ARCH=""
-            case "${ARCH_TYPE}" in
-                x86_64|amd64) SCRCPY_ARCH="x86_64" ;;
-                aarch64|arm64) SCRCPY_ARCH="aarch64" ;;
-            esac
-            if [ -n "${SCRCPY_ARCH}" ]; then
-                local SCRCPY_DIR="${HOME}/.local/share/scrcpy"
-                if [ ! -x "${SCRCPY_DIR}/scrcpy" ]; then
-                    echo -e "   ${CYAN}📦 Installing portable scrcpy in user space (~/.local)...${NC}"
-                    mkdir -p "${SCRCPY_DIR}" "${HOME}/.local/bin"
-                    local SCRCPY_URL="https://github.com/Genymobile/scrcpy/releases/download/v4.1/scrcpy-linux-${SCRCPY_ARCH}-v4.1.tar.gz"
-                    if curl -fsSL --connect-timeout 5 --max-time 30 "${SCRCPY_URL}" | tar -xz -C "${SCRCPY_DIR}" --strip-components=1 2>/dev/null; then
-                        ln -sf "${SCRCPY_DIR}/scrcpy" "${HOME}/.local/bin/scrcpy"
-                        export PATH="${SCRCPY_DIR}:${PATH}"
-                        echo -e "   ${GREEN}✓ scrcpy installed in user space.${NC}"
-                    fi
-                else
-                    ln -sf "${SCRCPY_DIR}/scrcpy" "${HOME}/.local/bin/scrcpy"
-                    export PATH="${SCRCPY_DIR}:${PATH}"
-                fi
-            fi
-        fi
-
-        # User-space fallback for adb if missing and no root privileges
-        if ! has_cmd adb; then
-            if [[ "${ARCH_TYPE}" = "x86_64" || "${ARCH_TYPE}" = "amd64" ]]; then
-                local PT_DIR="${HOME}/.local/share/platform-tools"
-                if [ ! -x "${PT_DIR}/adb" ]; then
-                    echo -e "   ${CYAN}📦 Installing Android platform-tools (adb) in user space...${NC}"
-                    local TEMP_ZIP="/tmp/platform-tools-$$.zip"
-                    if curl -fsSL --connect-timeout 5 --max-time 30 "https://dl.google.com/android/repository/platform-tools-latest-linux.zip" -o "${TEMP_ZIP}" 2>/dev/null; then
-                        mkdir -p "${HOME}/.local/share" "${HOME}/.local/bin"
-                        if has_cmd unzip; then
-                            unzip -q -o "${TEMP_ZIP}" -d "${HOME}/.local/share" 2>/dev/null || true
-                        else
-                            python3 -m zipfile -e "${TEMP_ZIP}" "${HOME}/.local/share" 2>/dev/null || true
-                        fi
-                        rm -f "${TEMP_ZIP}"
-                    fi
-                fi
-                if [ -x "${PT_DIR}/adb" ]; then
-                    ln -sf "${PT_DIR}/adb" "${HOME}/.local/bin/adb"
-                    export PATH="${PT_DIR}:${PATH}"
-                    echo -e "   ${GREEN}✓ adb installed in user space.${NC}"
-                fi
-            fi
+            echo -e "   ${YELLOW}⚡ Installing ffmpeg via Homebrew...${NC}"
+            brew install ffmpeg >/dev/null 2>&1 || true
         fi
     fi
+    if has_cmd ffmpeg; then
+        echo -e "   ${GREEN}✓ ffmpeg${NC}"
+    else
+        echo -e "   ${YELLOW}⚠ ffmpeg missing (brew install ffmpeg). Trace video compilation falls back to imageio-ffmpeg.${NC}"
+    fi
 
-    # Ensure local ADB daemon is warm & listening
-    if has_cmd adb; then
-        (unset ADB_SERVER_SOCKET; adb start-server >/dev/null 2>&1 || true)
+    # go-ios — physical-device bridge (`ios` CLI). No Homebrew formula; npm wraps the release binary.
+    if ! has_cmd ios; then
+        if has_cmd npm; then
+            echo -e "   ${YELLOW}⚡ Installing go-ios via npm...${NC}"
+            npm install -g go-ios >/dev/null 2>&1 || true
+        fi
+    fi
+    if ! has_cmd ios; then
+        GOIOS_ARCH="$(uname -m)"; [ "${GOIOS_ARCH}" = "arm64" ] && GOIOS_ARCH="arm64" || GOIOS_ARCH="amd64"
+        GOIOS_ZIP="$(mktemp -t go-ios.XXXXXX).zip"
+        if curl -fsSL "https://github.com/danielpaulus/go-ios/releases/latest/download/go-ios-mac.zip" -o "${GOIOS_ZIP}" 2>/dev/null; then
+            mkdir -p "${HOME}/.local/bin"
+            unzip -q -o "${GOIOS_ZIP}" -d "${HOME}/.local/share/go-ios" 2>/dev/null || true
+            GOIOS_BIN="$(find "${HOME}/.local/share/go-ios" -type f -name ios -perm -u+x 2>/dev/null | head -1)"
+            if [ -n "${GOIOS_BIN}" ]; then
+                ln -sf "${GOIOS_BIN}" "${HOME}/.local/bin/ios"
+                export PATH="${HOME}/.local/bin:${PATH}"
+            fi
+        fi
+        rm -f "${GOIOS_ZIP}"
+    fi
+    if has_cmd ios; then
+        echo -e "   ${GREEN}✓ go-ios $(ios version 2>/dev/null | head -1)${NC}"
+    else
+        echo -e "   ${YELLOW}⚠ go-ios missing (npm i -g go-ios). Needed only for physical devices.${NC}"
+    fi
+
+    # idb — optional simulator fast path (hierarchy dumps + HID input)
+    if has_cmd idb && has_cmd idb_companion; then
+        echo -e "   ${GREEN}✓ idb (optional simulator fast path)${NC}"
+    else
+        echo -e "   ${CYAN}ℹ idb not installed (optional): brew install facebook/fb/idb${NC}"
     fi
 }
 
@@ -492,7 +411,7 @@ setup_showcase_ui() {
 verify_readiness() {
     echo -e "\n${BOLD}7. Toolchain Readiness Summary:${NC}"
 
-    local tools=("adb" "ffmpeg" "scrcpy" "uv" "python3" "npm")
+    local tools=("xcrun" "ffmpeg" "ios" "idb" "uv" "python3" "npm")
     for t in "${tools[@]}"; do
         if has_cmd "$t"; then
             local loc

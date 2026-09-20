@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.PHONY: help test test-integration test-device test-all install install-deps setup start ui restart stop status build-ui doctor clean precommit-install precommit lint format typecheck quality-ratchet
+.PHONY: help test test-integration test-device test-all install install-deps setup start ui restart stop status build-ui doctor smoke-mock clean precommit-install precommit lint format typecheck quality-ratchet
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -42,17 +42,20 @@ build-ui: ## Build the Showcase UI Angular frontend
 doctor: ## Run system, device, and toolchain diagnostics
 	@uv run apollo doctor
 
+smoke-mock: ## Run a Flash task against the mock driver with a fake LLM (no device, no API key)
+	@APOLLO_MOCK_DRIVER=1 APOLLO_FAKE_LLM=1 GOOGLE_API_KEY=test-placeholder uv run apollo run "Open Settings" --profile flash --standalone --device-serial mock-device
+
 test: ## Run deterministic tests that need no device, credentials, or private services
 	@echo "🧪 Running deterministic tests..."
-	@uv run pytest
+	@GOOGLE_API_KEY="$${GOOGLE_API_KEY:-test-placeholder}" uv run pytest
 
 test-integration: ## Run non-device integration tests (may require configured model credentials)
 	@echo "🧪 Running integration tests..."
 	@uv run pytest tests/integration tests/tools -m "integration and not android and not cloud and not manual"
 
-test-device: ## Run Android and end-to-end tests explicitly
+test-device: ## Run device-bound and end-to-end tests explicitly (needs Android tooling until Phase 1)
 	@echo "📱 Running device and end-to-end tests..."
-	@uv run pytest tests/integration tests/e2e -m "android or e2e"
+	@uv run pytest tests/unit tests/integration tests/e2e -m "android or e2e"
 
 test-all: ## Run every test tree; external prerequisites must be available
 	@echo "🧪 Running the complete test tree..."
@@ -62,7 +65,7 @@ install: ## Install python dependencies via uv
 	@echo "📦 Installing python dependencies..."
 	@uv sync --dev
 
-install-deps: ## One-click install all system dependencies (ADB, FFmpeg, scrcpy, Python, uv)
+install-deps: ## One-click install system dependencies (Xcode CLT check, ffmpeg, go-ios, optional idb, uv)
 	@echo "⚡ Running one-click dependency installer..."
 	@bash scripts/install_deps.sh
 

@@ -38,11 +38,7 @@ STANDARD_PATHS=(
     "/usr/local/sbin"
     "${HOME}/.local/bin"
     "${HOME}/.local/share/node/bin"
-    "${HOME}/.local/share/platform-tools"
-    "${HOME}/.local/share/scrcpy"
     "${HOME}/.cargo/bin"
-    "${HOME}/Library/Android/sdk/platform-tools"
-    "${HOME}/Android/Sdk/platform-tools"
 )
 for p in "${STANDARD_PATHS[@]}"; do
     if [ -d "${p}" ] && [[ ":${PATH}:" != *":${p}:"* ]]; then
@@ -123,127 +119,21 @@ if ! command -v uv >/dev/null 2>&1; then
     export PATH="${HOME}/.local/bin:${HOME}/.cargo/bin:${PATH}"
 fi
 
-# 3. Check and auto-install missing system toolchains (ADB, FFmpeg, scrcpy)
-# Discover standard Android SDK / user-space locations if adb not in PATH
-if ! command -v adb >/dev/null 2>&1; then
-    for candidate in \
-        "${ANDROID_HOME:-}/platform-tools" \
-        "${ANDROID_SDK_ROOT:-}/platform-tools" \
-        "${HOME}/Library/Android/sdk/platform-tools" \
-        "${HOME}/Android/Sdk/platform-tools" \
-        "${HOME}/.local/share/platform-tools" \
-        "/opt/homebrew/bin" \
-        "/usr/local/bin"; do
-        if [ -n "${candidate}" ] && [ -x "${candidate}/adb" ]; then
-            export PATH="${candidate}:${PATH}"
-            break
-        fi
-    done
+# 3. Check the iOS toolchain (Xcode CLT + simctl required; ffmpeg / go-ios / idb optional)
+if [ "$(uname -s)" != "Darwin" ]; then
+    echo -e "${RED}✗ Apollo drives iOS Simulators and devices and requires macOS with Xcode.${NC}"
+    exit 1
 fi
-
-MISSING_CORE=()
-if ! command -v adb >/dev/null 2>&1; then MISSING_CORE+=("adb"); fi
-if ! command -v ffmpeg >/dev/null 2>&1; then MISSING_CORE+=("ffmpeg"); fi
-if ! command -v scrcpy >/dev/null 2>&1; then MISSING_CORE+=("scrcpy"); fi
-
-if [ ${#MISSING_CORE[@]} -gt 0 ]; then
-    OS_NAME="$(uname -s)"
-    if [ "${OS_NAME}" = "Darwin" ]; then
-        export HOMEBREW_NO_AUTO_UPDATE=1
-        export HOMEBREW_NO_INSTALL_CLEANUP=1
-        export HOMEBREW_NO_ENV_HINTS=1
-
-        if ! command -v brew >/dev/null 2>&1; then
-            if [ -x "/opt/homebrew/bin/brew" ]; then
-                eval "$(/opt/homebrew/bin/brew shellenv)"
-            elif [ -x "/usr/local/bin/brew" ]; then
-                eval "$(/usr/local/bin/brew shellenv)"
-            fi
-        fi
-
-        if command -v brew >/dev/null 2>&1; then
-            echo -e "   ${YELLOW}⚡ Auto-installing missing components (${MISSING_CORE[*]})...${NC}"
-            if ! command -v adb >/dev/null 2>&1; then
-                brew install --cask android-platform-tools >/dev/null 2>&1 || brew install android-platform-tools >/dev/null 2>&1 || true
-            fi
-            if ! command -v ffmpeg >/dev/null 2>&1; then
-                brew install ffmpeg >/dev/null 2>&1 || true
-            fi
-            if ! command -v scrcpy >/dev/null 2>&1; then
-                brew install scrcpy >/dev/null 2>&1 || true
-            fi
-        fi
-    elif [ "${OS_NAME}" = "Linux" ]; then
-        if request_sudo "install missing system components (${MISSING_CORE[*]})"; then
-            SUDO_PREFIX=""
-            if [ "$(id -u)" -ne 0 ]; then SUDO_PREFIX="sudo"; fi
-            if command -v apt-get >/dev/null 2>&1; then
-                echo -e "   ${CYAN}📦 Installing missing packages (${MISSING_CORE[*]}) via apt-get...${NC}"
-                DEBIAN_FRONTEND=noninteractive ${SUDO_PREFIX} apt-get -o DPkg::Lock::Timeout=3 -o Acquire::http::Timeout=3 -o Acquire::https::Timeout=3 install -y -qq "${MISSING_CORE[@]}" 2>/dev/null || true
-            elif command -v dnf >/dev/null 2>&1; then
-                ${SUDO_PREFIX} dnf install -y "${MISSING_CORE[@]}" 2>/dev/null || true
-            elif command -v pacman >/dev/null 2>&1; then
-                ${SUDO_PREFIX} pacman -S --noconfirm "${MISSING_CORE[@]}" 2>/dev/null || true
-            fi
-        fi
-
-        # Fallback: if scrcpy is still missing, install official precompiled portable scrcpy in user space
-        if ! command -v scrcpy >/dev/null 2>&1; then
-            ARCH="$(uname -m)"
-            SCRCPY_ARCH=""
-            case "${ARCH}" in
-                x86_64|amd64) SCRCPY_ARCH="x86_64" ;;
-                aarch64|arm64) SCRCPY_ARCH="aarch64" ;;
-            esac
-            if [ -n "${SCRCPY_ARCH}" ]; then
-                SCRCPY_DIR="${HOME}/.local/share/scrcpy"
-                if [ ! -x "${SCRCPY_DIR}/scrcpy" ]; then
-                    echo -e "   ${CYAN}📦 Installing portable scrcpy in user space (~/.local)...${NC}"
-                    mkdir -p "${SCRCPY_DIR}" "${HOME}/.local/bin"
-                    SCRCPY_URL="https://github.com/Genymobile/scrcpy/releases/download/v4.1/scrcpy-linux-${SCRCPY_ARCH}-v4.1.tar.gz"
-                    if curl -fsSL --connect-timeout 5 --max-time 30 "${SCRCPY_URL}" | tar -xz -C "${SCRCPY_DIR}" --strip-components=1 2>/dev/null; then
-                        ln -sf "${SCRCPY_DIR}/scrcpy" "${HOME}/.local/bin/scrcpy"
-                        export PATH="${SCRCPY_DIR}:${PATH}"
-                        echo -e "   ${GREEN}✓ scrcpy installed in user space.${NC}"
-                    fi
-                else
-                    ln -sf "${SCRCPY_DIR}/scrcpy" "${HOME}/.local/bin/scrcpy"
-                    export PATH="${SCRCPY_DIR}:${PATH}"
-                fi
-            fi
-        fi
-
-        # Fallback: if adb is missing on Linux without root/sudo, install platform-tools in user space
-        if ! command -v adb >/dev/null 2>&1; then
-            ARCH="$(uname -m)"
-            if [[ "${ARCH}" = "x86_64" || "${ARCH}" = "amd64" ]]; then
-                PT_DIR="${HOME}/.local/share/platform-tools"
-                if [ ! -x "${PT_DIR}/adb" ]; then
-                    echo -e "   ${CYAN}📦 Installing Android platform-tools (adb) in user space...${NC}"
-                    TEMP_ZIP="/tmp/platform-tools-$$.zip"
-                    if curl -fsSL --connect-timeout 5 --max-time 30 "https://dl.google.com/android/repository/platform-tools-latest-linux.zip" -o "${TEMP_ZIP}" 2>/dev/null; then
-                        mkdir -p "${HOME}/.local/share" "${HOME}/.local/bin"
-                        if command -v unzip >/dev/null 2>&1; then
-                            unzip -q -o "${TEMP_ZIP}" -d "${HOME}/.local/share" 2>/dev/null || true
-                        else
-                            python3 -m zipfile -e "${TEMP_ZIP}" "${HOME}/.local/share" 2>/dev/null || true
-                        fi
-                        rm -f "${TEMP_ZIP}"
-                    fi
-                fi
-                if [ -x "${PT_DIR}/adb" ]; then
-                    ln -sf "${PT_DIR}/adb" "${HOME}/.local/bin/adb"
-                    export PATH="${PT_DIR}:${PATH}"
-                    echo -e "   ${GREEN}✓ adb installed in user space.${NC}"
-                fi
-            fi
-        fi
-    fi
+if ! xcode-select -p >/dev/null 2>&1 || ! xcrun simctl list runtimes >/dev/null 2>&1; then
+    echo -e "${RED}✗ Xcode Command Line Tools / simctl not available.${NC}"
+    echo -e "   Install Xcode 26.x, run it once, then: ${CYAN}sudo xcode-select -s /Applications/Xcode.app${NC}"
+    exit 1
 fi
-
-# Ensure local ADB daemon is warm & listening so probes do not hit 'Connection refused'
-if command -v adb >/dev/null 2>&1; then
-    (unset ADB_SERVER_SOCKET; adb start-server >/dev/null 2>&1 || true)
+MISSING_OPT=()
+if ! command -v ffmpeg >/dev/null 2>&1; then MISSING_OPT+=("ffmpeg"); fi
+if ! command -v ios >/dev/null 2>&1; then MISSING_OPT+=("go-ios"); fi
+if [ ${#MISSING_OPT[@]} -gt 0 ]; then
+    echo -e "   ${YELLOW}⚠ Optional tools missing: ${MISSING_OPT[*]} — run 'make install-deps' to install them.${NC}"
 fi
 
 # 4. Check or initialize .env configuration file
@@ -411,11 +301,6 @@ if [ "${IS_REMOTE}" = true ]; then
         OPEN_FLAG="--no-open"
     fi
     echo ""
-fi
-
-# Ensure local ADB daemon is active and listening before launching UI
-if command -v adb >/dev/null 2>&1; then
-    (unset ADB_SERVER_SOCKET; adb start-server >/dev/null 2>&1 || true)
 fi
 
 # Launch via `python -m apollo` (not the `apollo` console-script shim) so the
