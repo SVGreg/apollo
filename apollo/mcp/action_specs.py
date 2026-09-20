@@ -571,7 +571,9 @@ _SPECS: tuple[ActionSpec, ...] = (
                 ParamSpec(
                     "key",
                     Literal["ENTER", "BACK", "HOME", "APP_SWITCH"],
-                    "Standard Android system button name (ENTER, BACK, HOME, APP_SWITCH).",
+                    "System button name (ENTER, BACK, HOME, APP_SWITCH). On iOS, BACK is the"
+                    " navigation-bar back control or the edge back swipe, APP_SWITCH the app"
+                    " switcher gesture, ENTER the keyboard Return key.",
                 ),
             ),
         ),
@@ -598,7 +600,7 @@ _SPECS: tuple[ActionSpec, ...] = (
                 ParamSpec(
                     "app_name",
                     str,
-                    "Display name or package name of the application.",
+                    "Display name, bundle id (iOS) or package name (Android) of the application.",
                 ),
             ),
         ),

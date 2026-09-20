@@ -221,6 +221,8 @@ class UnifiedMobileController:
         return await self._driver.stop_app(package_or_bundle_id)
 
     async def open_url(self, url: str) -> bool:
+        if hasattr(self._driver, "open_url"):
+            return await self._driver.open_url(url)
         await self._driver.execute_shell(f"am start -a android.intent.action.VIEW -d '{url}'")
         return True
 
@@ -236,11 +238,19 @@ class UnifiedMobileController:
     async def press_key(self, keycode: str) -> bool:
         return await self._driver.press_key(keycode)
 
+    def _is_ios(self) -> bool:
+        return getattr(getattr(self.ctx, "device", None), "mobile_platform", None) == "ios"
+
     async def erase_text(self, nb_chars: int | None = None) -> bool:
         if nb_chars is not None and nb_chars > 0:
             for _ in range(nb_chars):
                 await self._driver.press_key("delete")
             return True
+        if self._is_ios():
+            # No shell key combos on iOS: clear the focused field through WDA.
+            from apollo.drivers.ios import input as ios_input
+
+            return await ios_input.clear_focused_field(self._driver.wda)
         # Best-effort full clear: End -> Ctrl+A -> Delete
         try:
             clear_cmd = (
@@ -295,6 +305,11 @@ class UnifiedMobileController:
     ) -> VideoRecordingResult:
         """Get a video segment for a specific time range (relative to video start)."""
         device_id = self._get_device_id()
+
+        if self._is_ios():
+            return VideoRecordingResult(
+                success=False, message="Screen recording is not available on iOS yet (Phase 2)"
+            )
 
         # Handle mock driver
         if (
@@ -607,6 +622,11 @@ class UnifiedMobileController:
         self._segment_cache.clear()
         device_id = self._get_device_id()
 
+        if self._is_ios():
+            return VideoRecordingResult(
+                success=False, message="Screen recording is not available on iOS yet (Phase 2)"
+            )
+
         # Check mock driver first
         if (
             getattr(self._driver, "is_mock", False)
@@ -733,6 +753,9 @@ class UnifiedMobileController:
         """Stop scrcpy recording and return the converted MP4 video file."""
         self._segment_cache.clear()
         device_id = self._get_device_id()
+
+        if self._is_ios():
+            return VideoRecordingResult(success=False, message="No iOS recording to stop")
 
         # Check mock driver first
         if (

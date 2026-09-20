@@ -32,6 +32,19 @@ def isolated_lock_directory(tmp_path, monkeypatch):
     )
 
 
+@pytest.fixture(autouse=True)
+def no_host_simulators(monkeypatch):
+    """These tests pin the adb enumeration semantics; keep the host's iOS
+    simulators (and simctl itself) out of the picture."""
+    monkeypatch.setattr(DevicePool, "_query_ios_devices_sync", lambda self, timeout=None: None)
+
+    async def _none(self, timeout=None):
+        return None
+
+    monkeypatch.setattr(DevicePool, "_query_ios_devices_async", _none)
+    monkeypatch.setattr("apollo.clients.simctl.simctl_available", lambda: False)
+
+
 def test_device_pool_parse_lines():
     lines = [
         "List of devices attached",

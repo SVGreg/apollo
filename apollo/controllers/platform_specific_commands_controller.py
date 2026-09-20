@@ -53,7 +53,7 @@ def get_first_device(
 
         chosen = device_pool.select_device()
         if chosen:
-            return chosen, DevicePlatform.ANDROID, None
+            return chosen, DevicePlatform.infer(chosen), None
     except Exception as exc:
         if logger:
             logger.debug(f"Device pool selection fallback: {exc}")
@@ -72,7 +72,29 @@ def get_first_device(
     return None, None, None
 
 
+def _is_ios(ctx: ApolloContext) -> bool:
+    return getattr(ctx.device, "mobile_platform", None) == DevicePlatform.IOS
+
+
+def _ios_driver(ctx: ApolloContext):
+    from apollo.drivers.factory import get_driver
+
+    return get_driver(ctx)
+
+
+async def list_ios_apps(ctx: ApolloContext) -> list[tuple[str, str]]:
+    """(bundle_id, display_name) for every app on the simulator."""
+    try:
+        return await _ios_driver(ctx).list_apps()
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        logger.error(f"Failed to list iOS apps: {e}")
+        return []
+
+
 def get_device_date(ctx: ApolloContext) -> str:
+    if _is_ios(ctx):
+        # Simulators share the host clock.
+        return time.strftime("%Y-%m-%d %H:%M:%S")
     device = get_adb_device(ctx)
     if not device:
         return time.strftime("%Y-%m-%d %H:%M:%S")
@@ -112,6 +134,11 @@ def list_packages(ctx: ApolloContext) -> str:
 
 
 async def list_packages_async(ctx: ApolloContext) -> str:
+    if _is_ios(ctx):
+        # One "bundle-id<TAB>Display Name" line per app: the Hopper resolves app
+        # names against display names, launch_app validates against bundle ids.
+        apps = await list_ios_apps(ctx)
+        return "\n".join(f"{bundle}\t{name}" for bundle, name in sorted(apps))
     return list_packages(ctx)
 
 
@@ -147,4 +174,10 @@ def get_current_foreground_package(ctx: ApolloContext) -> str | None:
 
 
 async def get_current_foreground_package_async(ctx: ApolloContext) -> str | None:
+    if _is_ios(ctx):
+        try:
+            return await _ios_driver(ctx).get_current_package()
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.debug(f"iOS foreground app lookup failed: {e}")
+            return None
     return get_current_foreground_package(ctx)

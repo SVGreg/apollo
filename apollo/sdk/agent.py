@@ -16,6 +16,7 @@
 # Copyright 2025-2026 Minitap, Inc. Licensed under the Apache License 2.0.
 
 import asyncio
+import io
 import inspect
 import os
 import re
@@ -165,7 +166,7 @@ class Agent:
 
             builder = Builders.AgentConfig
             if target_dev:
-                builder.for_device(DevicePlatform.ANDROID, target_dev)
+                builder.for_device(DevicePlatform.infer(target_dev), target_dev)
             if concurrency_mode:
                 builder.with_concurrency_mode(concurrency_mode)
             if max_concurrency is not None:
@@ -220,9 +221,6 @@ class Agent:
         # MockDeviceDriver; no device bridge or platform tooling is needed.
         mock_mode = os.environ.get("APOLLO_MOCK_DRIVER") == "1"
 
-        if os.environ.get("APOLLO_CLOUD_MODE") != "1" and not mock_mode and not which("adb"):
-            raise ExecutableNotFoundError("adb")
-
         if self._initialized:
             logger.warning("Agent is already initialized. Skipping...")
             return True
@@ -243,15 +241,30 @@ class Agent:
             )
 
         if not device_id or not platform:
-            error_msg = "No device found. Exiting."
+            error_msg = (
+                "No device found. Boot an iOS Simulator (xcrun simctl boot <udid>) or pass "
+                "--device-serial <udid>."
+            )
             logger.error(error_msg)
             raise DeviceNotFoundError(error_msg)
 
+        ios_mode = platform == DevicePlatform.IOS
+        if (
+            os.environ.get("APOLLO_CLOUD_MODE") != "1"
+            and not mock_mode
+            and not ios_mode
+            and not which("adb")
+        ):
+            raise ExecutableNotFoundError("adb")
+
         # Initialize clients
         publish_startup_progress(
-            "device_check", "Checking the Android device", session_id=self._session_id
+            "device_check",
+            "Checking the iOS simulator" if ios_mode else "Checking the Android device",
+            session_id=self._session_id,
         )
-        if mock_mode:
+        if mock_mode or ios_mode:
+            # iOS talks to WebDriverAgent through the driver; there is no adb-style client.
             self._adb_client = None
             self._ui_adb_client = None
         elif os.environ.get("APOLLO_CLOUD_MODE") != "1":
@@ -275,7 +288,9 @@ class Agent:
         )
         logger.info(self._device_context.to_str())
         publish_startup_progress(
-            "device_ready", "Android device connected", session_id=self._session_id
+            "device_ready",
+            "iOS simulator connected" if ios_mode else "Android device connected",
+            session_id=self._session_id,
         )
 
         # Asynchronously pre-warm LLM connection pools in the background
@@ -365,6 +380,14 @@ class Agent:
             raise AgentNotInitializedError()
 
         device_id = self._device_context.device_id
+        if self._device_context.mobile_platform == DevicePlatform.IOS:
+            from apollo.clients.simctl import SimBridge
+
+            logger.info(f"Installing {apk_path.name} on iOS simulator '{device_id}'")
+            await SimBridge(device_id).install(apk_path)
+            logger.info(f"App installed successfully on iOS simulator '{device_id}'")
+            return
+
         logger.info(f"Installing APK on Android device '{device_id}'")
         if not self._adb_client:
             raise AgentError("ADB client not initialized")
@@ -658,6 +681,7 @@ class Agent:
                 if (
                     os.environ.get("APOLLO_CLOUD_MODE") != "1"
                     and os.environ.get("APOLLO_MOCK_DRIVER") != "1"
+                    and self._device_context.mobile_platform == DevicePlatform.ANDROID
                 ):
                     if self._ui_adb_client is not None:
                         await self._connect_screen_client(context, str(sess_id))
@@ -985,6 +1009,12 @@ class Agent:
         if not self._initialized:
             raise AgentNotInitializedError()
 
+        if self._device_context.mobile_platform == DevicePlatform.IOS:
+            from apollo.clients.simctl import SimBridge
+
+            png = await SimBridge(self._device_context.device_id).screenshot()
+            return Image.open(io.BytesIO(png))
+
         # Use ADB to capture screenshot
         logger.info("Capturing screenshot from local Android device")
         if not self._adb_client:
@@ -1053,6 +1083,8 @@ class Agent:
             )
             return
 
+        if self._device_context and self._device_context.mobile_platform != DevicePlatform.ANDROID:
+            return
         if not self._adb_client or not self._device_context:
             logger.warning(
                 "ADB client or device context not available. Skipping device environment prep..."
@@ -1470,6 +1502,28 @@ class Agent:
                 device_id=device_id,
                 device_width=width,
                 device_height=height,
+            )
+
+        if platform == DevicePlatform.IOS:
+            # Provisions WDA (boot/install/launch) and reads the pixel geometry.
+            from apollo.platform import platform as pal_platform
+            from apollo.runtime.runner_manager import RunnerManager
+
+            client, _ = await RunnerManager().ensure_simulator_runner(device_id)
+            try:
+                screen = await client.screen_info()
+            finally:
+                await client.aclose()
+            logger.info(
+                f"Retrieved iOS screen dimensions: {screen.width_px}x{screen.height_px} "
+                f"({screen.width_pt}x{screen.height_pt}pt @{screen.scale}x)"
+            )
+            return DeviceContext(
+                host_platform=pal_platform.os_type.name,
+                mobile_platform=platform,
+                device_id=device_id,
+                device_width=screen.width_px,
+                device_height=screen.height_px,
             )
 
         # Query dimensions without starting UIAutomator or acquiring an awake

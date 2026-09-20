@@ -238,7 +238,7 @@
       "parameters": {
         "properties": {
           "key": {
-            "description": "Standard Android system button name (ENTER, BACK, HOME, APP_SWITCH).",
+            "description": "System button name (ENTER, BACK, HOME, APP_SWITCH). On iOS, BACK is the navigation-bar back control or the edge back swipe, APP_SWITCH the app switcher gesture, ENTER the keyboard Return key.",
             "enum": [
               "ENTER",
               "BACK",
@@ -271,7 +271,7 @@
             "type": "string"
           },
           "app_name": {
-            "description": "Display name or package name of the application.",
+            "description": "Display name, bundle id (iOS) or package name (Android) of the application.",
             "type": "string"
           }
         },

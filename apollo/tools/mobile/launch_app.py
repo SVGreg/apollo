@@ -69,13 +69,28 @@ async def find_package(ctx: ApolloContext, app_name: str, use_fallback: bool = T
 
     try:
         all_packages = await list_packages_async(ctx=ctx)
-        package_set = {p.strip() for p in all_packages.split("\n") if p.strip()}
+        # iOS lists "bundle-id<TAB>Display Name"; Android lists bare package names.
+        catalog: dict[str, str] = {}
+        for line in all_packages.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            ident, _, display = line.partition("\t")
+            catalog[ident.strip()] = display.strip()
+        package_set = set(catalog)
 
         # Fast path: If app_name is already directly an installed package name
         if app_name in package_set:
             if isinstance(package_cache, dict):
                 package_cache[app_name] = app_name
             return app_name
+
+        # iOS fast path: display-name match, then the well-known bundle table.
+        resolved = resolve_ios_bundle_id(app_name, catalog)
+        if resolved:
+            if isinstance(package_cache, dict):
+                package_cache[app_name] = resolved
+            return resolved
 
         hopper_output: HopperOutput = await hopper(
             ctx=ctx,
@@ -88,7 +103,7 @@ async def find_package(ctx: ApolloContext, app_name: str, use_fallback: bool = T
                 package_cache[app_name] = None
             return None
 
-        package_name = hopper_output.output.strip()
+        package_name = hopper_output.output.strip().split("\t")[0].strip()
         if package_name not in package_set:
             logger.warning(
                 f"Hopper returned package '{package_name}' for '{app_name}', "
@@ -104,6 +119,74 @@ async def find_package(ctx: ApolloContext, app_name: str, use_fallback: bool = T
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error(f"Failed to find package for '{app_name}': {e}")
         return None
+
+
+# Display name → bundle id for the iOS built-ins (design §6.5). Only consulted when
+# the bundle is actually installed, so simulator/device differences are harmless.
+WELL_KNOWN_IOS_APPS: dict[str, str] = {
+    "settings": "com.apple.Preferences",
+    "safari": "com.apple.mobilesafari",
+    "messages": "com.apple.MobileSMS",
+    "mail": "com.apple.mobilemail",
+    "photos": "com.apple.mobileslideshow",
+    "camera": "com.apple.camera",
+    "calendar": "com.apple.mobilecal",
+    "notes": "com.apple.mobilenotes",
+    "reminders": "com.apple.reminders",
+    "maps": "com.apple.Maps",
+    "contacts": "com.apple.MobileAddressBook",
+    "clock": "com.apple.mobiletimer",
+    "weather": "com.apple.weather",
+    "files": "com.apple.DocumentsApp",
+    "wallet": "com.apple.Passbook",
+    "health": "com.apple.Health",
+    "fitness": "com.apple.Fitness",
+    "news": "com.apple.news",
+    "shortcuts": "com.apple.shortcuts",
+    "passwords": "com.apple.Passwords",
+    "app store": "com.apple.AppStore",
+    "music": "com.apple.Music",
+    "calculator": "com.apple.calculator",
+    "watch": "com.apple.Bridge",
+    "home": "com.apple.Home",
+    "translate": "com.apple.Translate",
+    "stocks": "com.apple.stocks",
+    "books": "com.apple.iBooks",
+    "facetime": "com.apple.facetime",
+    "phone": "com.apple.mobilephone",
+    "freeform": "com.apple.freeform",
+    "tv": "com.apple.tv",
+    "podcasts": "com.apple.podcasts",
+    "voice memos": "com.apple.VoiceMemos",
+    "preview": "com.apple.Preview",
+}
+
+
+def resolve_ios_bundle_id(app_name: str, catalog: dict[str, str]) -> str | None:
+    """Match an app name against installed display names, then the well-known table.
+
+    ``catalog`` maps bundle id → display name (empty on Android, which disables this).
+    """
+    if not any(catalog.values()):
+        return None
+    wanted = app_name.strip().lower()
+    if not wanted:
+        return None
+    for bundle, display in catalog.items():
+        if display.lower() == wanted:
+            return bundle
+    for bundle, display in catalog.items():
+        if display.lower().replace(" ", "") == wanted.replace(" ", ""):
+            return bundle
+    known = WELL_KNOWN_IOS_APPS.get(wanted)
+    if known and known in catalog:
+        return known
+    # "Apple Maps" / "the Settings app" style phrasing.
+    for bundle, display in catalog.items():
+        d = display.lower()
+        if d and (d in wanted or wanted in d) and len(d) >= 4:
+            return bundle
+    return None
 
 
 class LaunchAppTool(ApolloTool):

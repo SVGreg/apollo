@@ -157,6 +157,81 @@ class DevicePool:
                     pass
             return None
 
+    # ------------------------------------------------------------------ iOS
+    # Simulators are enumerated with `xcrun simctl list -j`; booted ones map to
+    # the adb "device" state so the rest of the pool (locks, selection, UI)
+    # works unchanged. Shutdown simulators are listed as "shutdown" so callers
+    # can offer to boot them.
+
+    @staticmethod
+    def _ios_rows(devices: list[Any]) -> list[tuple[str, str, str | None, str | None]]:
+        rows: list[tuple[str, str, str | None, str | None]] = []
+        for dev in devices:
+            state = "device" if dev.is_booted else dev.state.lower()
+            rows.append((dev.udid, state, dev.name, f"simulator iOS {dev.os_version}"))
+        return rows
+
+    def _query_ios_devices_sync(
+        self, timeout: float | None = None
+    ) -> list[tuple[str, str, str | None, str | None]] | None:
+        try:
+            from apollo.clients import simctl
+
+            if not simctl.simctl_available():
+                return None
+            return self._ios_rows(
+                simctl.list_devices_sync(
+                    timeout=timeout if timeout is not None else self._current_query_timeout()
+                )
+            )
+        except Exception as exc:
+            logger.debug(f"Error querying simulators: {exc}")
+            return None
+
+    async def _query_ios_devices_async(
+        self, timeout: float | None = None
+    ) -> list[tuple[str, str, str | None, str | None]] | None:
+        try:
+            from apollo.clients import simctl
+
+            if not simctl.simctl_available():
+                return None
+            devices = await asyncio.wait_for(
+                simctl.SimBridge.list_devices(),
+                timeout=timeout if timeout is not None else self._current_query_timeout(),
+            )
+            return self._ios_rows(devices)
+        except Exception as exc:
+            logger.debug(f"Error querying simulators asynchronously: {exc}")
+            return None
+
+    def _query_devices_sync(
+        self, timeout: float | None = None
+    ) -> list[tuple[str, str, str | None, str | None]] | None:
+        """iOS simulators first, then any adb devices; None only if both queries failed."""
+        ios = self._query_ios_devices_sync(timeout)
+        android = (
+            self._query_adb_devices_sync()
+            if timeout is None
+            else self._query_adb_devices_sync(timeout)
+        )
+        if ios is None and android is None:
+            return None
+        return (ios or []) + (android or [])
+
+    async def _query_devices_async(
+        self, timeout: float | None = None
+    ) -> list[tuple[str, str, str | None, str | None]] | None:
+        ios = await self._query_ios_devices_async(timeout)
+        android = (
+            await self._query_adb_devices_async()
+            if timeout is None
+            else await self._query_adb_devices_async(timeout)
+        )
+        if ios is None and android is None:
+            return None
+        return (ios or []) + (android or [])
+
     @staticmethod
     def _parse_device_lines(lines: list[str]) -> list[tuple[str, str, str | None, str | None]]:
         results: list[tuple[str, str, str | None, str | None]] = []
@@ -208,7 +283,7 @@ class DevicePool:
             cached = self._cached_snapshot(allow_stale=False)
             if cached is not None:
                 return cached
-            raw = self._query_adb_devices_sync()
+            raw = self._query_devices_sync()
             if raw is None:
                 return self._cached_snapshot(allow_stale=True)
             self._store_snapshot(raw)
@@ -234,7 +309,7 @@ class DevicePool:
     async def _enumerate_async_uncached(
         self,
     ) -> list[tuple[str, str, str | None, str | None]] | None:
-        raw = await self._query_adb_devices_async()
+        raw = await self._query_devices_async()
         if raw is None:
             return self._cached_snapshot(allow_stale=True)
         self._store_snapshot(raw)
@@ -282,13 +357,16 @@ class DevicePool:
         ready state (or the window closes). Returns True once any enumeration
         succeeded -- zero attached devices is still a warm pool.
         """
-        if self._resolve_adb() is None:
+        from apollo.clients import simctl
+
+        if self._resolve_adb() is None and not simctl.simctl_available():
             return False
-        await self._start_adb_server(timeout=server_timeout)
+        if self._resolve_adb() is not None:
+            await self._start_adb_server(timeout=server_timeout)
         deadline = time.monotonic() + max(settle_timeout, 0.0)
         succeeded = False
         while True:
-            raw = await self._query_adb_devices_async()
+            raw = await self._query_devices_async()
             if raw is not None:
                 succeeded = True
                 self._store_snapshot(raw)
@@ -306,7 +384,10 @@ class DevicePool:
         devices: list[DeviceStatus] = []
         for serial, state, model, product in raw_devices:
             is_emu = (
-                serial.startswith("emulator-") or "127.0.0.1" in serial or "localhost" in serial
+                serial.startswith("emulator-")
+                or "127.0.0.1" in serial
+                or "localhost" in serial
+                or (product or "").startswith("simulator")
             )
             clean_id = DeviceExecutionLock._normalize_lock_id(
                 serial,

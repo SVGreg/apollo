@@ -668,6 +668,17 @@ class RunAdbCommandTool(ApolloTool):
         interactive = bool(Interactive or kwargs.get("interactive", False))
         wait_seconds = max(float(wait_ms) / 1000.0, 0.05)
 
+        # iOS has no on-device shell: the driver runs an allowlisted host command
+        # (simctl / ios) scoped to this device. No persistent terminals, no background handoff.
+        if (
+            ctx is not None
+            and getattr(getattr(ctx, "device", None), "mobile_platform", None) == "ios"
+        ):
+            from apollo.drivers.factory import get_driver
+
+            ios_driver = driver if driver is not None else get_driver(ctx)
+            return await ios_driver.execute_shell(cmd_line, timeout_seconds=max(wait_seconds, 15.0))
+
         # Fallback to driver's execute_shell if no full ApolloContext is available
         if (
             (ctx is None or not hasattr(ctx, "device") or not ctx.device)

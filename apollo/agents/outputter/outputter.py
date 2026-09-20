@@ -94,7 +94,7 @@ async def outputter(
             logger.error(f"Failed to resolve plan and history in outputter: {e}")
 
     system_message = (
-        "You are the Output Synthesis Agent for an Android UI automation"
+        "You are the Output Synthesis Agent for an iOS UI automation"
         " system. Your sole objective is to verify whether the user's initial"
         " goal was achieved and synthesize the final report.\n\n## Core"
         " Principles\n1. STRICTLY EVIDENCE-BASED & NO HALLUCINATION: Rely ONLY"

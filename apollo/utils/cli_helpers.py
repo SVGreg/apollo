@@ -26,9 +26,31 @@ from rich.console import Console
 def display_device_status(console: Console, adb_client: AdbClient | None = None):
     """Checks for connected devices and displays the status."""
     console.print("\n[bold]📱 Device Status[/bold]")
+    # iOS simulators (booted ones are targets; shutdown ones are listed as hints).
+    try:
+        from apollo.clients import simctl
+
+        sims = simctl.list_devices_sync() if simctl.simctl_available() else []
+    except Exception:  # pylint: disable=broad-exception-caught
+        sims = []
+    booted = [d for d in sims if d.is_booted]
+    if booted:
+        console.print("✅ [bold green]iOS simulator(s) booted:[/bold green]")
+        for dev in booted:
+            console.print(f"  - {dev.udid}  {dev.name} (iOS {dev.os_version})")
+    elif sims:
+        console.print("⚠️  [yellow]No iOS simulator is booted.[/yellow] Available:")
+        for dev in sims[:6]:
+            console.print(f"  - {dev.udid}  {dev.name} (iOS {dev.os_version})")
+        console.print("Boot one with: [bold]xcrun simctl boot <udid>[/bold]")
     devices = None
     if adb_client is not None:
-        devices = adb_client.device_list()
+        try:
+            devices = adb_client.device_list()
+        except Exception:  # pylint: disable=broad-exception-caught
+            devices = None
+    if booted and not devices:
+        return
     if devices:
         console.print("✅ [bold green]Android device(s) connected:[/bold green]")
         for device in devices:

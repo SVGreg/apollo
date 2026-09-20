@@ -60,8 +60,20 @@ def create_driver(ctx: "ApolloContext") -> BaseDeviceDriver:
             height=ctx.device.device_height if ctx.device else 2400,
         )
 
-    # 3. Default Android ADB driver
+    # 3. iOS simulators and devices (WebDriverAgent + simctl / go-ios)
+    platform = getattr(ctx.device, "mobile_platform", None)
+    if platform == "ios" or getattr(platform, "value", None) == "ios":
+        from apollo.drivers.ios.driver import IosDriver
+
+        return IosDriver(udid=ctx.device.device_id)
+
+    # 4. Default Android ADB driver
     if ctx.adb_client is None:
+        if AdbClient is None:
+            raise RuntimeError(
+                "Android driver requested but adbutils is not installed; Apollo targets iOS "
+                "(use an iOS device platform or APOLLO_MOCK_DRIVER=1)."
+            )
         ctx.adb_client = AdbClient(
             host=settings.ADB_HOST or "localhost", port=settings.ADB_PORT or 5037
         )

@@ -152,7 +152,7 @@ async def execute_task(
     if target_serial:
         from apollo.context import DevicePlatform
 
-        config.for_device(DevicePlatform.ANDROID, target_serial)
+        config.for_device(DevicePlatform.infer(target_serial), target_serial)
 
     if graph_config_callbacks:
         config.with_graph_config_callbacks(graph_config_callbacks)

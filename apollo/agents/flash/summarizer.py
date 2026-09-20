@@ -192,7 +192,7 @@ class VisualStepSummarizer(StepMemoryService):
             self._prompt_template = prompt_path.read_text(encoding="utf-8")
         else:
             self._prompt_template = (
-                "You are the Step Summarizer for an Android UI automation agent.\n"
+                "You are the Step Summarizer for an iOS UI automation agent.\n"
                 "Synthesize the physical action and visual delta between BEFORE and AFTER screens in exactly ONE "
                 "continuous first-person paragraph using 'I' (e.g., 'In Step {{ step_number }}, I tapped... and observed...').\n"
                 "Strictly avoid subjective validation words: successfully, completed, failed, achieved, navigated to."
@@ -202,7 +202,7 @@ class VisualStepSummarizer(StepMemoryService):
             self._single_prompt_template = single_path.read_text(encoding="utf-8")
         else:
             self._single_prompt_template = (
-                "You are the Step Summarizer for an Android UI automation agent.\n"
+                "You are the Step Summarizer for an iOS UI automation agent.\n"
                 "Exactly ONE screenshot (the decision frame) is available; there is NO after-action screenshot —"
                 " that only means no independent post-action evidence exists.\n"
                 "Describe strictly what THIS screen shows and where the action landed (red marker), in exactly ONE"

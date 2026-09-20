@@ -1,0 +1,31 @@
+{
+  "runner": "webdriveragent",
+  "version": "16.12.9",
+  "bundle_id": "com.facebook.WebDriverAgentRunner.xctrunner",
+  "source": "https://github.com/appium/WebDriverAgent",
+  "simulator": {
+    "arm64": {
+      "url": "https://github.com/appium/WebDriverAgent/releases/download/v16.12.9/WebDriverAgentRunner-Build-Sim-arm64.zip",
+      "sha256": "6a853e005887b8e48eb11a686561658a10de8834416d389487500e3c4a704ed5",
+      "app_dir": "WebDriverAgentRunner-Runner.app"
+    },
+    "x86_64": {
+      "url": "https://github.com/appium/WebDriverAgent/releases/download/v16.12.9/WebDriverAgentRunner-Build-Sim-x86_64.zip",
+      "sha256": null,
+      "app_dir": "WebDriverAgentRunner-Runner.app"
+    }
+  },
+  "device": {
+    "url": "https://github.com/appium/WebDriverAgent/releases/download/v16.12.9/WebDriverAgentRunner-Runner.zip",
+    "sha256": null,
+    "note": "Unsigned; sign with xcodebuild (free team) or go-ios sign app (P12 + profile). See docs/spikes.md S4."
+  },
+  "ports": {
+    "runner_base": 8100,
+    "mjpeg_base": 9100
+  },
+  "xcode": {
+    "verified": ["26.6"],
+    "ios_runtimes_verified": ["26.2", "26.5"]
+  }
+}

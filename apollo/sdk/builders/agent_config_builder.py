@@ -165,13 +165,13 @@ class AgentConfigBuilder:
             self._device_platform = platform_or_device_id
             self._device_id = device_id
         else:
-            self._device_platform = DevicePlatform.ANDROID
+            self._device_platform = DevicePlatform.infer(str(platform_or_device_id))
             self._device_id = str(platform_or_device_id)
         return self
 
     def for_device_serial(self, device_serial: str) -> "AgentConfigBuilder":
         """Target a specific Android device by its ADB serial number."""
-        return self.for_device(DevicePlatform.ANDROID, device_serial)
+        return self.for_device(DevicePlatform.infer(device_serial), device_serial)
 
     def with_concurrency_mode(self, mode: str) -> "AgentConfigBuilder":
         """Configure concurrency mode: 'global' (1 task globally) or 'per_device' (1 task per device)."""

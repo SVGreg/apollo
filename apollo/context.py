@@ -23,6 +23,7 @@ Uses ContextVar to avoid prop drilling and maintain clean function signatures.
 from __future__ import annotations
 
 import asyncio
+import re
 
 try:
     from enum import StrEnum
@@ -66,12 +67,31 @@ class AppLaunchResult(BaseModel):
     locked_app_initial_launch_error: str | None
 
 
+_SIM_UDID_RE = re.compile(
+    r"^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+)
+_DEVICE_UDID_RE = re.compile(r"^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{16}$")
+
+
 class DevicePlatform(StrEnum):
     """Mobile device platform enumeration."""
 
     ANDROID = "android"
     IOS = "ios"
     MOCK = "mock"
+
+    @classmethod
+    def infer(cls, device_id: str | None) -> DevicePlatform:
+        """Guess the platform from an identifier: CoreSimulator UUIDs and Apple device
+        UDIDs (``00008110-001A10AC14B9401E``) are iOS; everything else is treated as Android."""
+        if not device_id:
+            return cls.ANDROID
+        ident = device_id.strip()
+        if ident == "mock-device" or ident.startswith("mock"):
+            return cls.MOCK
+        if _SIM_UDID_RE.match(ident) or _DEVICE_UDID_RE.match(ident):
+            return cls.IOS
+        return cls.ANDROID
 
 
 class DeviceContext(BaseModel):
