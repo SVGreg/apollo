@@ -1,0 +1,410 @@
+[
+ {
+  "children": [
+   {
+    "type": "Button",
+    "AXFrame": "{{16, 62.000000000000043}, {44, 44}}",
+    "frame": {
+     "y": 62.00000000000004,
+     "width": 44,
+     "x": 16,
+     "height": 44
+    },
+    "enabled": true,
+    "role_description": "back button",
+    "content_required": false,
+    "traits": [
+     "Scrollable",
+     "BackButton",
+     "Button"
+    ],
+    "children": [],
+    "AXValue": null,
+    "pid": 35665,
+    "subrole": null,
+    "help": null,
+    "custom_actions": [],
+    "AXUniqueId": "BackButton",
+    "title": null,
+    "role": "AXButton",
+    "AXLabel": "General"
+   },
+   {
+    "role": "AXHeading",
+    "title": null,
+    "help": null,
+    "role_description": "heading",
+    "traits": [
+     "Header",
+     "Scrollable"
+    ],
+    "custom_actions": [],
+    "AXFrame": "{{176.66666666666666, 73.666666666666714}, {48.333333333333343, 20.666666666666671}}",
+    "subrole": null,
+    "content_required": false,
+    "children": [],
+    "enabled": true,
+    "type": "Heading",
+    "AXValue": null,
+    "AXLabel": "About",
+    "AXUniqueId": null,
+    "frame": {
+     "x": 176.66666666666666,
+     "y": 73.66666666666671,
+     "width": 48.33333333333334,
+     "height": 20.66666666666667
+    },
+    "pid": 35665
+   },
+   {
+    "subrole": null,
+    "help": null,
+    "AXUniqueId": "NAME_CELL_ID",
+    "content_required": false,
+    "enabled": true,
+    "type": "StaticText",
+    "traits": [
+     "TextOperationsAvailable",
+     "Scrollable"
+    ],
+    "children": [],
+    "role_description": "text",
+    "AXFrame": "{{20, 133.66666603088379}, {362, 53}}",
+    "title": null,
+    "pid": 35665,
+    "role": "AXStaticText",
+    "AXValue": null,
+    "AXLabel": "Name, iPhone",
+    "custom_actions": [],
+    "frame": {
+     "x": 20,
+     "width": 362,
+     "height": 53,
+     "y": 133.6666660308838
+    }
+   },
+   {
+    "AXLabel": "iOS Version, 26.2",
+    "AXFrame": "{{20, 186.66666603088379}, {362, 53}}",
+    "frame": {
+     "y": 186.6666660308838,
+     "width": 362,
+     "x": 20,
+     "height": 53
+    },
+    "traits": [
+     "TextOperationsAvailable",
+     "Scrollable",
+     "Button"
+    ],
+    "enabled": true,
+    "AXValue": null,
+    "content_required": false,
+    "AXUniqueId": "SW_VERSION_SPECIFIER",
+    "pid": 35665,
+    "subrole": null,
+    "role": "AXButton",
+    "children": [],
+    "type": "Button",
+    "role_description": "button",
+    "help": null,
+    "custom_actions": [],
+    "title": null
+   },
+   {
+    "children": [],
+    "title": null,
+    "AXUniqueId": "ProductModelName",
+    "frame": {
+     "height": 53,
+     "y": 239.6666660308838,
+     "width": 362,
+     "x": 20
+    },
+    "enabled": true,
+    "custom_actions": [],
+    "role_description": "text",
+    "subrole": null,
+    "pid": 35665,
+    "help": null,
+    "role": "AXStaticText",
+    "AXFrame": "{{20, 239.66666603088379}, {362, 53}}",
+    "content_required": false,
+    "AXValue": null,
+    "type": "StaticText",
+    "AXLabel": "Model Name, iPhone 17 Pro",
+    "traits": [
+     "TextOperationsAvailable",
+     "Scrollable"
+    ]
+   },
+   {
+    "AXUniqueId": "ProductModel",
+    "frame": {
+     "x": 20,
+     "y": 292.6666660308838,
+     "width": 362,
+     "height": 53
+    },
+    "enabled": true,
+    "AXValue": null,
+    "role_description": "text",
+    "traits": [
+     "TextOperationsAvailable",
+     "Scrollable"
+    ],
+    "type": "StaticText",
+    "content_required": false,
+    "pid": 35665,
+    "AXLabel": "Model Number, A3256LL/A",
+    "role": "AXStaticText",
+    "AXFrame": "{{20, 292.66666603088379}, {362, 53}}",
+    "help": null,
+    "custom_actions": [],
+    "subrole": null,
+    "children": [],
+    "title": null
+   },
+   {
+    "custom_actions": [],
+    "pid": 35665,
+    "enabled": true,
+    "type": "StaticText",
+    "children": [],
+    "content_required": false,
+    "frame": {
+     "width": 362,
+     "height": 53,
+     "x": 20,
+     "y": 345.6666660308838
+    },
+    "help": null,
+    "title": null,
+    "AXUniqueId": "SerialNumber",
+    "AXValue": null,
+    "subrole": null,
+    "traits": [
+     "TextOperationsAvailable",
+     "Scrollable"
+    ],
+    "AXFrame": "{{20, 345.66666603088379}, {362, 53}}",
+    "role_description": "text",
+    "AXLabel": "Serial Number, LQ2CJVW40P",
+    "role": "AXStaticText"
+   },
+   {
+    "content_required": false,
+    "pid": 35665,
+    "role_description": "text",
+    "traits": [
+     "TextOperationsAvailable",
+     "Scrollable"
+    ],
+    "children": [],
+    "AXUniqueId": "SONGS",
+    "enabled": true,
+    "title": null,
+    "AXFrame": "{{20, 433.66666603088379}, {362, 53}}",
+    "help": null,
+    "role": "AXStaticText",
+    "subrole": null,
+    "AXLabel": "Songs, 0",
+    "AXValue": null,
+    "type": "StaticText",
+    "custom_actions": [],
+    "frame": {
+     "y": 433.6666660308838,
+     "height": 53,
+     "x": 20,
+     "width": 362
+    }
+   },
+   {
+    "title": null,
+    "type": "StaticText",
+    "AXUniqueId": "VIDEOS",
+    "custom_actions": [],
+    "pid": 35665,
+    "subrole": null,
+    "content_required": false,
+    "AXValue": null,
+    "children": [],
+    "enabled": true,
+    "frame": {
+     "x": 20,
+     "height": 53,
+     "y": 486.6666660308838,
+     "width": 362
+    },
+    "role_description": "text",
+    "role": "AXStaticText",
+    "traits": [
+     "TextOperationsAvailable",
+     "Scrollable"
+    ],
+    "AXFrame": "{{20, 486.66666603088379}, {362, 53}}",
+    "AXLabel": "Videos, 0",
+    "help": null
+   },
+   {
+    "frame": {
+     "width": 362,
+     "x": 20,
+     "y": 539.6666660308838,
+     "height": 53
+    },
+    "AXLabel": "Photos, 6",
+    "help": null,
+    "custom_actions": [],
+    "role_description": "text",
+    "subrole": null,
+    "children": [],
+    "role": "AXStaticText",
+    "title": null,
+    "AXUniqueId": "PHOTOS",
+    "traits": [
+     "TextOperationsAvailable",
+     "Scrollable"
+    ],
+    "AXValue": null,
+    "AXFrame": "{{20, 539.66666603088379}, {362, 53}}",
+    "type": "StaticText",
+    "enabled": true,
+    "content_required": false,
+    "pid": 35665
+   },
+   {
+    "title": null,
+    "traits": [
+     "TextOperationsAvailable",
+     "Scrollable"
+    ],
+    "enabled": true,
+    "custom_actions": [],
+    "type": "StaticText",
+    "AXFrame": "{{20, 592.66666603088379}, {362, 53}}",
+    "pid": 35665,
+    "AXUniqueId": "APPLICATIONS",
+    "children": [],
+    "subrole": null,
+    "help": null,
+    "AXLabel": "Applications, 1",
+    "role": "AXStaticText",
+    "frame": {
+     "width": 362,
+     "y": 592.6666660308838,
+     "x": 20,
+     "height": 53
+    },
+    "role_description": "text",
+    "AXValue": null,
+    "content_required": false
+   },
+   {
+    "subrole": null,
+    "title": null,
+    "children": [],
+    "type": "StaticText",
+    "role_description": "text",
+    "enabled": true,
+    "role": "AXStaticText",
+    "custom_actions": [],
+    "frame": {
+     "y": 645.6666660308838,
+     "height": 53,
+     "width": 362,
+     "x": 20
+    },
+    "AXValue": null,
+    "AXLabel": "Capacity, 994, 61 GB",
+    "AXUniqueId": "User Data Capacity",
+    "AXFrame": "{{20, 645.66666603088379}, {362, 53}}",
+    "help": null,
+    "pid": 35665,
+    "content_required": false,
+    "traits": [
+     "TextOperationsAvailable",
+     "Scrollable"
+    ]
+   },
+   {
+    "AXValue": null,
+    "type": "StaticText",
+    "children": [],
+    "AXUniqueId": "User Data Available",
+    "help": null,
+    "role_description": "text",
+    "subrole": null,
+    "role": "AXStaticText",
+    "title": null,
+    "pid": 35665,
+    "custom_actions": [],
+    "AXFrame": "{{20, 698.66666603088379}, {362, 53}}",
+    "enabled": true,
+    "AXLabel": "Available, 636, 35 GB",
+    "frame": {
+     "height": 53,
+     "x": 20,
+     "y": 698.6666660308838,
+     "width": 362
+    },
+    "content_required": false,
+    "traits": [
+     "TextOperationsAvailable",
+     "Scrollable"
+    ]
+   },
+   {
+    "children": [],
+    "AXUniqueId": "CERT_TRUST_SETTINGS",
+    "AXLabel": "Certificate Trust Settings",
+    "help": null,
+    "frame": {
+     "x": 20,
+     "height": 53,
+     "width": 362,
+     "y": 821.6666660308838
+    },
+    "content_required": false,
+    "title": null,
+    "role": "AXButton",
+    "AXFrame": "{{20, 821.66666603088379}, {362, 53}}",
+    "type": "Button",
+    "traits": [
+     "TextOperationsAvailable",
+     "Scrollable",
+     "Button"
+    ],
+    "enabled": true,
+    "role_description": "button",
+    "AXValue": null,
+    "pid": 35665,
+    "subrole": null,
+    "custom_actions": []
+   }
+  ],
+  "enabled": true,
+  "subrole": null,
+  "content_required": false,
+  "role_description": "application",
+  "AXValue": null,
+  "AXLabel": "Settings",
+  "AXFrame": "{{0, 0}, {402, 874}}",
+  "pid": 35665,
+  "traits": [
+   "None"
+  ],
+  "help": null,
+  "role": "AXApplication",
+  "AXUniqueId": null,
+  "frame": {
+   "width": 402,
+   "x": 0,
+   "y": 0,
+   "height": 874
+  },
+  "type": "Application",
+  "title": null,
+  "custom_actions": []
+ }
+]

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XCUIElementTypeApplication type="XCUIElementTypeApplication" name="Clock" label="Clock" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="" processId="42187" bundleId="com.iosworld.benchmark.clock">
+  <XCUIElementTypeWindow type="XCUIElementTypeWindow" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                <XCUIElementTypeNavigationBar type="XCUIElementTypeNavigationBar" name="World Clock" enabled="true" visible="true" accessible="false" x="0" y="62" width="402" height="106" index="0" traits="">
+                  <XCUIElementTypeButton type="XCUIElementTypeButton" name="Edit" label="Edit" enabled="true" visible="true" accessible="true" x="20" y="66" width="55" height="36" index="0" traits="Button"/>
+                  <XCUIElementTypeButton type="XCUIElementTypeButton" name="Add" label="Add" enabled="true" visible="true" accessible="true" x="346" y="66" width="36" height="36" index="1" traits="Button"/>
+                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="World Clock" name="World Clock" label="World Clock" enabled="true" visible="true" accessible="true" x="16" y="119" width="191" height="42" index="2" traits="Header"/>
+                </XCUIElementTypeNavigationBar>
+                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="1" traits="">
+                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                      <XCUIElementTypeTable type="XCUIElementTypeTable" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                        <XCUIElementTypeCell type="XCUIElementTypeCell" name="clock_world_city_tehran" enabled="true" visible="true" accessible="false" x="0" y="168" width="402" height="70" index="0" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="20" y="168" width="362" height="1" index="0" traits=""/>
+                          <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Tehran" name="Tehran" label="Tehran" enabled="true" visible="true" accessible="true" x="19" y="180" width="63" height="25" index="1" traits="StaticText"/>
+                          <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Today, +0:30HRS" name="Today, +0:30HRS" label="Today, +0:30HRS" enabled="true" visible="true" accessible="true" x="20" y="208" width="105" height="16" index="2" traits="StaticText"/>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="20" y="237" width="362" height="1" index="3" traits=""/>
+                          <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="1:03 PM" name="1:03 PM" label="1:03 PM" enabled="true" visible="true" accessible="true" x="284" y="186" width="98" height="34" index="4" traits="StaticText"/>
+                        </XCUIElementTypeCell>
+                        <XCUIElementTypeCell type="XCUIElementTypeCell" name="clock_world_city_new_york" enabled="true" visible="true" accessible="true" x="0" y="238" width="402" height="70" index="1" traits="">
+                          <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="New York" name="New York" label="New York" enabled="true" visible="true" accessible="true" x="20" y="250" width="86" height="25" index="0" traits="StaticText"/>
+                          <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Today, -7HRS" name="Today, -7HRS" label="Today, -7HRS" enabled="true" visible="true" accessible="true" x="20" y="278" width="83" height="16" index="1" traits="StaticText"/>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="20" y="307" width="362" height="1" index="2" traits=""/>
+                          <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="5:33 AM" name="5:33 AM" label="5:33 AM" enabled="true" visible="true" accessible="true" x="279" y="256" width="103" height="34" index="3" traits="StaticText"/>
+                        </XCUIElementTypeCell>
+                        <XCUIElementTypeCell type="XCUIElementTypeCell" name="clock_world_city_london" enabled="true" visible="true" accessible="true" x="0" y="308" width="402" height="70" index="2" traits="">
+                          <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="London" name="London" label="London" enabled="true" visible="true" accessible="true" x="20" y="320" width="68" height="25" index="0" traits="StaticText"/>
+                          <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Today, -2HRS" name="Today, -2HRS" label="Today, -2HRS" enabled="true" visible="true" accessible="true" x="20" y="348" width="83" height="16" index="1" traits="StaticText"/>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="20" y="377" width="362" height="1" index="2" traits=""/>
+                          <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="10:33 AM" name="10:33 AM" label="10:33 AM" enabled="true" visible="true" accessible="true" x="266" y="326" width="116" height="34" index="3" traits="StaticText"/>
+                        </XCUIElementTypeCell>
+                        <XCUIElementTypeCell type="XCUIElementTypeCell" name="clock_world_city_tokyo" enabled="true" visible="true" accessible="true" x="0" y="378" width="402" height="70" index="3" traits="">
+                          <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Tokyo" name="Tokyo" label="Tokyo" enabled="true" visible="true" accessible="true" x="19" y="390" width="55" height="25" index="0" traits="StaticText"/>
+                          <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Today, +6HRS" name="Today, +6HRS" label="Today, +6HRS" enabled="true" visible="true" accessible="true" x="20" y="418" width="86" height="16" index="1" traits="StaticText"/>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="20" y="447" width="362" height="1" index="2" traits=""/>
+                          <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="6:33 PM" name="6:33 PM" label="6:33 PM" enabled="true" visible="true" accessible="true" x="280" y="396" width="102" height="34" index="3" traits="StaticText"/>
+                        </XCUIElementTypeCell>
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" value="0%" name="Vertical scroll bar, 1 page" label="Vertical scroll bar, 1 page" enabled="true" visible="false" accessible="false" x="369" y="168" width="30" height="623" index="4" traits="Adjustable">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="396" y="514" width="3" height="274" index="0" traits=""/>
+                        </XCUIElementTypeOther>
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" value="0%" name="Horizontal scroll bar, 1 page" label="Horizontal scroll bar, 1 page" enabled="true" visible="false" accessible="false" x="62" y="758" width="278" height="30" index="5" traits="Adjustable">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="59" y="785" width="284" height="3" index="0" traits=""/>
+                        </XCUIElementTypeOther>
+                      </XCUIElementTypeTable>
+                    </XCUIElementTypeOther>
+                  </XCUIElementTypeOther>
+                </XCUIElementTypeOther>
+                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="0" y="0" width="402" height="874" index="2" traits="">
+                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="0" y="0" width="402" height="874" index="0" traits=""/>
+                </XCUIElementTypeOther>
+              </XCUIElementTypeOther>
+            </XCUIElementTypeOther>
+          </XCUIElementTypeOther>
+          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="791" width="402" height="83" index="1" traits="">
+            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+              <XCUIElementTypeTabBar type="XCUIElementTypeTabBar" name="Tab Bar" label="Tab Bar" enabled="true" visible="true" accessible="false" x="0" y="791" width="402" height="83" index="0" traits="">
+                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="21" y="791" width="360" height="62" index="0" traits="">
+                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="21" y="791" width="100" height="54" index="0" traits=""/>
+                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="21" y="791" width="360" height="62" index="1" traits="">
+                    <XCUIElementTypeButton type="XCUIElementTypeButton" value="1" name="clock_tab_world" label="World Clock" enabled="true" visible="true" accessible="true" x="25" y="795" width="100" height="54" index="0" traits="Selected, Button">
+                      <XCUIElementTypeImage type="XCUIElementTypeImage" name="globe" label="Globe" enabled="true" visible="true" accessible="false" x="61" y="801" width="28" height="28" index="0" traits="Image"/>
+                    </XCUIElementTypeButton>
+                    <XCUIElementTypeButton type="XCUIElementTypeButton" name="clock_tab_alarm" label="Alarm" enabled="true" visible="true" accessible="true" x="109" y="795" width="100" height="54" index="1" traits="Button">
+                      <XCUIElementTypeImage type="XCUIElementTypeImage" name="alarm" label="alarm" enabled="true" visible="true" accessible="false" x="146" y="800" width="27" height="28" index="0" traits="Image"/>
+                    </XCUIElementTypeButton>
+                    <XCUIElementTypeButton type="XCUIElementTypeButton" name="clock_tab_stopwatch" label="Stopwatch" enabled="true" visible="true" accessible="true" x="193" y="795" width="100" height="54" index="2" traits="Button">
+                      <XCUIElementTypeImage type="XCUIElementTypeImage" name="stopwatch" label="stopwatch" enabled="true" visible="true" accessible="false" x="229" y="799" width="28" height="30" index="0" traits="Image"/>
+                    </XCUIElementTypeButton>
+                    <XCUIElementTypeButton type="XCUIElementTypeButton" name="clock_tab_timer" label="Timer" enabled="true" visible="true" accessible="true" x="277" y="795" width="100" height="54" index="3" traits="Button">
+                      <XCUIElementTypeImage type="XCUIElementTypeImage" name="timer" label="Timer" enabled="true" visible="true" accessible="false" x="313" y="801" width="28" height="28" index="0" traits="Image"/>
+                    </XCUIElementTypeButton>
+                  </XCUIElementTypeOther>
+                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="25" y="795" width="100" height="54" index="2" traits="">
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="25" y="795" width="100" height="54" index="0" traits="">
+                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="25" y="795" width="100" height="54" index="0" traits=""/>
+                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="25" y="795" width="100" height="54" index="1" traits="">
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="25" y="795" width="100" height="54" index="0" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="25" y="795" width="100" height="54" index="0" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="25" y="795" width="100" height="54" index="0" traits=""/>
+                          </XCUIElementTypeOther>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="25" y="795" width="100" height="54" index="1" traits=""/>
+                        </XCUIElementTypeOther>
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="25" y="795" width="100" height="54" index="1" traits=""/>
+                      </XCUIElementTypeOther>
+                    </XCUIElementTypeOther>
+                  </XCUIElementTypeOther>
+                </XCUIElementTypeOther>
+              </XCUIElementTypeTabBar>
+            </XCUIElementTypeOther>
+            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="791" width="402" height="83" index="1" traits="">
+              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="791" width="402" height="83" index="0" traits="">
+                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="791" width="402" height="83" index="0" traits="">
+                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="791" width="402" height="83" index="0" traits="">
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="791" width="402" height="83" index="0" traits="">
+                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="791" width="402" height="83" index="0" traits=""/>
+                    </XCUIElementTypeOther>
+                  </XCUIElementTypeOther>
+                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="791" width="402" height="83" index="1" traits="">
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="791" width="402" height="83" index="0" traits=""/>
+                  </XCUIElementTypeOther>
+                </XCUIElementTypeOther>
+              </XCUIElementTypeOther>
+            </XCUIElementTypeOther>
+          </XCUIElementTypeOther>
+        </XCUIElementTypeOther>
+      </XCUIElementTypeOther>
+    </XCUIElementTypeOther>
+  </XCUIElementTypeWindow>
+</XCUIElementTypeApplication>

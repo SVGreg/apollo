@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XCUIElementTypeApplication type="XCUIElementTypeApplication" name="Weather" label="Weather" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="" processId="42191" bundleId="com.iosworld.benchmark.weather">
+  <XCUIElementTypeWindow type="XCUIElementTypeWindow" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+          <XCUIElementTypeCollectionView type="XCUIElementTypeCollectionView" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+            <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+              <XCUIElementTypeOther type="XCUIElementTypeOther" name="weather_city_page_san-francisco-ca" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                <XCUIElementTypeScrollView type="XCUIElementTypeScrollView" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="24" y="122" width="354" height="1256" index="0" traits="">
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="24" y="122" width="354" height="192" index="0" traits="">
+                      <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="San Francisco" name="weather_city_name" label="San Francisco" enabled="true" visible="true" accessible="true" x="135" y="122" width="132" height="27" index="0" traits="StaticText"/>
+                      <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="56°" name="weather_temp" label="56°" enabled="true" visible="true" accessible="true" x="139" y="160" width="124" height="103" index="1" traits="StaticText"/>
+                      <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Mostly Cloudy" name="weather_summary" label="Mostly Cloudy" enabled="true" visible="true" accessible="true" x="142" y="269" width="118" height="22" index="2" traits="StaticText"/>
+                      <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="66° / 58°" name="weather_high_low" label="66° / 58°" enabled="true" visible="true" accessible="true" x="167" y="294" width="68" height="20" index="3" traits="StaticText"/>
+                    </XCUIElementTypeOther>
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="24" y="332" width="354" height="71" index="1" traits="">
+                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="24" y="332" width="354" height="71" index="0" traits="">
+                        <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Mostly cloudy. High near 66, with temperatures falling to around 64 in the afternoon. West southwest wind 6 to 12 mph." name="weather_detail" label="Mostly cloudy. High near 66, with temperatures falling to around 64 in the afternoon. West southwest wind 6 to 12 mph." enabled="true" visible="true" accessible="true" x="40" y="344" width="322" height="47" index="0" traits="StaticText"/>
+                      </XCUIElementTypeOther>
+                    </XCUIElementTypeOther>
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="24" y="420" width="354" height="102" index="2" traits="">
+                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="24" y="420" width="354" height="102" index="0" traits="">
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="32" y="432" width="338" height="78" index="0" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="32" y="432" width="338" height="34" index="0" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="32" y="432" width="108" height="34" index="0" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="73" y="432" width="25" height="18" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="56°" name="56°" label="56°" enabled="true" visible="true" accessible="true" x="73" y="432" width="25" height="18" index="0" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Feels Like" name="Feels Like" label="Feels Like" enabled="true" visible="true" accessible="true" x="59" y="452" width="54" height="14" index="1" traits="StaticText"/>
+                            </XCUIElementTypeOther>
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="147" y="432" width="108" height="34" index="1" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="194" y="432" width="14" height="18" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="—" name="—" label="—" enabled="true" visible="true" accessible="true" x="194" y="432" width="14" height="18" index="0" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Wind" name="Wind" label="Wind" enabled="true" visible="true" accessible="true" x="187" y="452" width="28" height="14" index="1" traits="StaticText"/>
+                            </XCUIElementTypeOther>
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="262" y="432" width="109" height="34" index="2" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="301" y="432" width="31" height="18" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="91%" name="91%" label="91%" enabled="true" visible="true" accessible="true" x="301" y="432" width="31" height="18" index="0" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Humidity" name="Humidity" label="Humidity" enabled="true" visible="true" accessible="true" x="292" y="452" width="49" height="14" index="1" traits="StaticText"/>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="32" y="476" width="338" height="34" index="1" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="32" y="476" width="108" height="34" index="0" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="74" y="476" width="24" height="17" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="0%" name="0%" label="0%" enabled="true" visible="true" accessible="true" x="74" y="476" width="24" height="17" index="0" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Precip" name="Precip" label="Precip" enabled="true" visible="true" accessible="true" x="68" y="496" width="35" height="14" index="1" traits="StaticText"/>
+                            </XCUIElementTypeOther>
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="147" y="476" width="108" height="34" index="1" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="194" y="476" width="14" height="17" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="—" name="—" label="—" enabled="true" visible="true" accessible="true" x="194" y="476" width="14" height="17" index="0" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Visibility" name="Visibility" label="Visibility" enabled="true" visible="true" accessible="true" x="178" y="496" width="46" height="14" index="1" traits="StaticText"/>
+                            </XCUIElementTypeOther>
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="262" y="476" width="109" height="34" index="2" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="310" y="476" width="13" height="17" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="—" name="—" label="—" enabled="true" visible="true" accessible="true" x="310" y="476" width="13" height="17" index="0" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Pressure" name="Pressure" label="Pressure" enabled="true" visible="true" accessible="true" x="292" y="496" width="49" height="14" index="1" traits="StaticText"/>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeOther>
+                      </XCUIElementTypeOther>
+                    </XCUIElementTypeOther>
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="24" y="539" width="354" height="141" index="3" traits="">
+                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="24" y="539" width="354" height="141" index="0" traits="">
+                        <XCUIElementTypeScrollView type="XCUIElementTypeScrollView" enabled="true" visible="true" accessible="false" x="24" y="539" width="354" height="141" index="0" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="40" y="549" width="1830" height="100" index="0" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="40" y="549" width="1830" height="29" index="0" traits=""/>
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="40" y="585" width="1830" height="64" index="1" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="40" y="585" width="54" height="64" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="12pm" name="12pm" label="12pm" enabled="true" visible="true" accessible="true" x="51" y="585" width="32" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="true" accessible="false" x="55" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="59°" name="59°" label="59°" enabled="true" visible="true" accessible="true" x="54" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="114" y="585" width="54" height="64" index="1" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="1pm" name="1pm" label="1pm" enabled="true" visible="true" accessible="true" x="129" y="585" width="24" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="true" accessible="false" x="129" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="59°" name="59°" label="59°" enabled="true" visible="true" accessible="true" x="128" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="188" y="585" width="54" height="64" index="2" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="2pm" name="2pm" label="2pm" enabled="true" visible="true" accessible="true" x="202" y="585" width="26" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="true" accessible="false" x="203" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="59°" name="59°" label="59°" enabled="true" visible="true" accessible="true" x="202" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="262" y="585" width="54" height="64" index="3" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="3pm" name="3pm" label="3pm" enabled="true" visible="true" accessible="true" x="276" y="585" width="26" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="true" accessible="false" x="277" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="59°" name="59°" label="59°" enabled="true" visible="true" accessible="true" x="276" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="336" y="585" width="54" height="64" index="4" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="4pm" name="4pm" label="4pm" enabled="true" visible="true" accessible="true" x="350" y="585" width="27" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="true" accessible="false" x="351" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="58°" name="58°" label="58°" enabled="true" visible="true" accessible="true" x="350" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="484" y="585" width="54" height="64" index="5" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="5pm" name="5pm" label="5pm" enabled="true" visible="false" accessible="true" x="498" y="585" width="26" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="499" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="59°" name="59°" label="59°" enabled="true" visible="false" accessible="true" x="498" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="558" y="585" width="54" height="64" index="6" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="6pm" name="6pm" label="6pm" enabled="true" visible="false" accessible="true" x="572" y="585" width="27" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="573" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="60°" name="60°" label="60°" enabled="true" visible="false" accessible="true" x="572" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="632" y="585" width="54" height="64" index="7" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="7pm" name="7pm" label="7pm" enabled="true" visible="false" accessible="true" x="646" y="585" width="26" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="647" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="60°" name="60°" label="60°" enabled="true" visible="false" accessible="true" x="646" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="706" y="585" width="54" height="64" index="8" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="8pm" name="8pm" label="8pm" enabled="true" visible="false" accessible="true" x="720" y="585" width="27" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="721" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="62°" name="62°" label="62°" enabled="true" visible="false" accessible="true" x="720" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="780" y="585" width="54" height="64" index="9" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="9pm" name="9pm" label="9pm" enabled="true" visible="false" accessible="true" x="794" y="585" width="27" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="795" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="63°" name="63°" label="63°" enabled="true" visible="false" accessible="true" x="794" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="854" y="585" width="54" height="64" index="10" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="10pm" name="10pm" label="10pm" enabled="true" visible="false" accessible="true" x="865" y="585" width="32" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="869" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="65°" name="65°" label="65°" enabled="true" visible="false" accessible="true" x="868" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="928" y="585" width="54" height="64" index="11" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="11pm" name="11pm" label="11pm" enabled="true" visible="false" accessible="true" x="940" y="585" width="30" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="943" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="65°" name="65°" label="65°" enabled="true" visible="false" accessible="true" x="942" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="1002" y="585" width="54" height="64" index="12" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="12am" name="12am" label="12am" enabled="true" visible="false" accessible="true" x="1013" y="585" width="32" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="1017" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="66°" name="66°" label="66°" enabled="true" visible="false" accessible="true" x="1016" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="1076" y="585" width="54" height="64" index="13" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="1am" name="1am" label="1am" enabled="true" visible="false" accessible="true" x="1091" y="585" width="24" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="1091" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="66°" name="66°" label="66°" enabled="true" visible="false" accessible="true" x="1090" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="1150" y="585" width="54" height="64" index="14" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="2am" name="2am" label="2am" enabled="true" visible="false" accessible="true" x="1164" y="585" width="26" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="1165" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="65°" name="65°" label="65°" enabled="true" visible="false" accessible="true" x="1164" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="1224" y="585" width="54" height="64" index="15" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="3am" name="3am" label="3am" enabled="true" visible="false" accessible="true" x="1238" y="585" width="26" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="1239" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="64°" name="64°" label="64°" enabled="true" visible="false" accessible="true" x="1238" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="1298" y="585" width="54" height="64" index="16" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="4am" name="4am" label="4am" enabled="true" visible="false" accessible="true" x="1312" y="585" width="26" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="1313" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="63°" name="63°" label="63°" enabled="true" visible="false" accessible="true" x="1312" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="1372" y="585" width="54" height="64" index="17" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="5am" name="5am" label="5am" enabled="true" visible="false" accessible="true" x="1386" y="585" width="26" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="1387" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="61°" name="61°" label="61°" enabled="true" visible="false" accessible="true" x="1387" y="632" width="24" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="1446" y="585" width="54" height="64" index="18" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="6am" name="6am" label="6am" enabled="true" visible="false" accessible="true" x="1460" y="585" width="26" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="1461" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="60°" name="60°" label="60°" enabled="true" visible="false" accessible="true" x="1460" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="1520" y="585" width="54" height="64" index="19" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="7am" name="7am" label="7am" enabled="true" visible="false" accessible="true" x="1535" y="585" width="25" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="1535" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="59°" name="59°" label="59°" enabled="true" visible="false" accessible="true" x="1534" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="1594" y="585" width="54" height="64" index="20" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="8am" name="8am" label="8am" enabled="true" visible="false" accessible="true" x="1608" y="585" width="26" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="1609" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="59°" name="59°" label="59°" enabled="true" visible="false" accessible="true" x="1608" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="1668" y="585" width="54" height="64" index="21" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="9am" name="9am" label="9am" enabled="true" visible="false" accessible="true" x="1682" y="585" width="26" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="1683" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="59°" name="59°" label="59°" enabled="true" visible="false" accessible="true" x="1682" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="1742" y="585" width="54" height="64" index="22" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="10am" name="10am" label="10am" enabled="true" visible="false" accessible="true" x="1753" y="585" width="32" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="1757" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="59°" name="59°" label="59°" enabled="true" visible="false" accessible="true" x="1756" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="1816" y="585" width="54" height="64" index="23" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="11am" name="11am" label="11am" enabled="true" visible="false" accessible="true" x="1828" y="585" width="30" height="15" index="0" traits="StaticText"/>
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="cloud.moon.fill" label="partly cloudy night" enabled="true" visible="false" accessible="false" x="1831" y="607" width="24" height="18" index="1" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="59°" name="59°" label="59°" enabled="true" visible="false" accessible="true" x="1830" y="632" width="26" height="17" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="410" y="599" width="54" height="50" index="24" traits="">
+                                <XCUIElementTypeImage type="XCUIElementTypeImage" name="sunrise.fill" label="sunrise" enabled="true" visible="false" accessible="false" x="424" y="606" width="26" height="21" index="0" traits="Image"/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Sunrise" name="Sunrise" label="Sunrise" enabled="true" visible="false" accessible="true" x="411" y="632" width="52" height="17" index="1" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" value="0%" name="Vertical scroll bar, 1 page" label="Vertical scroll bar, 1 page" enabled="true" visible="true" accessible="false" x="345" y="539" width="30" height="141" index="1" traits="Adjustable">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="372" y="500" width="3" height="37" index="0" traits=""/>
+                          </XCUIElementTypeOther>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" value="0%" name="Vertical scroll bar, 1 page" label="Vertical scroll bar, 1 page" enabled="true" visible="true" accessible="false" x="345" y="539" width="30" height="141" index="2" traits="Adjustable">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="372" y="500" width="3" height="37" index="0" traits=""/>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeScrollView>
+                      </XCUIElementTypeOther>
+                    </XCUIElementTypeOther>
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="24" y="697" width="354" height="94" index="4" traits="">
+                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="24" y="697" width="354" height="94" index="0" traits="">
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="40" y="709" width="322" height="70" index="0" traits="">
+                          <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Precipitation" name="Precipitation" label="Precipitation" enabled="true" visible="true" accessible="true" x="40" y="709" width="322" height="18" index="0" traits="StaticText"/>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="40" y="738" width="322" height="41" index="1" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="40" y="738" width="32" height="41" index="0" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="40" y="738" width="32" height="41" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="0%" name="0%" label="0%" enabled="true" visible="true" accessible="true" x="46" y="738" width="19" height="14" index="0" traits="StaticText"/>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="52" y="755" width="7" height="7" index="1" traits=""/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="12pm" name="12pm" label="12pm" enabled="true" visible="true" accessible="true" x="41" y="765" width="30" height="14" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="81" y="738" width="32" height="41" index="1" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="81" y="738" width="32" height="41" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="0%" name="0%" label="0%" enabled="true" visible="true" accessible="true" x="88" y="738" width="19" height="14" index="0" traits="StaticText"/>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="94" y="755" width="7" height="7" index="1" traits=""/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="3pm" name="3pm" label="3pm" enabled="true" visible="true" accessible="true" x="85" y="765" width="25" height="14" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="123" y="738" width="32" height="41" index="2" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="123" y="738" width="32" height="41" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="0%" name="0%" label="0%" enabled="true" visible="true" accessible="true" x="129" y="738" width="19" height="14" index="0" traits="StaticText"/>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="135" y="755" width="7" height="7" index="1" traits=""/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="6pm" name="6pm" label="6pm" enabled="true" visible="true" accessible="true" x="126" y="765" width="25" height="14" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="164" y="738" width="32" height="41" index="3" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="164" y="738" width="32" height="41" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="1%" name="1%" label="1%" enabled="true" visible="true" accessible="true" x="172" y="738" width="17" height="14" index="0" traits="StaticText"/>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="177" y="755" width="7" height="7" index="1" traits=""/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="9pm" name="9pm" label="9pm" enabled="true" visible="true" accessible="true" x="168" y="765" width="25" height="14" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="206" y="738" width="32" height="41" index="4" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="206" y="738" width="32" height="41" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="1%" name="1%" label="1%" enabled="true" visible="true" accessible="true" x="213" y="738" width="17" height="14" index="0" traits="StaticText"/>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="218" y="755" width="7" height="7" index="1" traits=""/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="12am" name="12am" label="12am" enabled="true" visible="true" accessible="true" x="207" y="765" width="29" height="14" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="247" y="738" width="32" height="41" index="5" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="247" y="738" width="32" height="41" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="1%" name="1%" label="1%" enabled="true" visible="true" accessible="true" x="255" y="738" width="17" height="14" index="0" traits="StaticText"/>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="260" y="755" width="7" height="7" index="1" traits=""/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="3am" name="3am" label="3am" enabled="true" visible="true" accessible="true" x="251" y="765" width="24" height="14" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="289" y="738" width="32" height="41" index="6" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="289" y="738" width="32" height="41" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="2%" name="2%" label="2%" enabled="true" visible="true" accessible="true" x="296" y="738" width="18" height="14" index="0" traits="StaticText"/>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="301" y="755" width="7" height="7" index="1" traits=""/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="6am" name="6am" label="6am" enabled="true" visible="true" accessible="true" x="293" y="765" width="24" height="14" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="330" y="738" width="32" height="41" index="7" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="330" y="738" width="32" height="41" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="3%" name="3%" label="3%" enabled="true" visible="true" accessible="true" x="337" y="738" width="19" height="14" index="0" traits="StaticText"/>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="343" y="755" width="7" height="7" index="1" traits=""/>
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="9am" name="9am" label="9am" enabled="true" visible="true" accessible="true" x="334" y="765" width="24" height="14" index="2" traits="StaticText"/>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeOther>
+                      </XCUIElementTypeOther>
+                    </XCUIElementTypeOther>
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="24" y="809" width="354" height="465" index="5" traits="">
+                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="24" y="809" width="354" height="465" index="0" traits="">
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="40" y="821" width="322" height="441" index="0" traits="">
+                          <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="10-Day Forecast" name="10-Day Forecast" label="10-Day Forecast" enabled="true" visible="true" accessible="true" x="40" y="821" width="322" height="17" index="0" traits="StaticText"/>
+                          <XCUIElementTypeButton type="XCUIElementTypeButton" name="weather_daily_row_today" enabled="true" visible="true" accessible="true" x="40" y="848" width="322" height="33" index="1" traits="Button">
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" enabled="true" visible="false" accessible="false" x="40" y="848" width="0" height="0" index="0" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Today" name="Today" label="Today" enabled="true" visible="true" accessible="false" x="40" y="855" width="64" height="18" index="1" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="58°" name="58°" label="58°" enabled="true" visible="true" accessible="false" x="142" y="855" width="44" height="18" index="2" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="66°" name="66°" label="66°" enabled="true" visible="true" accessible="false" x="294" y="855" width="44" height="18" index="3" traits="StaticText"/>
+                          </XCUIElementTypeButton>
+                          <XCUIElementTypeButton type="XCUIElementTypeButton" name="weather_daily_row_mon" enabled="true" visible="false" accessible="true" x="40" y="890" width="322" height="33" index="2" traits="Button">
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" enabled="true" visible="false" accessible="false" x="40" y="890" width="0" height="1" index="0" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Mon" name="Mon" label="Mon" enabled="true" visible="false" accessible="false" x="40" y="898" width="64" height="17" index="1" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="58°" name="58°" label="58°" enabled="true" visible="false" accessible="false" x="142" y="898" width="44" height="17" index="2" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="67°" name="67°" label="67°" enabled="true" visible="false" accessible="false" x="294" y="898" width="44" height="17" index="3" traits="StaticText"/>
+                          </XCUIElementTypeButton>
+                          <XCUIElementTypeButton type="XCUIElementTypeButton" name="weather_daily_row_tue" enabled="true" visible="false" accessible="true" x="40" y="932" width="322" height="33" index="3" traits="Button">
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" enabled="true" visible="false" accessible="false" x="40" y="932" width="0" height="1" index="0" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Tue" name="Tue" label="Tue" enabled="true" visible="false" accessible="false" x="40" y="940" width="64" height="18" index="1" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="58°" name="58°" label="58°" enabled="true" visible="false" accessible="false" x="142" y="940" width="44" height="18" index="2" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="69°" name="69°" label="69°" enabled="true" visible="false" accessible="false" x="294" y="940" width="44" height="18" index="3" traits="StaticText"/>
+                          </XCUIElementTypeButton>
+                          <XCUIElementTypeButton type="XCUIElementTypeButton" name="weather_daily_row_wed" enabled="true" visible="false" accessible="true" x="40" y="975" width="322" height="33" index="4" traits="Button">
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" enabled="true" visible="false" accessible="false" x="40" y="975" width="0" height="0" index="0" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Wed" name="Wed" label="Wed" enabled="true" visible="false" accessible="false" x="40" y="982" width="64" height="18" index="1" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="58°" name="58°" label="58°" enabled="true" visible="false" accessible="false" x="142" y="982" width="44" height="18" index="2" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="78°" name="78°" label="78°" enabled="true" visible="false" accessible="false" x="294" y="982" width="44" height="18" index="3" traits="StaticText"/>
+                          </XCUIElementTypeButton>
+                          <XCUIElementTypeButton type="XCUIElementTypeButton" name="weather_daily_row_thu" enabled="true" visible="false" accessible="true" x="40" y="1017" width="322" height="33" index="5" traits="Button">
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" enabled="true" visible="false" accessible="false" x="40" y="1017" width="0" height="1" index="0" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Thu" name="Thu" label="Thu" enabled="true" visible="false" accessible="false" x="40" y="1025" width="64" height="17" index="1" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="59°" name="59°" label="59°" enabled="true" visible="false" accessible="false" x="142" y="1025" width="44" height="17" index="2" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="76°" name="76°" label="76°" enabled="true" visible="false" accessible="false" x="294" y="1025" width="44" height="17" index="3" traits="StaticText"/>
+                          </XCUIElementTypeButton>
+                          <XCUIElementTypeButton type="XCUIElementTypeButton" name="weather_daily_row_fri" enabled="true" visible="false" accessible="true" x="40" y="1059" width="322" height="33" index="6" traits="Button">
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" enabled="true" visible="false" accessible="false" x="40" y="1059" width="0" height="1" index="0" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Fri" name="Fri" label="Fri" enabled="true" visible="false" accessible="false" x="40" y="1067" width="64" height="18" index="1" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="60°" name="60°" label="60°" enabled="true" visible="false" accessible="false" x="142" y="1067" width="44" height="18" index="2" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="72°" name="72°" label="72°" enabled="true" visible="false" accessible="false" x="294" y="1067" width="44" height="18" index="3" traits="StaticText"/>
+                          </XCUIElementTypeButton>
+                          <XCUIElementTypeButton type="XCUIElementTypeButton" name="weather_daily_row_sat" enabled="true" visible="false" accessible="true" x="40" y="1102" width="322" height="33" index="7" traits="Button">
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" enabled="true" visible="false" accessible="false" x="40" y="1102" width="0" height="0" index="0" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Sat" name="Sat" label="Sat" enabled="true" visible="false" accessible="false" x="40" y="1109" width="64" height="18" index="1" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="58°" name="58°" label="58°" enabled="true" visible="false" accessible="false" x="142" y="1109" width="44" height="18" index="2" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="67°" name="67°" label="67°" enabled="true" visible="false" accessible="false" x="294" y="1109" width="44" height="18" index="3" traits="StaticText"/>
+                          </XCUIElementTypeButton>
+                          <XCUIElementTypeButton type="XCUIElementTypeButton" name="weather_daily_row_sun" enabled="true" visible="false" accessible="true" x="40" y="1144" width="322" height="33" index="8" traits="Button">
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" enabled="true" visible="false" accessible="false" x="40" y="1144" width="0" height="1" index="0" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Sun" name="Sun" label="Sun" enabled="true" visible="false" accessible="false" x="40" y="1152" width="64" height="17" index="1" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="58°" name="58°" label="58°" enabled="true" visible="false" accessible="false" x="142" y="1152" width="44" height="17" index="2" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="70°" name="70°" label="70°" enabled="true" visible="false" accessible="false" x="294" y="1152" width="44" height="17" index="3" traits="StaticText"/>
+                          </XCUIElementTypeButton>
+                          <XCUIElementTypeButton type="XCUIElementTypeButton" name="weather_daily_row_mon" enabled="true" visible="false" accessible="true" x="40" y="1186" width="322" height="33" index="9" traits="Button">
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" enabled="true" visible="false" accessible="false" x="40" y="1186" width="0" height="1" index="0" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Mon" name="Mon" label="Mon" enabled="true" visible="false" accessible="false" x="40" y="1194" width="64" height="18" index="1" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="60°" name="60°" label="60°" enabled="true" visible="false" accessible="false" x="142" y="1194" width="44" height="18" index="2" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="72°" name="72°" label="72°" enabled="true" visible="false" accessible="false" x="294" y="1194" width="44" height="18" index="3" traits="StaticText"/>
+                          </XCUIElementTypeButton>
+                          <XCUIElementTypeButton type="XCUIElementTypeButton" name="weather_daily_row_tue" enabled="true" visible="false" accessible="true" x="40" y="1229" width="322" height="33" index="10" traits="Button">
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" enabled="true" visible="false" accessible="false" x="40" y="1229" width="0" height="0" index="0" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Tue" name="Tue" label="Tue" enabled="true" visible="false" accessible="false" x="40" y="1236" width="64" height="18" index="1" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="60°" name="60°" label="60°" enabled="true" visible="false" accessible="false" x="142" y="1236" width="44" height="18" index="2" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="72°" name="72°" label="72°" enabled="true" visible="false" accessible="false" x="294" y="1236" width="44" height="18" index="3" traits="StaticText"/>
+                          </XCUIElementTypeButton>
+                        </XCUIElementTypeOther>
+                      </XCUIElementTypeOther>
+                    </XCUIElementTypeOther>
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="24" y="1291" width="354" height="87" index="6" traits="">
+                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="24" y="1291" width="354" height="87" index="0" traits="">
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="40" y="1303" width="322" height="63" index="0" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="40" y="1303" width="155" height="63" index="0" traits="">
+                            <XCUIElementTypeImage type="XCUIElementTypeImage" name="sunrise.fill" label="sunrise" enabled="true" visible="false" accessible="false" x="108" y="1303" width="19" height="20" index="0" traits="Image"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="4:55 PM" name="4:55 PM" label="4:55 PM" enabled="true" visible="false" accessible="true" x="82" y="1325" width="71" height="22" index="1" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Sunrise" name="Sunrise" label="Sunrise" enabled="true" visible="false" accessible="true" x="95" y="1351" width="45" height="15" index="2" traits="StaticText"/>
+                          </XCUIElementTypeOther>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="207" y="1303" width="155" height="63" index="1" traits="">
+                            <XCUIElementTypeImage type="XCUIElementTypeImage" name="sunset.fill" label="sunset" enabled="true" visible="false" accessible="false" x="275" y="1303" width="19" height="20" index="0" traits="Image"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="5:09 AM" name="5:09 AM" label="5:09 AM" enabled="true" visible="false" accessible="true" x="249" y="1325" width="71" height="22" index="1" traits="StaticText"/>
+                            <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Sunset" name="Sunset" label="Sunset" enabled="true" visible="false" accessible="true" x="264" y="1351" width="41" height="15" index="2" traits="StaticText"/>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeOther>
+                      </XCUIElementTypeOther>
+                    </XCUIElementTypeOther>
+                  </XCUIElementTypeOther>
+                  <XCUIElementTypeOther type="XCUIElementTypeOther" value="0%" name="Horizontal scroll bar, 1 page" label="Horizontal scroll bar, 1 page" enabled="true" visible="true" accessible="false" x="62" y="841" width="278" height="30" index="1" traits="Adjustable">
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="392" y="868" width="7" height="3" index="0" traits=""/>
+                  </XCUIElementTypeOther>
+                  <XCUIElementTypeOther type="XCUIElementTypeOther" value="0%" name="Horizontal scroll bar, 1 page" label="Horizontal scroll bar, 1 page" enabled="true" visible="true" accessible="false" x="62" y="841" width="278" height="30" index="2" traits="Adjustable">
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="392" y="868" width="7" height="3" index="0" traits=""/>
+                  </XCUIElementTypeOther>
+                </XCUIElementTypeScrollView>
+              </XCUIElementTypeOther>
+            </XCUIElementTypeCell>
+            <XCUIElementTypeOther type="XCUIElementTypeOther" value="0%" name="Vertical scroll bar, 3 pages" label="Vertical scroll bar, 3 pages" enabled="true" visible="true" accessible="false" x="369" y="62" width="30" height="750" index="1" traits="Adjustable">
+              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="396" y="808" width="3" height="7" index="0" traits=""/>
+            </XCUIElementTypeOther>
+            <XCUIElementTypeOther type="XCUIElementTypeOther" value="0%" name="Vertical scroll bar, 3 pages" label="Vertical scroll bar, 3 pages" enabled="true" visible="true" accessible="false" x="369" y="62" width="30" height="750" index="2" traits="Adjustable">
+              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="396" y="808" width="3" height="7" index="0" traits=""/>
+            </XCUIElementTypeOther>
+          </XCUIElementTypeCollectionView>
+          <XCUIElementTypeButton type="XCUIElementTypeButton" name="weather_add_city" label="Add city" enabled="true" visible="true" accessible="true" x="358" y="74" width="26" height="26" index="1" traits="Button"/>
+          <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Updated 12:15 PM" name="weather_updated_label" label="Updated 12:15 PM" enabled="true" visible="true" accessible="true" x="148" y="786" width="106" height="15" index="2" traits="StaticText"/>
+          <XCUIElementTypePageIndicator type="XCUIElementTypePageIndicator" value="san-francisco-ca,new-york-ny,dallas-tx" name="weather_page_control" enabled="true" visible="true" accessible="true" x="164" y="806" width="74" height="31" index="3" traits="Adjustable, UpdatesFrequently"/>
+          <XCUIElementTypeButton type="XCUIElementTypeButton" name="weather_location_list" label="Manage cities" enabled="true" visible="true" accessible="true" x="357" y="808" width="27" height="20" index="4" traits="Button"/>
+        </XCUIElementTypeOther>
+      </XCUIElementTypeOther>
+    </XCUIElementTypeOther>
+  </XCUIElementTypeWindow>
+</XCUIElementTypeApplication>

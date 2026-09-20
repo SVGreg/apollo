@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XCUIElementTypeApplication type="XCUIElementTypeApplication" name="Notes" label="Notes" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="" processId="42190" bundleId="com.iosworld.benchmark.notes">
+  <XCUIElementTypeWindow type="XCUIElementTypeWindow" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+              <XCUIElementTypeNavigationBar type="XCUIElementTypeNavigationBar" name="Folders" enabled="true" visible="true" accessible="false" x="0" y="62" width="402" height="166" index="0" traits="">
+                <XCUIElementTypeButton type="XCUIElementTypeButton" name="Edit" label="Edit" enabled="true" visible="true" accessible="true" x="328" y="66" width="54" height="36" index="0" traits="Button"/>
+                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Folders" name="Folders" label="Folders" enabled="true" visible="true" accessible="true" x="15" y="119" width="119" height="42" index="1" traits="Header"/>
+                <XCUIElementTypeSearchField type="XCUIElementTypeSearchField" value="Search" name="Search" label="Search" enabled="true" visible="true" accessible="true" x="16" y="169" width="370" height="44" index="2" placeholderValue="Search" traits="SearchField">
+                  <XCUIElementTypeImage type="XCUIElementTypeImage" name="magnifyingglass" label="Search" enabled="true" visible="false" accessible="false" x="28" y="181" width="21" height="19" index="0" traits="Image"/>
+                </XCUIElementTypeSearchField>
+              </XCUIElementTypeNavigationBar>
+              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="1" traits="">
+                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                      <XCUIElementTypeCollectionView type="XCUIElementTypeCollectionView" enabled="true" visible="false" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="-16" y="-1520" width="434" height="3871" index="0" traits=""/>
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="1" traits=""/>
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="2" traits=""/>
+                        <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="228" width="370" height="41" index="3" traits="Header">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="228" width="370" height="41" index="0" traits=""/>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="228" width="370" height="41" index="1" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="228" width="370" height="41" index="0" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="228" width="370" height="41" index="0" traits="">
+                                <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="iCloud" name="iCloud" label="iCloud" enabled="true" visible="true" accessible="true" x="16" y="228" width="370" height="41" index="0" traits="Header, StaticText"/>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeCell>
+                        <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="268" width="370" height="53" index="4" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="268" width="370" height="53" index="0" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="268" width="370" height="53" index="0" traits=""/>
+                          </XCUIElementTypeOther>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="268" width="370" height="53" index="1" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="268" width="370" height="53" index="0" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="268" width="370" height="53" index="0" traits="">
+                                <XCUIElementTypeButton type="XCUIElementTypeButton" name="notes_folder_all" label="All iCloud, 13" enabled="true" visible="true" accessible="true" x="16" y="268" width="370" height="53" index="0" traits="Button">
+                                  <XCUIElementTypeImage type="XCUIElementTypeImage" name="tray.fill" label="Inbox" enabled="true" visible="true" accessible="false" x="34" y="286" width="24" height="18" index="0" traits="Image"/>
+                                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="All iCloud" name="All iCloud" label="All iCloud" enabled="true" visible="true" accessible="false" x="68" y="284" width="72" height="21" index="1" traits="StaticText"/>
+                                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="13" name="13" label="13" enabled="true" visible="true" accessible="false" x="330" y="284" width="18" height="21" index="2" traits="StaticText"/>
+                                  <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="288" width="8" height="13" index="3" traits="Image"/>
+                                </XCUIElementTypeButton>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeCell>
+                        <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="320" width="370" height="53" index="5" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="320" width="370" height="53" index="0" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="320" width="370" height="53" index="0" traits=""/>
+                          </XCUIElementTypeOther>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="320" width="370" height="53" index="1" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="320" width="370" height="53" index="0" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="320" width="370" height="53" index="0" traits="">
+                                <XCUIElementTypeButton type="XCUIElementTypeButton" name="notes_folder_notes" label="Notes, 5" enabled="true" visible="true" accessible="true" x="16" y="320" width="370" height="53" index="0" traits="Button">
+                                  <XCUIElementTypeImage type="XCUIElementTypeImage" name="folder.fill" label="Move" enabled="true" visible="true" accessible="false" x="35" y="337" width="23" height="19" index="0" traits="Image"/>
+                                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Notes" name="Notes" label="Notes" enabled="true" visible="true" accessible="false" x="68" y="336" width="46" height="21" index="1" traits="StaticText"/>
+                                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="5" name="5" label="5" enabled="true" visible="true" accessible="false" x="337" y="336" width="11" height="21" index="2" traits="StaticText"/>
+                                  <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="340" width="8" height="13" index="3" traits="Image"/>
+                                </XCUIElementTypeButton>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeCell>
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="68" y="319" width="302" height="2" index="6" traits=""/>
+                        <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="372" width="370" height="53" index="7" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="372" width="370" height="53" index="0" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="372" width="370" height="53" index="0" traits=""/>
+                          </XCUIElementTypeOther>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="372" width="370" height="53" index="1" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="372" width="370" height="53" index="0" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="372" width="370" height="53" index="0" traits="">
+                                <XCUIElementTypeButton type="XCUIElementTypeButton" name="notes_folder_work" label="Work, 3" enabled="true" visible="true" accessible="true" x="16" y="372" width="370" height="53" index="0" traits="Button">
+                                  <XCUIElementTypeImage type="XCUIElementTypeImage" name="folder.fill" label="Move" enabled="true" visible="true" accessible="false" x="35" y="389" width="23" height="19" index="0" traits="Image"/>
+                                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Work" name="Work" label="Work" enabled="true" visible="true" accessible="false" x="68" y="388" width="40" height="21" index="1" traits="StaticText"/>
+                                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="3" name="3" label="3" enabled="true" visible="true" accessible="false" x="337" y="388" width="11" height="21" index="2" traits="StaticText"/>
+                                  <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="392" width="8" height="13" index="3" traits="Image"/>
+                                </XCUIElementTypeButton>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeCell>
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="68" y="371" width="302" height="2" index="8" traits=""/>
+                        <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="424" width="370" height="53" index="9" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="424" width="370" height="53" index="0" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="424" width="370" height="53" index="0" traits=""/>
+                          </XCUIElementTypeOther>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="424" width="370" height="53" index="1" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="424" width="370" height="53" index="0" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="424" width="370" height="53" index="0" traits="">
+                                <XCUIElementTypeButton type="XCUIElementTypeButton" name="notes_folder_personal" label="Personal, 3" enabled="true" visible="true" accessible="true" x="16" y="424" width="370" height="53" index="0" traits="Button">
+                                  <XCUIElementTypeImage type="XCUIElementTypeImage" name="folder.fill" label="Move" enabled="true" visible="true" accessible="false" x="35" y="441" width="23" height="19" index="0" traits="Image"/>
+                                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Personal" name="Personal" label="Personal" enabled="true" visible="true" accessible="false" x="68" y="440" width="66" height="21" index="1" traits="StaticText"/>
+                                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="3" name="3" label="3" enabled="true" visible="true" accessible="false" x="337" y="440" width="11" height="21" index="2" traits="StaticText"/>
+                                  <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="444" width="8" height="13" index="3" traits="Image"/>
+                                </XCUIElementTypeButton>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeCell>
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="68" y="423" width="302" height="2" index="10" traits=""/>
+                        <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="476" width="370" height="53" index="11" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="476" width="370" height="53" index="0" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="476" width="370" height="53" index="0" traits=""/>
+                          </XCUIElementTypeOther>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="476" width="370" height="53" index="1" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="476" width="370" height="53" index="0" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="476" width="370" height="53" index="0" traits="">
+                                <XCUIElementTypeButton type="XCUIElementTypeButton" name="notes_folder_recipes" label="Recipes, 2" enabled="true" visible="true" accessible="true" x="16" y="476" width="370" height="53" index="0" traits="Button">
+                                  <XCUIElementTypeImage type="XCUIElementTypeImage" name="folder.fill" label="Move" enabled="true" visible="true" accessible="false" x="35" y="493" width="23" height="19" index="0" traits="Image"/>
+                                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Recipes" name="Recipes" label="Recipes" enabled="true" visible="true" accessible="false" x="68" y="492" width="61" height="21" index="1" traits="StaticText"/>
+                                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="2" name="2" label="2" enabled="true" visible="true" accessible="false" x="338" y="492" width="10" height="21" index="2" traits="StaticText"/>
+                                  <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="496" width="8" height="13" index="3" traits="Image"/>
+                                </XCUIElementTypeButton>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeCell>
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="68" y="475" width="302" height="2" index="12" traits=""/>
+                        <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="528" width="370" height="55" index="13" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="528" width="370" height="55" index="0" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="528" width="370" height="55" index="0" traits=""/>
+                          </XCUIElementTypeOther>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="528" width="370" height="55" index="1" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="528" width="370" height="55" index="0" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="528" width="370" height="55" index="0" traits="">
+                                <XCUIElementTypeButton type="XCUIElementTypeButton" name="notes_folder_trash" label="Recently Deleted, 1" enabled="true" visible="true" accessible="true" x="16" y="528" width="370" height="55" index="0" traits="Button">
+                                  <XCUIElementTypeImage type="XCUIElementTypeImage" name="trash.fill" label="Trash" enabled="true" visible="true" accessible="false" x="36" y="544" width="20" height="23" index="0" traits="Image"/>
+                                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Recently Deleted" name="Recently Deleted" label="Recently Deleted" enabled="true" visible="true" accessible="false" x="68" y="545" width="130" height="21" index="1" traits="StaticText"/>
+                                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="1" name="1" label="1" enabled="true" visible="true" accessible="false" x="340" y="545" width="8" height="21" index="2" traits="StaticText"/>
+                                  <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="549" width="8" height="13" index="3" traits="Image"/>
+                                </XCUIElementTypeButton>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeCell>
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="68" y="527" width="302" height="2" index="14" traits=""/>
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" value="0%" name="Vertical scroll bar, 1 page" label="Vertical scroll bar, 1 page" enabled="true" visible="true" accessible="false" x="369" y="116" width="30" height="672" index="15" traits="Adjustable">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="396" y="679" width="3" height="106" index="0" traits=""/>
+                        </XCUIElementTypeOther>
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" value="0%" name="Vertical scroll bar, 1 page" label="Vertical scroll bar, 1 page" enabled="true" visible="true" accessible="false" x="369" y="116" width="30" height="672" index="16" traits="Adjustable">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="396" y="679" width="3" height="106" index="0" traits=""/>
+                        </XCUIElementTypeOther>
+                      </XCUIElementTypeCollectionView>
+                    </XCUIElementTypeOther>
+                  </XCUIElementTypeOther>
+                </XCUIElementTypeOther>
+              </XCUIElementTypeOther>
+              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="2" traits="">
+                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                  <XCUIElementTypeToolbar type="XCUIElementTypeToolbar" name="Toolbar" label="Toolbar" enabled="true" visible="true" accessible="false" x="0" y="788" width="402" height="86" index="0" traits="">
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="28" y="798" width="346" height="48" index="0" traits="">
+                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="28" y="798" width="346" height="48" index="0" traits="">
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="28" y="798" width="0" height="0" index="0" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="28" y="798" width="136" height="48" index="0" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="28" y="798" width="136" height="48" index="0" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="33" y="804" width="126" height="36" index="0" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="33" y="804" width="126" height="36" index="0" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" name="notes_new_folder_button" label="New Folder" enabled="true" visible="true" accessible="false" x="33" y="804" width="126" height="36" index="0" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="33" y="804" width="126" height="36" index="0" traits="">
+                                      <XCUIElementTypeButton type="XCUIElementTypeButton" name="notes_new_folder_button" label="New Folder" enabled="true" visible="true" accessible="true" x="33" y="804" width="126" height="36" index="0" traits="Button">
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" name="folder.badge.plus" label="New Folder" enabled="true" visible="true" accessible="false" x="40" y="812" width="30" height="20" index="0" traits="Image"/>
+                                        <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="New Folder" name="New Folder" label="New Folder" enabled="true" visible="true" accessible="false" x="71" y="812" width="83" height="20" index="1" traits="StaticText"/>
+                                      </XCUIElementTypeButton>
+                                    </XCUIElementTypeOther>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="326" y="798" width="48" height="48" index="1" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="326" y="798" width="48" height="48" index="0" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="331" y="804" width="38" height="36" index="0" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="331" y="804" width="38" height="36" index="0" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" name="notes_new_note_button" label="Compose" enabled="true" visible="true" accessible="false" x="331" y="804" width="38" height="36" index="0" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="331" y="804" width="38" height="36" index="0" traits="">
+                                      <XCUIElementTypeButton type="XCUIElementTypeButton" name="notes_new_note_button" label="Compose" enabled="true" visible="true" accessible="true" x="335" y="804" width="30" height="36" index="0" traits="Button"/>
+                                    </XCUIElementTypeOther>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeOther>
+                      </XCUIElementTypeOther>
+                    </XCUIElementTypeOther>
+                  </XCUIElementTypeToolbar>
+                </XCUIElementTypeOther>
+              </XCUIElementTypeOther>
+            </XCUIElementTypeOther>
+          </XCUIElementTypeOther>
+        </XCUIElementTypeOther>
+      </XCUIElementTypeOther>
+    </XCUIElementTypeOther>
+  </XCUIElementTypeWindow>
+</XCUIElementTypeApplication>

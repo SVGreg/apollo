@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XCUIElementTypeApplication type="XCUIElementTypeApplication" name="Settings" label="Settings" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="" processId="29248" bundleId="com.apple.Preferences">
+  <XCUIElementTypeWindow type="XCUIElementTypeWindow" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                    <XCUIElementTypeNavigationBar type="XCUIElementTypeNavigationBar" name="Settings" enabled="true" visible="true" accessible="false" x="0" y="62" width="402" height="106" index="0" traits="">
+                      <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Settings" name="Settings" label="Settings" enabled="true" visible="true" accessible="true" x="16" y="119" width="133" height="42" index="0" traits="Header"/>
+                    </XCUIElementTypeNavigationBar>
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="1" traits="">
+                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                            <XCUIElementTypeCollectionView type="XCUIElementTypeCollectionView" enabled="true" visible="false" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="-16" y="-1580" width="434" height="1856" index="0" traits=""/>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="1" traits=""/>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="2" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="733" width="402" height="141" index="0" traits="">
+                                  <XCUIElementTypeImage type="XCUIElementTypeImage" name="AdditionalDimmingOverlay" enabled="true" visible="true" accessible="false" x="-120" y="738" width="642" height="272" index="0" traits="Image"/>
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="733" width="402" height="141" index="1" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="733" width="402" height="141" index="0" traits=""/>
+                                  </XCUIElementTypeOther>
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="733" width="402" height="141" index="2" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="733" width="402" height="141" index="0" traits=""/>
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="733" width="402" height="141" index="1" traits=""/>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="168" width="370" height="91" index="3" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="168" width="370" height="91" index="0" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="168" width="370" height="91" index="0" traits=""/>
+                                </XCUIElementTypeOther>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="168" width="370" height="91" index="1" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="168" width="370" height="91" index="0" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="168" width="370" height="91" index="0" traits="">
+                                      <XCUIElementTypeButton type="XCUIElementTypeButton" name="com.apple.settings.primaryAppleAccount" label="Apple Account, Sign in to access your iCloud data, the App Store, Apple services, and more." enabled="true" visible="true" accessible="true" x="16" y="168" width="370" height="91" index="0" traits="StaticText, Button">
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" name="apple.id" label="apple.id" enabled="true" visible="true" accessible="false" x="32" y="183" width="60" height="61" index="0" traits="Image"/>
+                                        <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Apple Account" name="Apple Account" label="Apple Account" enabled="true" visible="true" accessible="false" x="100" y="183" width="135" height="24" index="1" traits="StaticText"/>
+                                        <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Sign in to access your iCloud data, the App Store, Apple services, and more." name="Sign in to access your iCloud data, the App Store, Apple services, and more." label="Sign in to access your iCloud data, the App Store, Apple services, and more." enabled="true" visible="true" accessible="false" x="100" y="209" width="236" height="35" index="2" traits="StaticText"/>
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="207" width="8" height="12" index="3" traits="Image"/>
+                                      </XCUIElementTypeButton>
+                                    </XCUIElementTypeOther>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeCell>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="-16" y="276" width="434" height="87" index="4" traits=""/>
+                              <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="293" width="370" height="53" index="5" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="293" width="370" height="53" index="0" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="293" width="370" height="53" index="0" traits=""/>
+                                </XCUIElementTypeOther>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="293" width="370" height="53" index="1" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="293" width="370" height="53" index="0" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="293" width="370" height="53" index="0" traits="">
+                                      <XCUIElementTypeButton type="XCUIElementTypeButton" name="com.apple.settings.followUpItem.com.apple.icloud.gm" label="Ready for Apple Intelligence" enabled="true" visible="true" accessible="true" x="16" y="293" width="370" height="53" index="0" traits="StaticText, Button">
+                                        <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Ready for Apple Intelligence" name="Ready for Apple Intelligence" label="Ready for Apple Intelligence" enabled="true" visible="true" accessible="false" x="32" y="309" width="213" height="21" index="0" traits="StaticText"/>
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="313" width="8" height="13" index="1" traits="Image"/>
+                                      </XCUIElementTypeButton>
+                                    </XCUIElementTypeOther>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeCell>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="-16" y="363" width="434" height="451" index="6" traits=""/>
+                              <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="380" width="370" height="53" index="7" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="380" width="370" height="53" index="0" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="380" width="370" height="53" index="0" traits=""/>
+                                </XCUIElementTypeOther>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="380" width="370" height="53" index="1" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="380" width="370" height="53" index="0" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="380" width="370" height="53" index="0" traits="">
+                                      <XCUIElementTypeButton type="XCUIElementTypeButton" name="com.apple.settings.general" label="General" enabled="true" visible="true" accessible="true" x="16" y="380" width="370" height="53" index="0" traits="StaticText, Button">
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" enabled="true" visible="true" accessible="false" x="29" y="392" width="30" height="30" index="0" traits="Image"/>
+                                        <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="General" name="General" label="General" enabled="true" visible="true" accessible="false" x="29" y="392" width="103" height="29" index="1" traits="StaticText"/>
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="400" width="8" height="13" index="2" traits="Image"/>
+                                      </XCUIElementTypeButton>
+                                    </XCUIElementTypeOther>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeCell>
+                              <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="432" width="370" height="53" index="8" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="432" width="370" height="53" index="0" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="432" width="370" height="53" index="0" traits=""/>
+                                </XCUIElementTypeOther>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="432" width="370" height="53" index="1" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="432" width="370" height="53" index="0" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="432" width="370" height="53" index="0" traits="">
+                                      <XCUIElementTypeButton type="XCUIElementTypeButton" name="com.apple.settings.accessibility" label="Accessibility" enabled="true" visible="true" accessible="true" x="16" y="432" width="370" height="53" index="0" traits="StaticText, Button">
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" enabled="true" visible="true" accessible="false" x="29" y="444" width="30" height="29" index="0" traits="Image"/>
+                                        <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Accessibility" name="Accessibility" label="Accessibility" enabled="true" visible="true" accessible="false" x="29" y="444" width="138" height="29" index="1" traits="StaticText"/>
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="452" width="8" height="13" index="2" traits="Image"/>
+                                      </XCUIElementTypeButton>
+                                    </XCUIElementTypeOther>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeCell>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="72" y="431" width="298" height="2" index="9" traits=""/>
+                              <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="484" width="370" height="53" index="10" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="484" width="370" height="53" index="0" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="484" width="370" height="53" index="0" traits=""/>
+                                </XCUIElementTypeOther>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="484" width="370" height="53" index="1" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="484" width="370" height="53" index="0" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="484" width="370" height="53" index="0" traits="">
+                                      <XCUIElementTypeButton type="XCUIElementTypeButton" name="com.apple.settings.actionButton" label="Action Button" enabled="true" visible="true" accessible="true" x="16" y="484" width="370" height="53" index="0" traits="StaticText, Button">
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" enabled="true" visible="true" accessible="false" x="29" y="496" width="30" height="29" index="0" traits="Image"/>
+                                        <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Action Button" name="Action Button" label="Action Button" enabled="true" visible="true" accessible="false" x="29" y="496" width="147" height="29" index="1" traits="StaticText"/>
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="504" width="8" height="13" index="2" traits="Image"/>
+                                      </XCUIElementTypeButton>
+                                    </XCUIElementTypeOther>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeCell>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="72" y="483" width="298" height="2" index="11" traits=""/>
+                              <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="536" width="370" height="53" index="12" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="536" width="370" height="53" index="0" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="536" width="370" height="53" index="0" traits=""/>
+                                </XCUIElementTypeOther>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="536" width="370" height="53" index="1" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="536" width="370" height="53" index="0" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="536" width="370" height="53" index="0" traits="">
+                                      <XCUIElementTypeButton type="XCUIElementTypeButton" name="com.apple.settings.siri" label="Apple Intelligence &amp; Siri" enabled="true" visible="true" accessible="true" x="16" y="536" width="370" height="53" index="0" traits="StaticText, Button">
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" enabled="true" visible="true" accessible="false" x="29" y="547" width="30" height="30" index="0" traits="Image"/>
+                                        <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Apple Intelligence &amp; Siri" name="Apple Intelligence &amp; Siri" label="Apple Intelligence &amp; Siri" enabled="true" visible="true" accessible="false" x="29" y="548" width="223" height="29" index="1" traits="StaticText"/>
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="556" width="8" height="13" index="2" traits="Image"/>
+                                      </XCUIElementTypeButton>
+                                    </XCUIElementTypeOther>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeCell>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="72" y="535" width="298" height="2" index="13" traits=""/>
+                              <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="588" width="370" height="53" index="14" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="588" width="370" height="53" index="0" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="588" width="370" height="53" index="0" traits=""/>
+                                </XCUIElementTypeOther>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="588" width="370" height="53" index="1" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="588" width="370" height="53" index="0" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="588" width="370" height="53" index="0" traits="">
+                                      <XCUIElementTypeButton type="XCUIElementTypeButton" name="com.apple.settings.camera" label="Camera" enabled="true" visible="true" accessible="true" x="16" y="588" width="370" height="53" index="0" traits="StaticText, Button">
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" enabled="true" visible="true" accessible="false" x="29" y="599" width="30" height="30" index="0" traits="Image"/>
+                                        <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Camera" name="Camera" label="Camera" enabled="true" visible="true" accessible="false" x="29" y="600" width="103" height="29" index="1" traits="StaticText"/>
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="608" width="8" height="13" index="2" traits="Image"/>
+                                      </XCUIElementTypeButton>
+                                    </XCUIElementTypeOther>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeCell>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="72" y="587" width="298" height="2" index="15" traits=""/>
+                              <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="640" width="370" height="53" index="16" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="640" width="370" height="53" index="0" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="640" width="370" height="53" index="0" traits=""/>
+                                </XCUIElementTypeOther>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="640" width="370" height="53" index="1" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="640" width="370" height="53" index="0" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="640" width="370" height="53" index="0" traits="">
+                                      <XCUIElementTypeButton type="XCUIElementTypeButton" name="com.apple.settings.homeScreen" label="Home Screen &amp; App Library" enabled="true" visible="true" accessible="true" x="16" y="640" width="370" height="53" index="0" traits="StaticText, Button">
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" enabled="true" visible="true" accessible="false" x="29" y="651" width="30" height="30" index="0" traits="Image"/>
+                                        <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Home Screen &amp; App Library" name="Home Screen &amp; App Library" label="Home Screen &amp; App Library" enabled="true" visible="true" accessible="false" x="29" y="652" width="255" height="29" index="1" traits="StaticText"/>
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="660" width="8" height="13" index="2" traits="Image"/>
+                                      </XCUIElementTypeButton>
+                                    </XCUIElementTypeOther>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeCell>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="72" y="639" width="298" height="2" index="17" traits=""/>
+                              <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="692" width="370" height="53" index="18" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="692" width="370" height="53" index="0" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="692" width="370" height="53" index="0" traits=""/>
+                                </XCUIElementTypeOther>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="692" width="370" height="53" index="1" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="692" width="370" height="53" index="0" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="692" width="370" height="53" index="0" traits="">
+                                      <XCUIElementTypeButton type="XCUIElementTypeButton" name="com.apple.settings.search" label="Search" enabled="true" visible="true" accessible="true" x="16" y="692" width="370" height="53" index="0" traits="StaticText, Button">
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" enabled="true" visible="true" accessible="false" x="29" y="704" width="30" height="29" index="0" traits="Image"/>
+                                        <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Search" name="Search" label="Search" enabled="true" visible="true" accessible="false" x="29" y="704" width="97" height="29" index="1" traits="StaticText"/>
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="712" width="8" height="13" index="2" traits="Image"/>
+                                      </XCUIElementTypeButton>
+                                    </XCUIElementTypeOther>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeCell>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="72" y="691" width="298" height="2" index="19" traits=""/>
+                              <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="false" x="16" y="744" width="370" height="53" index="20" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="744" width="370" height="53" index="0" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="744" width="370" height="53" index="0" traits=""/>
+                                </XCUIElementTypeOther>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="744" width="370" height="53" index="1" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="744" width="370" height="53" index="0" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="16" y="744" width="370" height="53" index="0" traits="">
+                                      <XCUIElementTypeButton type="XCUIElementTypeButton" name="com.apple.settings.standBy" label="StandBy" enabled="true" visible="true" accessible="true" x="16" y="744" width="370" height="53" index="0" traits="StaticText, Button">
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" enabled="true" visible="true" accessible="false" x="29" y="756" width="30" height="29" index="0" traits="Image"/>
+                                        <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="StandBy" name="StandBy" label="StandBy" enabled="true" visible="true" accessible="false" x="29" y="756" width="108" height="29" index="1" traits="StaticText"/>
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="true" accessible="false" x="360" y="764" width="8" height="13" index="2" traits="Image"/>
+                                      </XCUIElementTypeButton>
+                                    </XCUIElementTypeOther>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeCell>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="72" y="743" width="298" height="2" index="21" traits=""/>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="-16" y="813" width="434" height="88" index="22" traits=""/>
+                              <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="false" accessible="false" x="16" y="831" width="370" height="53" index="23" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="831" width="370" height="53" index="0" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="831" width="370" height="53" index="0" traits=""/>
+                                </XCUIElementTypeOther>
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="831" width="370" height="53" index="1" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="831" width="370" height="53" index="0" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="16" y="831" width="370" height="53" index="0" traits="">
+                                      <XCUIElementTypeButton type="XCUIElementTypeButton" name="com.apple.settings.screenTime" label="Screen Time" enabled="true" visible="false" accessible="true" x="16" y="831" width="370" height="53" index="0" traits="StaticText, Button">
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" enabled="true" visible="false" accessible="false" x="29" y="843" width="30" height="29" index="0" traits="Image"/>
+                                        <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Screen Time" name="Screen Time" label="Screen Time" enabled="true" visible="false" accessible="false" x="29" y="843" width="139" height="29" index="1" traits="StaticText"/>
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" name="chevron.forward" enabled="true" visible="false" accessible="false" x="360" y="851" width="8" height="13" index="2" traits="Image"/>
+                                      </XCUIElementTypeButton>
+                                    </XCUIElementTypeOther>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeCell>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" value="0%" name="Vertical scroll bar, 2 pages" label="Vertical scroll bar, 2 pages" enabled="true" visible="true" accessible="false" x="369" y="116" width="30" height="672" index="24" traits="Adjustable">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="396" y="119" width="3" height="430" index="0" traits=""/>
+                              </XCUIElementTypeOther>
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" value="0%" name="Vertical scroll bar, 2 pages" label="Vertical scroll bar, 2 pages" enabled="true" visible="true" accessible="false" x="369" y="116" width="30" height="672" index="25" traits="Adjustable">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="396" y="119" width="3" height="430" index="0" traits=""/>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeCollectionView>
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="201" y="478" width="0" height="0" index="1" traits=""/>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeOther>
+                      </XCUIElementTypeOther>
+                    </XCUIElementTypeOther>
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="2" traits="">
+                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                        <XCUIElementTypeToolbar type="XCUIElementTypeToolbar" name="Toolbar" label="Toolbar" enabled="true" visible="true" accessible="false" x="0" y="788" width="402" height="86" index="0" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="28" y="798" width="346" height="48" index="0" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="28" y="798" width="346" height="48" index="0" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="28" y="798" width="0" height="0" index="0" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="27" y="798" width="347" height="48" index="0" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="27" y="798" width="347" height="48" index="0" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="32" y="803" width="337" height="38" index="0" traits="">
+                                      <XCUIElementTypeSearchField type="XCUIElementTypeSearchField" value="Search" name="Search" label="Search" enabled="true" visible="true" accessible="true" x="32" y="803" width="337" height="38" index="0" placeholderValue="Search" traits="SearchField">
+                                        <XCUIElementTypeButton type="XCUIElementTypeButton" name="Dictate" label="Dictate" enabled="true" visible="true" accessible="false" x="335" y="811" width="18" height="22" index="0" traits="Button"/>
+                                        <XCUIElementTypeImage type="XCUIElementTypeImage" name="magnifyingglass" label="Search" enabled="true" visible="true" accessible="false" x="45" y="812" width="22" height="19" index="1" traits="Image"/>
+                                        <XCUIElementTypeButton type="XCUIElementTypeButton" name="Dictate" label="Dictate" enabled="true" visible="true" accessible="false" x="335" y="811" width="18" height="22" index="2" traits="Button"/>
+                                      </XCUIElementTypeSearchField>
+                                    </XCUIElementTypeOther>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeToolbar>
+                      </XCUIElementTypeOther>
+                    </XCUIElementTypeOther>
+                  </XCUIElementTypeOther>
+                </XCUIElementTypeOther>
+              </XCUIElementTypeOther>
+              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="1" traits="">
+                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits=""/>
+              </XCUIElementTypeOther>
+            </XCUIElementTypeOther>
+          </XCUIElementTypeOther>
+        </XCUIElementTypeOther>
+      </XCUIElementTypeOther>
+    </XCUIElementTypeOther>
+  </XCUIElementTypeWindow>
+</XCUIElementTypeApplication>
