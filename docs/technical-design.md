@@ -6,7 +6,8 @@ for coding assistants, a CLI, a Python SDK, and a web console. Artemis drives An
 adb + an on-device Accessibility Helper; Apollo drives iOS Simulators and physical iPhones/iPads
 through XCTest-based runners (WebDriverAgent) plus Apple's `simctl`/`devicectl` and `go-ios`.
 
-Status: design baseline, 2026-09-16. Companion document: `development-plan.md`.
+Status: design baseline 2026-09-16, revised 2026-09-20 after the Phase 0 spikes (`spikes.md`).
+Companion document: `development-plan.md`.
 
 ---
 
@@ -76,9 +77,9 @@ screenshot/streaming, app lifecycle, Xcode 26 status, license, interop from Pyth
 |---|---|---|---|---|---|---|---|---|---|---|
 | **WebDriverAgent** (Appium) | ✔ | ✔ (signed) | ✔ `/source` XML/JSON, tunable (`snapshotMaxDepth`, excluded attrs) | ✔ W3C actions, `/wda/keys`, `/wda/pressButton` | ✔ `/screenshot`; MJPEG server :9100 | ✔ `/wda/apps/*`, `/wda/activeAppInfo`, `/url` | ✔ fixed in WDA 11.4.1 (2026-03) | BSD-3 | HTTP/JSON (httpx) | **Primary on-device runner** (analog of Artemis Helper) |
 | **DeviceKit** (mobile-next/devicekit-ios) | ✔ | ✔ | ✔ `device.dump.ui` | ✔ | ✔ PNG/JPEG, MJPEG :12004, H264 | ✔ | ✔ (Xcode 15+) | FSL-1.1 → Apache-2.0 after 2 yrs | JSON-RPC/HTTP+WS | Optional backend behind a flag; not in required path (license, 60 commits) |
-| **idb** (Meta) | ✔ | ✗ on iOS 17+ (issue #853 open since 2023) | ✔ sim-only `ui describe-all` (private AX, no XCTest) | ✔ HID tap/swipe/text/key | ✔ screenshot, record-video | ✔ | ✔ builds w/ Xcode 26 | MIT | gRPC (`fb-idb` 1.5.9, py≥3.10) or CLI JSON | **Simulator fast path** for hierarchy + HID (analog of uiautomator2 tier) |
+| **idb** (Meta) | ✔ | ✗ on iOS 17+ (issue #853 open since 2023) | ✔ sim-only `ui describe-all` (private AX, **accessibility leaves only**, 0.15–0.2 s) | ✔ HID tap/swipe/key; `ui text` ASCII-only | ✔ screenshot, record-video | ✔ | ✔ 1.6.1 via `brew install facebook/fb/idb` | MIT | CLI `--json` only — `fb-idb` (protobuf ≥7.35) conflicts with the Vertex SDK | **Simulator fast path** for a compact element list + HID (analog of uiautomator2 tier) |
 | **AXe** (cameroncooke) | ✔ | ✗ | ✔ `describe-ui` JSON | ✔ HID | ✔ | – | ✔ (26/27) | MIT | CLI JSON | Alternative to idb for sim fast path; same frameworks, lighter install. Pick one (idb) |
-| **go-ios** (danielpaulus) | ✗ | ✔ iOS ≤26; tunnel (userspace, no sudo) | inspector-only (`ios ax`), no bulk dump | via runner (`ios ui run wda\|devicekit`) | ✔ screenshot/MJPEG | ✔ install/launch/kill/apps | ✔ (v1.3.x, Aug 2026) | MIT | CLI `--json` / REST API / Go module | **Real-device bridge** (the "adb" for devices); also signs+installs WDA |
+| **go-ios** (danielpaulus) | ✗ | ✔ iOS ≤26; tunnel (userspace, no sudo, <1 s) | inspector-only (`ios ax`), no bulk dump | via runner (`ios runwda`, `ios ui …`) | ✔ screenshot/MJPEG (needs Developer Mode) | ✔ install/launch/kill/apps | ✔ v1.3.2 (`npm i -g go-ios`; no brew formula) | MIT | CLI `--json` / REST API / Go module | **Real-device bridge** (the "adb" for devices); signs WDA only with a P12+profile or an App Store Connect key — free-team signing goes through `xcodebuild` |
 | **pymobiledevice3** | ✗ | ✔ | audit only | via xctest | ✔ | ✔ | ✔ | **GPL-3** | Python lib | Rejected as dependency (copyleft); go-ios covers the same ground |
 | **`xcrun simctl`** (Apple) | ✔ | ✗ | ✗ | ✗ | ✔ `io screenshot`, `io recordVideo` | ✔ boot/install/launch/terminate/openurl/clone/pbcopy/privacy/push/status_bar | ✔ | Apple | CLI | **Simulator bridge** |
 | **`xcrun devicectl`** (Apple, Xcode 15+) | ✗ | ✔ | ✗ | ✗ | ✗ | ✔ list/install/launch/kill/copy | ✔ | Apple | CLI JSON | Optional official fallback for device app lifecycle; no tunnel needed |
@@ -99,8 +100,8 @@ Opus 4.6 vision+XML) is the AndroidWorld counterpart. MobileWorld / AndroidDaily
 |---|---|---|
 | D1 | **Implementation language: Python 3.12+** (same as Artemis). Go is used only as prebuilt tool binaries (`ios` from go-ios), never as Apollo source. | The expensive, differentiating part of Artemis is the agent stack (LangGraph, ~100 modules, prompts, memory, MCP, console). Every iOS primitive we need is reachable from Python over HTTP (WDA, DeviceKit), gRPC (idb) or subprocess+JSON (simctl, devicectl, go-ios). A Go rewrite would re-implement the agent layer for no device-layer gain. |
 | D2 | **Fork Artemis, replace the platform layer** (not a plugin, not a rewrite). Apollo = Artemis tree with `drivers/android`→`drivers/ios`, adb clients→iOS bridges, Android diagnostics→iOS diagnostics, and a small set of refactors that make controllers/factory platform-dispatched. | Artemis has no plugin registry; a pure out-of-tree driver cannot reach `unified_controller`, `diagnose`, streaming, `helper`. Forking gives exact parity on day one. The refactors are kept minimal and upstream-friendly so Artemis changes can be merged periodically (see §10). |
-| D3 | **On-device runner: WebDriverAgent** (Appium fork). Apollo pins a WDA release, ships prebuilt simulator bundle download + `xcodebuild`/go-ios signing for devices. | Mature, BSD, Xcode 26 fixed, both targets, MJPEG stream, W3C actions, tunable source. It is the iOS analog of the Artemis Accessibility Helper (an installed on-device service exposing HTTP). |
-| D4 | **Simulator fast path: idb** (`ui describe-all`, HID) as tier-2 hierarchy/input backend on simulators. | Private-AX dump is faster than XCTest snapshots on deep trees and works when WDA is not attached (mirrors Artemis's uiautomator2 tier). Optional; WDA alone is sufficient. |
+| D3 | **On-device runner: WebDriverAgent** (Appium fork), pinned at **v16.12.9** (prebuilt `WebDriverAgentRunner-Build-Sim-arm64.zip`, sha256 in `runner_manifest.json`); devices get `xcodebuild -allowProvisioningUpdates` (free team) or go-ios P12 signing. | Mature, BSD, works on Xcode 26.6 / iOS 26.2 and 26.5 unmodified, both targets, MJPEG stream, W3C actions, tunable source. Measured `/source` 0.24–0.73 s on real screens (spikes S1). It is the iOS analog of the Artemis Accessibility Helper. |
+| D4 | **Simulator fast path: idb** (`ui describe-all --json`, HID tap/swipe/key) as tier-2 backend on simulators, driven through the CLI (no `fb-idb` dependency). | 2× faster than WDA `/source` and independent of the XCTest session, but it returns accessibility leaves only and types ASCII only — so it is a *perception* accelerator and tap backend, never the text-input path. Optional; WDA alone is sufficient (S1 met the latency target). |
 | D5 | **Real-device bridge: go-ios** (`ios` CLI, JSON output). `devicectl` as optional official fallback for install/launch. | MIT, cross-platform, handles iOS 17+ tunnel in userspace, signs and runs WDA, MJPEG screenshots, syslog/crash. idb is dead on iOS 17+ devices; pymobiledevice3 is GPL. |
 | D6 | **DeviceKit** supported as an alternate runner behind `ios.runner: devicekit`, not default. | Attractive API (atomic dump, H264) but FSL license and youth. Keeps the door open. |
 | D7 | **Keep Artemis's UIAutomator-style XML as the internal hierarchy contract**; iOS trees are normalized into it. | Perception, OCR fusion, `filter_ui_hierarchy`, prompts, hierarchy-parity tests, and the console all consume that schema. Normalizing at the driver boundary keeps ~all upstream code untouched. |
@@ -201,16 +202,17 @@ the screenshot, exactly as on Android.
 - **`DeviceKitClient`** (optional): JSON-RPC `device.dump.ui`, `device.io.*`, `device.screenshot`, `/mjpeg`.
 - **`SimBridge`**: `xcrun simctl` wrappers with `-j` where available; `listapps` → `plutil -convert json`; `io screenshot --type=png`; `io recordVideo --codec=h264`; `openurl`; `pbcopy`; `privacy grant`; `status_bar override`; `clone` for parallel benchmark runs; `spawn … defaults write com.apple.Preferences`… for keyboard settings.
 - **`DeviceBridge`**: `ios --udid … --json` for `list`, `info`, `apps --list`, `install --path`, `launch`, `kill`, `screenshot`, `syslog`, `crash`, `forward`, `tunnel start --userspace`, `ui download|install|run wda`, `devmodearm`, `pair`. Managed `tunnel` process per host (iOS ≥17). `devicectl` used only if `ios` is missing or fails for install/launch.
-- **`IdbClient`** (optional, simulators): `fb-idb` gRPC or CLI `--json`: `ui describe-all --nested`, `ui tap`, `ui swipe`, `ui text`, `ui key`, `screenshot`, `launch`, `terminate`.
+- **`IdbClient`** (optional, simulators): subprocess `idb … --udid … --json` (companion auto-spawns, ~5 s cold): `ui describe-all --nested`, `ui tap`, `ui swipe`, `ui key`, `ui button`, `screenshot`, `launch`, `terminate`. No `ui text` (ASCII-only) — text goes through WDA.
 
 ### 6.3 Screen data pipeline
 
 1. Settle 0.3 s (as Artemis) unless `skip_settling`.
 2. Hierarchy source by tier (config `ios.hierarchy_backend`, default `auto`):
    1. WDA `/source` (XML). Settings: `snapshotMaxDepth` 60, exclude `visible`? **No** — `visible` is needed for filtering; instead exclude `accessible`,`index` and cap `snapshotMaxChildren` 200. Timeout 8 s.
-   2. On simulators, idb `describe-all` if WDA source exceeds 3 s twice in a row or errors (tier switch is sticky per task, logged).
+   2. On simulators, idb `describe-all` if WDA source exceeds 3 s twice in a row or errors (tier switch is sticky per task, logged). idb yields a flat accessibility-leaf list (Heading/Button/TextField… with label, value, frame in points), which the normalizer wraps as leaf `<node>`s under a synthetic root.
    3. DeviceKit `device.dump.ui` if selected runner.
-3. Screenshot: WDA `/screenshot` (PNG). On simulators `simctl io screenshot` is used when WDA is busy (parallel); both return native pixels.
+3. Screenshot: WDA `/screenshot` (PNG, 0.06 s, native pixels). On simulators `simctl io screenshot` is used when WDA is busy (parallel); both return native pixels.
+   **After `launch_app`, poll `/wda/activeAppInfo` until `bundleId` matches before the first dump** — otherwise WDA returns the Springboard tree (S1).
 4. Normalize to UIAutomator XML (`hierarchy.py`): one `<node>` per XCUIElement with
    `class="XCUIElementType<Type>"`, `text=label|value`, `content-desc=label`, `resource-id=identifier`
    (AXUniqueId / `name` when it differs from label), `bounds="[x1,y1][x2,y2]"` in pixels,
@@ -219,22 +221,24 @@ the screenshot, exactly as on Android.
    `selected`, `scrollable` (ScrollView/Table/CollectionView), `password` (SecureTextField),
    `package`=active bundleId, `index`. Off-screen and zero-area nodes dropped, Window/Other wrappers
    collapsed unless they carry an identifier. Artemis's `filter_ui_hierarchy` then runs unchanged.
-5. Status bar: iOS status bar height is model-dependent (20/44/47/54/59 pt); `IosDriver` provides
-   it from `/wda/screen` + a model table so perception's OCR crop stays correct.
+5. Status bar: `/wda/screen` returns `statusBarSize` (54 pt on iPhone 17 Pro) and `scale`; `IosDriver` multiplies by scale for perception's OCR crop. No model table needed.
 6. Atomicity: WDA has no combined snapshot; Apollo captures screenshot → source back-to-back and
    stamps both; DeviceKit provides a single call. Drift is acceptable (same as Artemis's pre-Android-11 path).
 
 ### 6.4 Text input strategy (`input.py`)
 
 1. If `target` given: tap to focus; if `clear_existing`: element `clear` via WDA when an element id
-   is resolvable from the tree (`/session/:id/element/:eid/clear`), else `keys` with
-   `select-all` is not available → send `"\b"×len(value)` using the value from the tree.
+   is resolvable from the tree (`/session/:id/element/:eid/clear`, 0.9 s), else send
+   `"\b"×len(value)` using the value from the tree.
 2. Type: `/wda/keys {"value": [text]}` (XCTest `typeText`; Unicode OK; needs software keyboard —
    doctor enforces `ConnectHardwareKeyboard=0` on simulators).
-3. Fallback for long/multiline text: set pasteboard (`simctl pbcopy` / WDA `/wda/setPasteboard`) and
-   `keys` with ⌘V equivalent is not reliable on iOS → use element `setValue` (`/element/:eid/value`)
-   on simulators via idb `ui set-value`.
-4. Newlines → `"\n"`; `erase_one_char` → `"\b"`.
+3. Fallback for long/multiline text: element `setValue` (`POST /element/:eid/value`, Unicode OK,
+   works on simulators and devices). Pasteboard (`/wda/setPasteboard`) is available but paste needs a
+   long-press menu, so it is not used by default.
+4. Newlines → `"\n"` — in a single-line `TextField` Return moves focus/submits, in a `TextView` it
+   inserts a newline; the Operator prompt says so. `erase_one_char` → `"\b"`.
+5. Never `POST /wda/element/:id/scroll` with a predicate (60 s timeouts observed); scroll with W3C
+   `actions` swipes (0.3–0.5 s).
 
 ### 6.5 App identity
 
@@ -254,16 +258,23 @@ perception when enabled, and `simctl privacy grant` is offered in task presets f
 
 - Console live view: `device_stream_service` proxies WDA MJPEG (`http://127.0.0.1:<mjpeg_port>`),
   10–15 fps, quality 40. If WDA is down: `simctl io screenshot` polling (sim) / `ios screenshot`.
-- Recording (`recorder.py`): simulator → `simctl io recordVideo -f out.mp4` (H.264, rotation-safe);
-  device → `ffmpeg -i http://127.0.0.1:<mjpeg_port> -c:v libx264 -pix_fmt yuv420p out.mp4`.
-  Segment metadata (Artemis `extract_segment_metadata`) reads the same MP4 timeline.
+- Recording (`recorder.py`): simulator → `simctl io recordVideo --codec=h264 -f out.mp4` (H.264,
+  **variable frame rate: frames are written only when the display changes**, so a static screen
+  yields one frame); device → `ffmpeg -use_wallclock_as_timestamps 1 -f mjpeg -i http://127.0.0.1:<mjpeg_port>
+  -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" -c:v libx264 -pix_fmt yuv420p out.mp4` (the even-size filter is
+  mandatory: scaled MJPEG frames have odd dimensions). Segment metadata (Artemis
+  `extract_segment_metadata`) must use presentation timestamps, not frame counts.
 
 ### 6.8 Device pool, ports, concurrency
 
 `DevicePool` enumerates `simctl list -j devices` (booted or bootable) and `ios list --json`;
-each lease allocates `runner_port` 8100+n, `mjpeg_port` 9100+n; simulators bind WDA on host
-loopback directly; devices need `ios forward <host> 8100` (usbmux) per lease. One go-ios tunnel
-daemon per host serves all iOS-17+ devices. Locks reuse Artemis `device_lock`.
+each lease allocates `runner_port` 8100+n, `mjpeg_port` 9100+n, passed to the simulator runner as
+`SIMCTL_CHILD_USE_PORT` / `SIMCTL_CHILD_MJPEG_SERVER_PORT` on `simctl launch` (verified: two WDAs on
+8100/8101); devices need `ios forward <host> 8100` (usbmux) per lease. One go-ios tunnel daemon
+per host (`ios tunnel start --userspace`, info API :60105) serves all iOS-17+ devices. Locks reuse
+Artemis `device_lock`. `simctl clone` only accepts a **shutdown** source, so parallel runs clone
+from a shutdown template device and install WDA on each clone. Never quit Simulator.app while
+simulators are leased — quitting it shuts them all down.
 
 ### 6.9 Runner provisioning (`RunnerManager`)
 
@@ -271,9 +282,14 @@ daemon per host serves all iOS-17+ devices. Locks reuse Artemis `device_lock`.
   `WebDriverAgentRunner-Runner.app` simulator zips; git tag for device builds).
 - Simulator: download zip → verify → `simctl install` → `simctl launch com.facebook.WebDriverAgentRunner.xctrunner`
   → poll `/status`. (Same recipe mobile-mcp validated.)
-- Device: `ios ui download --wda && ios ui install --wda --team-id …` (go-ios signing) or
-  `xcodebuild -project WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner -destination id=<udid>
-  DEVELOPMENT_TEAM=… test-without-building`; then `ios ui run wda`, forward 8100.
+- Device, two signing routes: (a) default, free personal team — `xcodebuild -project
+  WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner -destination id=<udid>
+  -allowProvisioningUpdates DEVELOPMENT_TEAM=<team> build-for-testing`, install the runner with `ios
+  install`; (b) labs/CI — `ios ui download wda` + `ios sign app --p12file … --profile … --install`.
+  Then `ios runwda` (needs `ios tunnel start --userspace` running) and `ios forward 8100 8100`.
+  Prerequisites the doctor checks: Developer Mode (`ios devmode get`; on a passcode-locked phone
+  `ios devmode enable` only reveals the Settings menu — the user toggles and reboots), CoreDevice
+  pairing (`devicectl list devices`), a codesigning identity (`security find-identity -p codesigning`).
 - Health: `/status` sessionless probe; restart on 3 consecutive failures; `apollo runner status`.
 
 ---

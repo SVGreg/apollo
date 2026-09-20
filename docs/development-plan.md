@@ -6,7 +6,8 @@ benchmark/bench work from Phase 5 shortens the tail by ~2 weeks. Total: **~14 we
 with a usable simulator-only alpha at the end of week 4.
 
 Local baseline on the authoring machine (2026-09-16): Go 1.26.5, Python 3.14.2 (pyenv),
-Xcode 26.6; `idb`, `go-ios`, `ffmpeg` not installed.
+Xcode 26.6; `idb`, `go-ios`, `ffmpeg` not installed. **Phase 0 completed 2026-09-20** — see
+`spikes.md`; numbers and design changes are folded into `technical-design.md`.
 
 ---
 
@@ -18,7 +19,7 @@ design verified by hand before code is written against it.
 Tasks
 1. Import `google/artemis` at a pinned SHA as the first commit; add `upstream` remote; write `docs/upstream-sync.md`.
 2. Rename package `artemis`→`apollo`, CLI, env prefix (`ARTEMIS_*`→`APOLLO_*`), `artemis-client`→`apollo-client`, config `apollo.jsonc`. Keep module paths otherwise identical to ease merges.
-3. `pyproject.toml`: drop `adbutils`, `uiautomator2`; add `fb-idb` (optional extra `sim-fastpath`), `respx` (dev). Pin Python 3.12/3.13 via `.python-version`; verify the LangGraph/opencv/grpc stack installs with `uv`.
+3. `pyproject.toml`: drop `adbutils`, `uiautomator2`; add `respx` (dev). Pin Python 3.12 via `.python-version`; verify the LangGraph/opencv/grpc stack installs with `uv`. *(Done. No `fb-idb` extra: its protobuf ≥7.35 pin conflicts with the Vertex SDK; idb is used via CLI.)*
 4. Apache-2.0 LICENSE kept; `NOTICE` crediting Google LLC (Artemis) and Minitap (mobile-use); file headers.
 5. CI: GitHub Actions `macos-26` — lint (ruff), pyright, unit tests, `apollo run --mock`.
 6. **Spikes (each ≤ half a day, results recorded in `docs/spikes.md`):**
@@ -31,6 +32,8 @@ Tasks
    - S7 iOSWorld: clone, bootstrap 3 apps, run one task with their Appium loop to learn the trajectory format.
 
 Exit criteria: CI green on mock driver; spike table filled with numbers; any design change from spikes reflected in `technical-design.md`.
+
+Status 2026-09-20: tasks 1–5 done (`APOLLO_MOCK_DRIVER=1 APOLLO_FAKE_LLM=1 apollo run … --standalone` passes end-to-end; `make smoke-mock`); S1–S3, S5–S7 done, S4 partial (WDA on device pending Developer Mode + signing on the test phone).
 
 ---
 
@@ -49,7 +52,7 @@ Deliverables
 - Minimal `apollo doctor` (Xcode, runtimes, booted sims, WDA status, hardware-keyboard setting).
 - Unit tests: normalizer golden fixtures (≥6 screens), keymap, input strategy, allowlist, port allocator (mocked WDA with `respx`).
 
-Exit criteria: Flash profile completes 8/10 built-in-app tasks (Settings toggle, Notes create, Calendar event, Safari search, Reminders add, Clock alarm, Contacts add, Photos open) with `--verification-level final`; integration smoke (no LLM) runs in CI on `macos-26`.
+Exit criteria: Flash profile completes 8/10 built-in-app tasks with `--verification-level final`; integration smoke (no LLM) runs in CI on `macos-26`. The iOS 26 simulator runtime ships **no Notes, Clock or Mail**, so the task set is: Settings toggle, Settings › General › About lookup, Calendar event, Safari search, Reminders add, Contacts add, Photos open, Maps search, Messages compose (no send), Files browse.
 
 ---
 
@@ -94,7 +97,7 @@ Exit criteria: Phase 1's 10 tasks pass on a real device; `apollo doctor --probe-
 Goal: Flash step time on simulators comparable to Artemis (~3–5 s), resilient long runs.
 
 Deliverables
-- `IdbClient` tier (`fb-idb` extra): `describe-all` hierarchy + HID input on simulators; sticky tier switching with metrics; `apollo doctor` detects companion.
+- `IdbClient` tier (CLI `--json`): `describe-all` leaf list + HID tap/swipe on simulators; sticky tier switching with metrics; `apollo doctor` detects companion.
 - WDA snapshot tuning per screen complexity (`snapshotMaxDepth`, `snapshotMaxChildren`, `pageSourceExcludedAttributes`, `waitForIdleTimeout`), exposed in `apollo.jsonc`; source caching keyed by `activeAppInfo` + screenshot hash for action bursts.
 - Session recovery (invalid session, WDA crash, simulator reboot); awake handling.
 - `DeviceKitClient` behind `ios.runner: devicekit` (user-built bundle; not vendored); `device.dump.ui` normalizer; MJPEG at :12004.
@@ -155,10 +158,10 @@ Exit criteria: full-suite run completes unattended; results published in `docs/b
 
 | Risk | Phase | Trigger to re-plan |
 |---|---|---|
-| WDA `/source` > 3 s on typical screens (S1) | 0→1 | Promote idb tier from Phase 4 to Phase 1 for simulators |
-| go-ios signing/tunnel unreliable on iOS 26 (S4) | 3 | Fall back to `xcodebuild … test-without-building` + `devicectl`; add one week |
+| WDA `/source` > 3 s on typical screens (S1) | 0→1 | Not triggered: measured 0.24–0.73 s (Springboard 2.1 s). idb stays in Phase 4. |
+| go-ios signing/tunnel unreliable on iOS 26 (S4) | 3 | Tunnel verified (<1 s, userspace). go-ios has no free-team signing: `xcodebuild -allowProvisioningUpdates` is the default device signing route, go-ios P12 signing for labs. |
 | Upstream Artemis refactors touch `controllers/` or `factory.py` heavily | any | Rebase platform commits at each sync; keep an adapter shim |
-| Python 3.12 dependency conflicts under `uv` | 0 | Pin to Artemis's lockfile versions |
+| Python 3.12 dependency conflicts under `uv` | 0 | Resolved cleanly (2026-09-20) once Android deps were dropped. |
 | iOSWorld harness changes (Appium-specific assumptions) | 5 | Vendor a copy of `tasks.json` + judge at a pinned SHA |
 
 ## Open decisions (defaults chosen; revisit at Phase 0 review)
