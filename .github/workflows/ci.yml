@@ -107,9 +107,10 @@ jobs:
       - name: Boot an iPhone simulator on the newest available iOS runtime
         run: uv run python scripts/ci_boot_simulator.py
 
-      - name: Driver smoke (simctl → WDA provisioning → Settings screen → HOME)
+      - name: Driver smoke (simctl → WDA provisioning → Settings screen → HOME) and SDK contract
         run: >-
           uv run pytest tests/integration/test_ios_simulator_smoke.py
+          tests/integration/test_sdk_ios_simulator.py
           -m ios_sim -q -o faulthandler_timeout=300
 
       - name: Flash loop on the simulator with the fake LLM (no model calls)

@@ -193,6 +193,9 @@ Prompt/vocabulary pass: the Pro Operator prompt gains the same iOS-conventions b
 Center, no intents or shell); Planner/Operator "ADB shell commands / ADB tools" wording became
 "host device commands (`xcrun simctl`)"; background-task headers renamed. Diffs kept to the
 template strings so upstream merges stay easy.
+SDK smoke done: `tests/integration/test_sdk_ios_simulator.py` spawns a fake-LLM daemon and drives
+the simulator through `apollo-client` (health → capabilities → devices → submit/idempotent resubmit
+→ wait → scheduler release; unknown UDID rejected); part of `make smoke-sim` and the CI job.
 
 ---
 

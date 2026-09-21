@@ -47,7 +47,7 @@ smoke-mock: ## Run a Flash task against the mock driver with a fake LLM (no devi
 
 smoke-sim: ## Boot an iPhone simulator, run the driver smoke and a fake-LLM Flash task on it (no API key)
 	@udid=$$(uv run python scripts/ci_boot_simulator.py) && \
-	APOLLO_SIM_UDID=$$udid GOOGLE_API_KEY="$${GOOGLE_API_KEY:-test-placeholder}" uv run pytest tests/integration/test_ios_simulator_smoke.py -m ios_sim -q -o faulthandler_timeout=300 && \
+	APOLLO_SIM_UDID=$$udid GOOGLE_API_KEY="$${GOOGLE_API_KEY:-test-placeholder}" uv run pytest tests/integration/test_ios_simulator_smoke.py tests/integration/test_sdk_ios_simulator.py -m ios_sim -q -o faulthandler_timeout=300 && \
 	APOLLO_FAKE_LLM=1 GOOGLE_API_KEY="$${GOOGLE_API_KEY:-test-placeholder}" uv run apollo run "Open Settings" --profile flash --standalone --device-serial $$udid
 
 test: ## Run deterministic tests that need no device, credentials, or private services
