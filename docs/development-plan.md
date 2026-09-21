@@ -128,7 +128,15 @@ step replay. MCP: `mobile_diagnose` (iOS facts, `launch_avd="iPhone 17 Pro"` boo
 `mobile_inspect_trace` verified over stdio; `rules.md` rewritten for iOS. Task set run so far: 6/10
 (About lookup, Bold Text, Reminders, Contacts, Safari, Calendar); Photos/Maps/Messages/Files and the
 Pro profile remain. `mcp/device_server.py` (13 low-level tools) and `apollo runner` CLI deferred to
-Phase 2; the CI `macos-26` integration smoke is not wired yet.
+Phase 2.
+
+Status 2026-09-21: **CI integration smoke wired** — `simulator-smoke` job on `macos-26`
+(`scripts/ci_boot_simulator.py` boots an iPhone on the newest runtime → `tests/integration/
+test_ios_simulator_smoke.py` (`-m ios_sim`: simctl → WDA provisioning → Settings screenshot +
+hierarchy → HOME) → `apollo run` with `APOLLO_FAKE_LLM=1` on the same simulator; WDA bundle cached
+by manifest hash, traces + simulator diagnostics uploaded on failure). Locally: `make smoke-sim`.
+Quality-ratchet baseline raised 754 → 778 for the broad handlers Phase 1a/1b added (unpaid debt,
+not new code). Remaining 1b exit-criteria work: Photos/Messages/Files tasks and one Pro run.
 
 ---
 

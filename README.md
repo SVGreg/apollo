@@ -89,11 +89,15 @@ uv run apollo mcp --install claude   # registers mobile_run_task / mobile_manage
 <udid>` is the manual equivalent. Never quit Simulator.app while tasks run — it shuts every
 simulator down.
 
-### Without a device or key
+### Without a key
 
 ```sh
 make smoke-mock     # Flash loop against the in-memory mock driver with a fake LLM
+make smoke-sim      # boots an iPhone simulator, provisions WDA, runs the driver smoke + a fake-LLM task
 ```
+
+`make smoke-sim` is what CI runs on `macos-26` (`simulator-smoke` job); it needs Xcode with an
+iOS runtime but no model key.
 
 ### Known limits (Phase 1a)
 

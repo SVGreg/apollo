@@ -7,13 +7,12 @@
   // 1. Global Default Model (Applied to all sub-agents unless overridden below)
   // ------------------------------------------------------------------------------
   "default": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-5",
-    "thinking_level": "medium",
+    "provider": "google",
+    "model": "gemini-3.8-flash",
+    "thinking_level": "low",
     "fallback": {
       "provider": "anthropic",
-      "model": "claude-opus-5",
-      "thinking_level": "medium"
+      "model": "claude-haiku-4-5"
     }
   },
 
@@ -101,6 +100,7 @@
 
     // 🔽 Hopper: Fast lightweight package name locator
     "hopper": {
+      "provider": "anthropic",
       "model": "claude-haiku-4-5",
       "fallback": {
         "provider": "anthropic",

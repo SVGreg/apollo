@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.PHONY: help test test-integration test-device test-all install install-deps setup start ui restart stop status build-ui doctor smoke-mock clean precommit-install precommit lint format typecheck quality-ratchet
+.PHONY: help test test-integration test-device test-all install install-deps setup start ui restart stop status build-ui doctor smoke-mock smoke-sim clean precommit-install precommit lint format typecheck quality-ratchet
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -44,6 +44,11 @@ doctor: ## Run system, device, and toolchain diagnostics
 
 smoke-mock: ## Run a Flash task against the mock driver with a fake LLM (no device, no API key)
 	@APOLLO_MOCK_DRIVER=1 APOLLO_FAKE_LLM=1 GOOGLE_API_KEY=test-placeholder uv run apollo run "Open Settings" --profile flash --standalone --device-serial mock-device
+
+smoke-sim: ## Boot an iPhone simulator, run the driver smoke and a fake-LLM Flash task on it (no API key)
+	@udid=$$(uv run python scripts/ci_boot_simulator.py) && \
+	APOLLO_SIM_UDID=$$udid GOOGLE_API_KEY="$${GOOGLE_API_KEY:-test-placeholder}" uv run pytest tests/integration/test_ios_simulator_smoke.py -m ios_sim -q -o faulthandler_timeout=300 && \
+	APOLLO_FAKE_LLM=1 GOOGLE_API_KEY="$${GOOGLE_API_KEY:-test-placeholder}" uv run apollo run "Open Settings" --profile flash --standalone --device-serial $$udid
 
 test: ## Run deterministic tests that need no device, credentials, or private services
 	@echo "🧪 Running deterministic tests..."
