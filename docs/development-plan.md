@@ -196,6 +196,10 @@ template strings so upstream merges stay easy.
 SDK smoke done: `tests/integration/test_sdk_ios_simulator.py` spawns a fake-LLM daemon and drives
 the simulator through `apollo-client` (health → capabilities → devices → submit/idempotent resubmit
 → wait → scheduler release; unknown UDID rejected); part of `make smoke-sim` and the CI job.
+`mcp/device_server.py` (`apollo mcp --type device`, `adb` kept as alias): the 13 raw actions
+verified over stdio on the simulator (launch_app, get_ui_hierarchy, take_screenshot, tap, back,
+press_key HOME). The implementation stays in `adb_server.py` for upstream merges; no shell tool
+on iOS — host commands go through the agent server's `run_adb_command` allowlist.
 
 ---
 

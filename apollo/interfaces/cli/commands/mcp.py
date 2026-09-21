@@ -697,7 +697,7 @@ def mcp_command(
         typer.Option(
             "--type",
             "-t",
-            help="Type of MCP server to start: 'agent' (default, universal IDE mobile agent), 'adb' (raw adb), 'xml' (xml fuzzy search).",
+            help="Type of MCP server to start: 'agent' (default, universal IDE mobile agent), 'device' (13 raw device actions; 'adb' is the legacy alias), 'xml' (xml fuzzy search).",
         ),
     ] = "agent",
     transport: Annotated[
@@ -833,9 +833,9 @@ def mcp_command(
                 agent_mcp.run(transport="sse", host=host, port=port)
             else:
                 agent_mcp.run(transport="stdio")
-        elif st == "adb":
+        elif st in ("device", "adb"):
             if transport.lower() == "sse":
-                logger.info(f"Starting Apollo ADB MCP Server over {transport}...")
+                logger.info(f"Starting Apollo device MCP Server over {transport}...")
                 adb_mcp.run(transport="sse", host=host, port=port)
             else:
                 # stdio carries the MCP JSON-RPC stream: redirect logging and detach
@@ -843,7 +843,7 @@ def mcp_command(
                 from apollo.mcp.adb_server import configure_stdio_mode
 
                 configure_stdio_mode()
-                logger.info("Starting Apollo ADB MCP Server over stdio...")
+                logger.info("Starting Apollo device MCP Server over stdio...")
                 adb_mcp.run(transport="stdio")
         elif st == "xml":
             from apollo.mcp.xml_search_server import mcp as xml_mcp

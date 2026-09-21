@@ -88,7 +88,7 @@ def configure_stdio_mode() -> None:
 
 
 # Create minimal MCP server
-mcp = FastMCP("Android_ADB_Controller")
+mcp = FastMCP("Apollo_Device_Controller")
 
 _GLOBAL_CONTROLLER = None
 _CONTROLLERS: dict[str, Any] = {}
