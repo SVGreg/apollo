@@ -69,9 +69,9 @@ def main() -> None:
     # CoreSimulator stays sluggish for a while after a boot on a loaded runner; one slow
     # `list` here absorbs that so the tests' own calls answer within their budgets.
     started = time.monotonic()
-    subprocess.run(
-        ["xcrun", "simctl", "list", "devices", "-j"], check=True, capture_output=True, timeout=300
-    )
+    for args in (["list", "devices", "-j"], ["listapps", udid]):
+        subprocess.run(["xcrun", "simctl", *args], check=True, capture_output=True, timeout=300)
+    print(f"CoreSimulator responsive after {time.monotonic() - started:.1f}s", file=sys.stderr)
     print(f"CoreSimulator responsive after {time.monotonic() - started:.1f}s", file=sys.stderr)
 
     github_env = os.environ.get("GITHUB_ENV")

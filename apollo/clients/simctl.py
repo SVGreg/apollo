@@ -224,7 +224,7 @@ class SimBridge:
                 raise
 
     async def install(self, app_path: str | Path) -> None:
-        await _run(["install", self.udid, str(app_path)], timeout=120.0)
+        await _run(["install", self.udid, str(app_path)], timeout=300.0)
 
     async def uninstall(self, bundle_id: str) -> None:
         await _run(["uninstall", self.udid, bundle_id], timeout=60.0)
@@ -255,14 +255,14 @@ class SimBridge:
 
     async def terminate(self, bundle_id: str) -> bool:
         try:
-            await _run(["terminate", self.udid, bundle_id], timeout=30.0)
+            await _run(["terminate", self.udid, bundle_id], timeout=60.0)
             return True
         except SimctlError as exc:
             logger.debug(f"simctl terminate {bundle_id}: {exc}")
             return False
 
     async def list_apps(self) -> list[SimApp]:
-        raw = await _run(["listapps", self.udid], timeout=30.0)
+        raw = await _run(["listapps", self.udid], timeout=90.0)
         return await asyncio.to_thread(_parse_listapps, raw)
 
     async def is_installed(self, bundle_id: str) -> bool:
