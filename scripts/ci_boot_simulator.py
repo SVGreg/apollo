@@ -14,6 +14,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 
 
 def _simctl(*args: str) -> str:
@@ -65,6 +66,13 @@ def main() -> None:
     subprocess.run(
         ["xcrun", "simctl", "bootstatus", udid, "-b"], check=True, timeout=300, stdout=sys.stderr
     )
+    # CoreSimulator stays sluggish for a while after a boot on a loaded runner; one slow
+    # `list` here absorbs that so the tests' own calls answer within their budgets.
+    started = time.monotonic()
+    subprocess.run(
+        ["xcrun", "simctl", "list", "devices", "-j"], check=True, capture_output=True, timeout=300
+    )
+    print(f"CoreSimulator responsive after {time.monotonic() - started:.1f}s", file=sys.stderr)
 
     github_env = os.environ.get("GITHUB_ENV")
     if github_env:

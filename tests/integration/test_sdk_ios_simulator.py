@@ -59,7 +59,7 @@ def daemon_url():
         stderr=subprocess.STDOUT,
     )
     url = f"http://127.0.0.1:{port}"
-    deadline = time.monotonic() + 90
+    deadline = time.monotonic() + 240
     try:
         while time.monotonic() < deadline:
             if proc.poll() is not None:
@@ -71,7 +71,7 @@ def daemon_url():
                 pass
             time.sleep(1.0)
         else:
-            pytest.fail("apollo ui did not become ready within 90 s")
+            pytest.fail("apollo ui did not become ready within 240 s")
         yield url
     finally:
         proc.terminate()

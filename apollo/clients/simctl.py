@@ -171,7 +171,7 @@ def _parse_listapps(raw_plist: str) -> list[SimApp]:
 # --------------------------------------------------------------------------- sync API
 
 
-def list_devices_sync(*, booted_only: bool = False, timeout: float = 20.0) -> list[SimDevice]:
+def list_devices_sync(*, booted_only: bool = False, timeout: float = 60.0) -> list[SimDevice]:
     args = ["list", "devices", "-j"]
     if booted_only:
         args.append("booted")
@@ -197,7 +197,7 @@ class SimBridge:
         args = ["list", "devices", "-j"]
         if booted_only:
             args.append("booted")
-        devices = _parse_device_list(await _run(args, timeout=20.0))
+        devices = _parse_device_list(await _run(args, timeout=60.0))
         return [d for d in devices if d.is_available]
 
     async def get_device(self) -> SimDevice | None:
