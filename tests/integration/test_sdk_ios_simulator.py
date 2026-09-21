@@ -90,8 +90,14 @@ async def test_sdk_runs_a_task_on_the_simulator(daemon_url):
 
     assert (await client.health()).get("status") in ("idle", "running", "busy")
     assert (await client.capabilities()).supports("tasks.submit")
-    devices = await client.list_devices()
-    assert any(d.serial == udid and d.state == "device" for d in devices), devices
+    # The daemon's device pool fills in shortly after the readiness endpoint answers.
+    deadline = time.monotonic() + 60
+    while True:
+        devices = await client.list_devices()
+        if any(d.serial == udid and d.state == "device" for d in devices):
+            break
+        assert time.monotonic() < deadline, f"simulator {udid} never listed: {devices}"
+        await asyncio.sleep(1.0)
 
     task_id = str(uuid.uuid4())
     handle = await client.submit("Open Settings", task_id=task_id)
@@ -115,5 +121,8 @@ async def test_sdk_runs_a_task_on_the_simulator(daemon_url):
 @pytest.mark.asyncio
 async def test_sdk_rejects_unknown_simulator(daemon_url):
     client = ApolloClient(daemon_url, default_profile="flash")
+    deadline = time.monotonic() + 60  # wait for the pool so the rejection is a real verdict
+    while not await client.list_devices() and time.monotonic() < deadline:
+        await asyncio.sleep(1.0)
     with pytest.raises(TaskRejectedError):
         await client.submit("Must never run", device_serial="00000000-0000-0000-0000-000000000000")

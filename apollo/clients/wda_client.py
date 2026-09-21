@@ -123,7 +123,12 @@ class WdaClient:
     async def _request(self, method: str, path: str, *, retry: bool = True, **kwargs) -> Any:
         """Session-scoped request; recreates the session once on invalid-session errors."""
         sid = await self.ensure_session()
-        resp = await self._client.request(method, f"/session/{sid}{path}", **kwargs)
+        try:
+            resp = await self._client.request(method, f"/session/{sid}{path}", **kwargs)
+        except httpx.HTTPError as exc:
+            # Transport failures (read timeouts on a slow simulator, runner restarts) surface
+            # as WdaError so callers can take their simctl fallbacks instead of crashing.
+            raise WdaError(f"{method} {path} failed: {exc.__class__.__name__}: {exc}") from exc
         try:
             return _value(resp)
         except WdaError as exc:
@@ -179,7 +184,9 @@ class WdaClient:
     # --------------------------------------------------------------- app lifecycle
 
     async def launch_app(self, bundle_id: str, *, wait_active: float = 10.0) -> bool:
-        await self.post("/wda/apps/launch", json={"bundleId": bundle_id})
+        # XCUIApplication.launch waits for the app to go idle; cap it so a cold, slow
+        # simulator falls through to the driver's simctl launch instead of stalling.
+        await self.post("/wda/apps/launch", json={"bundleId": bundle_id}, timeout=20.0)
         return await self.wait_for_active(bundle_id, timeout=wait_active)
 
     async def activate_app(self, bundle_id: str) -> None:
