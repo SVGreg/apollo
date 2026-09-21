@@ -69,3 +69,17 @@ async def test_stop_without_process_reports_existing_file(tmp_path):
     assert await rec.stop() is None
     out.write_bytes(b"\x00" * 10)
     assert await rec.stop() == out
+
+
+def test_safety_net_hierarchy_budget_is_wider_on_ios():
+    from apollo.constants import (
+        VALIDATOR_UI_HIERARCHY_TIMEOUT,
+        VALIDATOR_UI_HIERARCHY_TIMEOUT_IOS,
+        ui_hierarchy_timeout_for,
+    )
+    from apollo.context import DevicePlatform
+
+    assert ui_hierarchy_timeout_for(DevicePlatform.IOS) == VALIDATOR_UI_HIERARCHY_TIMEOUT_IOS
+    assert ui_hierarchy_timeout_for("ios") == VALIDATOR_UI_HIERARCHY_TIMEOUT_IOS
+    assert ui_hierarchy_timeout_for(DevicePlatform.ANDROID) == VALIDATOR_UI_HIERARCHY_TIMEOUT
+    assert ui_hierarchy_timeout_for(None) == VALIDATOR_UI_HIERARCHY_TIMEOUT

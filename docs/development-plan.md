@@ -178,6 +178,13 @@ are part of `DEFAULT_WDA_SETTINGS` because WDA resets them per session. `recordi
 the trace folder and `data_engine.update_video_path` picks it up. Not done: segment extraction for
 the Video Analyzer on iOS (whole-file only), rolling on rotation.
 
+Pro cross-app (2026-09-21): "create a Calendar event with location Apple Park → reopen it → Maps
+search for the location" passed in 21 steps (62 calls, 653k prompt tokens, Gemini 3.8 Flash) with
+the recording attached; a 30+-step run is still to be demonstrated. Found and fixed: the Safety Net's
+live-XML precondition check timed out on every tap (1 s budget vs 0.5–1.1 s WDA `/source` plus the
+perception settle) — iOS now uses a source-only `get_ui_elements` fast path and a 2 s budget
+(`ui_hierarchy_timeout_for`), after which a Pro run showed zero pixel-validation fallbacks.
+
 ---
 
 ## Phase 3 — Physical devices (weeks 7–9)

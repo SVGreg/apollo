@@ -29,7 +29,7 @@ import math
 import re
 
 from apollo.agents.validator.categories import ValidationErrorCategory
-from apollo.constants import VALIDATOR_UI_HIERARCHY_TIMEOUT
+from apollo.constants import ui_hierarchy_timeout_for
 from apollo.context import ApolloContext
 from apollo.graph.state import State
 from apollo.utils import visualization
@@ -111,7 +111,7 @@ def _resolve_screen_dims(ctx: ApolloContext, state: State | None) -> tuple[int, 
     return width, height
 
 
-async def _fetch_live_elements(session):
+async def _fetch_live_elements(session, timeout: float):
     """Pulls the live XML tree with a strict timeout.
 
     Returns ``(elements, None)`` on success, or ``(None, (False, category,
@@ -122,7 +122,7 @@ async def _fetch_live_elements(session):
             # The timeout must ride inside the session (MCP read timeout), never an
             # outer asyncio.wait_for: cancelling call_tool mid-flight corrupts the
             # in-memory transport and bricks the session for all later callers.
-            elements = await session.ui_hierarchy(timeout=VALIDATOR_UI_HIERARCHY_TIMEOUT)
+            elements = await session.ui_hierarchy(timeout=timeout)
         except Exception as e:
             logger.warning(
                 f"Failed to get live XML via MCP: {e!r}. Falling back to Pixel-based validation."
@@ -619,7 +619,8 @@ async def validate_action_precondition_single(
     )
 
     # 3. Pull live XML tree with strict timeout to avoid hanging the execution flow
-    elements, bypass = await _fetch_live_elements(session)
+    platform = getattr(getattr(ctx, "device", None), "mobile_platform", None)
+    elements, bypass = await _fetch_live_elements(session, ui_hierarchy_timeout_for(platform))
     if bypass is not None:
         return bypass
 

@@ -170,6 +170,16 @@ class IosDriver(BaseDeviceDriver):
             platform="ios",
         )
 
+    async def get_ui_elements(self) -> list[dict[str, Any]]:
+        """Hierarchy only (no screenshot, no settle) — the Safety Net's live-XML check."""
+        await self._ensure()
+        width, height = self.screen_size
+        source_xml = await self._wda.source()
+        normalized = normalize_wda_source(
+            source_xml, scale=self.scale, width_px=width, height_px=height
+        )
+        return filter_ui_hierarchy(normalized.elements, screen_width=width, screen_height=height)
+
     # ----------------------------------------------------------------- gestures (px → pt)
 
     def _pt(self, px: int | float) -> float:

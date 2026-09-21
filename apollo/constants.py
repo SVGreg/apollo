@@ -20,6 +20,18 @@ VALIDATOR_POLL_TIMEOUT = 2.0
 VALIDATOR_POLL_INTERVAL = 0.2
 VALIDATOR_OCR_INTERVAL = 1.0
 VALIDATOR_UI_HIERARCHY_TIMEOUT = 1.0
+# WDA /source takes 0.5–1.1 s on dense screens (Calendar month grid), so the iOS Safety Net
+# gets a wider budget instead of falling back to pixel validation on every tap.
+VALIDATOR_UI_HIERARCHY_TIMEOUT_IOS = 2.0
+
+
+def ui_hierarchy_timeout_for(platform: object) -> float:
+    return (
+        VALIDATOR_UI_HIERARCHY_TIMEOUT_IOS
+        if str(getattr(platform, "value", platform)).lower() == "ios"
+        else VALIDATOR_UI_HIERARCHY_TIMEOUT
+    )
+
 
 from google.genai import types as _genai_types
 

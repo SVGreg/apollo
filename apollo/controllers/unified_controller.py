@@ -265,6 +265,9 @@ class UnifiedMobileController:
         return True
 
     async def get_ui_elements(self) -> list[dict]:
+        fast_path = getattr(self._driver, "get_ui_elements", None)
+        if callable(fast_path):
+            return await fast_path() or []
         screen_data = await self._driver.get_screen_data()
         return screen_data.ui_elements or []
 
