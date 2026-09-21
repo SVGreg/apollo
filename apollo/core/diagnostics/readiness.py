@@ -42,8 +42,9 @@ CHECK_ORDER: dict[str, int] = {
     "gemini_api_key": 3,
     "ios_device": 4,
     "android_adb": 4,
-    "toolchain": 5,
-    "vision_ocr_key": 6,
+    "ios_physical_device": 5,
+    "toolchain": 6,
+    "vision_ocr_key": 7,
 }
 
 

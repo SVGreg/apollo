@@ -21,7 +21,11 @@ import time
 from typing import Any
 
 from apollo.core.diagnostics.adb_server_connection import adb_server_connection
-from apollo.core.diagnostics.probes.ios_probe import IosDeviceProbe, IosToolchainProbe
+from apollo.core.diagnostics.probes.ios_probe import (
+    IosDeviceProbe,
+    IosPhysicalDeviceProbe,
+    IosToolchainProbe,
+)
 from apollo.core.diagnostics.probes.base import BaseProbe
 from apollo.core.diagnostics.probes.credentials_probe import (
     LLMCredentialsProbe,
@@ -81,6 +85,7 @@ class ReadinessEngine:
         self.register_probe(self._credentials_probe)
         self.register_probe(self._ocr_probe)
         self.register_probe(self._adb_probe)
+        self.register_probe(IosPhysicalDeviceProbe())
 
     def register_probe(self, probe: BaseProbe) -> None:
         """Register a new diagnostic probe."""

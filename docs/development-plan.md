@@ -213,6 +213,14 @@ which is wired (`simctl install` + WDA launch/lock) but unverified: building the
 project needs a human-run `xcodebuild` (the assistant's sandbox refuses third-party builds).
 Segment extraction for the Video Analyzer on iOS and rolling recordings on rotation are deferred.
 
+**Phase 3 groundwork landed early** (2026-09-21, nothing that needs signing): `apollo/clients/goios.py`
+(list/info/apps/install/launch/kill/screenshot/devmode, `TunnelAgent` for `ios tunnel start
+--userspace` with its :60105 info API, `forward`, `runwda`; every tunnel call carries
+`--tunnel-info-port`) with mocked unit tests and a live check against go-ios 1.3.2; `apollo doctor`
+"Physical iOS devices" probe (attached devices, Developer Mode, tunnel agent, keychain signing
+identities; never a blocker); `docs/device-setup.md`. Still needed to start Phase 3 proper: the
+iPhone plugged in and a team that can register it (see the doc's checklist).
+
 ---
 
 ## Phase 3 — Physical devices (weeks 7–9)

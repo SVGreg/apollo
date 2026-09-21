@@ -400,3 +400,164 @@ class IosToolchainProbe(BaseProbe):
             metadata=metadata,
             actions=actions,
         )
+
+
+class IosPhysicalDeviceProbe(BaseProbe):
+    """USB iPhones/iPads (Phase 3): go-ios detection, Developer Mode, tunnel, signing identity.
+
+    Never a blocker — simulators are the default target. It exists so `apollo doctor`
+    tells the user exactly which of the device prerequisites (Developer Mode + reboot,
+    trust/pairing, a signing-capable Apple team) is still missing before a device run.
+    """
+
+    @property
+    def probe_id(self) -> str:
+        return "ios_physical_device"
+
+    @property
+    def category(self) -> ProbeCategory:
+        return ProbeCategory.DEVICE
+
+    @property
+    def is_blocker(self) -> bool:
+        return False
+
+    @staticmethod
+    def _signing_identities() -> list[str]:
+        try:
+            res = subprocess.run(
+                ["security", "find-identity", "-v", "-p", "codesigning"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return []
+        identities: list[str] = []
+        for line in res.stdout.splitlines():
+            line = line.strip()
+            if '"' in line and ("Apple Development" in line or "iPhone Developer" in line):
+                identities.append(line.split('"')[1])
+        return identities
+
+    async def probe(self) -> ProbeResult:
+        from apollo.clients import goios
+
+        metadata: dict[str, Any] = {"go_ios": goios.goios_available(), "devices": []}
+        actions: list[ProbeAction] = []
+        if not goios.goios_available():
+            actions.append(
+                ProbeAction(
+                    action_type="command",
+                    label="Install go-ios (physical devices)",
+                    payload="brew install go-ios",
+                )
+            )
+            return ProbeResult(
+                id=self.probe_id,
+                category=self.category,
+                title="Physical iOS devices",
+                status=ProbeStatus.WARN,
+                is_blocker=False,
+                summary="go-ios not installed",
+                description="Simulators work without it; USB iPhones need go-ios (Phase 3).",
+                metadata=metadata,
+                actions=actions,
+            )
+
+        metadata["go_ios_version"] = await asyncio.to_thread(goios.version_sync)
+        try:
+            devices = await asyncio.to_thread(goios.list_devices_sync)
+        except goios.GoIosError as exc:
+            devices = []
+            metadata["error"] = str(exc)
+        identities = await asyncio.to_thread(self._signing_identities)
+        metadata["signing_identities"] = identities
+        tunnel_up = await goios.TunnelAgent.is_running()
+        metadata["tunnel_agent"] = tunnel_up
+
+        if not devices:
+            return ProbeResult(
+                id=self.probe_id,
+                category=self.category,
+                title="Physical iOS devices",
+                status=ProbeStatus.PASS,
+                is_blocker=False,
+                summary="No USB device attached (simulators only)",
+                description=(
+                    "Plug in an iPhone with Developer Mode on and trust this Mac to run tasks on "
+                    "hardware. Signing identities on this Mac: "
+                    + (", ".join(identities) if identities else "none")
+                    + "."
+                ),
+                metadata=metadata,
+                actions=actions,
+            )
+
+        problems: list[str] = []
+        for dev in devices:
+            bridge = goios.DeviceBridge(dev.udid)
+            devmode = await bridge.developer_mode_enabled()
+            entry = {
+                "udid": dev.udid,
+                "name": dev.name,
+                "product_type": dev.product_type,
+                "os_version": dev.os_version,
+                "developer_mode": devmode,
+            }
+            metadata["devices"].append(entry)
+            if devmode is False:
+                problems.append(f"{dev.name or dev.udid}: Developer Mode is off")
+            elif devmode is None:
+                problems.append(
+                    f"{dev.name or dev.udid}: Developer Mode unknown (locked or untrusted?)"
+                )
+        if not identities:
+            problems.append("no Apple Development signing identity in the keychain")
+            actions.append(
+                ProbeAction(
+                    action_type="link",
+                    label="Sign in to Xcode with an Apple ID (Settings › Accounts) to get one",
+                    payload="https://developer.apple.com/documentation/xcode/signing-capabilities",
+                )
+            )
+        if any(d["developer_mode"] is False for d in metadata["devices"]):
+            actions.append(
+                ProbeAction(
+                    action_type="link",
+                    label="Enable Developer Mode (Settings › Privacy & Security), then reboot",
+                    payload="https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device",
+                )
+            )
+
+        names = ", ".join(
+            f"{d['name'] or d['udid']} (iOS {d['os_version']})" for d in metadata["devices"]
+        )
+        if problems:
+            return ProbeResult(
+                id=self.probe_id,
+                category=self.category,
+                title="Physical iOS devices",
+                status=ProbeStatus.WARN,
+                is_blocker=False,
+                summary=f"{len(devices)} attached; not ready",
+                description=f"{names}. " + "; ".join(problems) + ".",
+                metadata=metadata,
+                actions=actions,
+            )
+        return ProbeResult(
+            id=self.probe_id,
+            category=self.category,
+            title="Physical iOS devices",
+            status=ProbeStatus.PASS,
+            is_blocker=False,
+            summary=f"{len(devices)} attached, Developer Mode on",
+            description=(
+                f"{names}. Signing identity: {identities[0]}. Tunnel agent "
+                + ("running" if tunnel_up else "not running (started on demand)")
+                + ". WDA on device requires a team that can register this device."
+            ),
+            metadata=metadata,
+            actions=actions,
+        )

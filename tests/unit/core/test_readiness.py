@@ -132,6 +132,7 @@ def test_sort_by_fix_order_follows_check_order_and_appends_unknown_ids():
         "gemini_api_key",
         "ios_device",
         "android_adb",
+        "ios_physical_device",
         "toolchain",
         "vision_ocr_key",
     ]
