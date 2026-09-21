@@ -308,7 +308,8 @@ class UnifiedMobileController:
 
         if self._is_ios():
             return VideoRecordingResult(
-                success=False, message="Screen recording is not available on iOS yet (Phase 2)"
+                success=False,
+                message="Video segment extraction is not available on iOS (whole recording only)",
             )
 
         # Handle mock driver
@@ -623,9 +624,13 @@ class UnifiedMobileController:
         device_id = self._get_device_id()
 
         if self._is_ios():
-            return VideoRecordingResult(
-                success=False, message="Screen recording is not available on iOS yet (Phase 2)"
-            )
+            # The iOS driver owns its recorder (simctl recordVideo or ffmpeg over WDA MJPEG);
+            # there is no scrcpy-style segment session, so the file is attached on stop.
+            try:
+                await self._driver.start_video_recording(output_dir)
+            except (RuntimeError, OSError) as exc:
+                return VideoRecordingResult(success=False, message=f"iOS recording failed: {exc}")
+            return VideoRecordingResult(success=True, message="iOS recording started")
 
         # Check mock driver first
         if (
@@ -755,7 +760,12 @@ class UnifiedMobileController:
         device_id = self._get_device_id()
 
         if self._is_ios():
-            return VideoRecordingResult(success=False, message="No iOS recording to stop")
+            path = await self._driver.stop_video_recording()
+            if not path:
+                return VideoRecordingResult(success=False, message="No iOS recording to stop")
+            return VideoRecordingResult(
+                success=True, video_path=Path(path), message="iOS recording stopped"
+            )
 
         # Check mock driver first
         if (

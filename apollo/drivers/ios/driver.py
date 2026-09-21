@@ -18,6 +18,7 @@ from apollo.drivers.ios import input as ios_input
 from apollo.drivers.ios import keymap
 from apollo.drivers.ios.device_commands import DeviceCommandError, run_device_command
 from apollo.drivers.ios.hierarchy import normalize_wda_source
+from apollo.drivers.ios.recorder import MJPEG_SETTINGS, SimulatorRecorder
 from apollo.utils.logger import get_logger
 from apollo.utils.ui_filter import filter_ui_hierarchy
 
@@ -28,6 +29,9 @@ DEFAULT_WDA_SETTINGS = {
     "snapshotMaxDepth": 60,
     "pageSourceExcludedAttributes": "accessible,index",
     "shouldUseCompactResponses": True,
+    # WDA resets session settings whenever a session is created, so every session
+    # re-applies the MJPEG tuning the console live view and the recorder rely on.
+    **MJPEG_SETTINGS,
 }
 
 SETTLE_SECONDS = 0.3
@@ -55,6 +59,7 @@ class IosDriver(BaseDeviceDriver):
         self._settings_applied = False
         self._current_bundle: str | None = None
         self._connect_lock = asyncio.Lock()
+        self._recorder: SimulatorRecorder | None = None
 
     # ----------------------------------------------------------------- identity
 
@@ -323,10 +328,38 @@ class IosDriver(BaseDeviceDriver):
         except DeviceCommandError as exc:
             return f"Error: {exc}"
 
-    # ----------------------------------------------------------------- recording (Phase 2)
+    # ----------------------------------------------------------------- recording
+
+    @property
+    def recording_path(self) -> Path | None:
+        return self._recorder.output_path if self._recorder else None
 
     async def start_video_recording(self, output_dir: Path | None = None) -> None:
-        logger.info("Screen recording is not available on iOS yet; continuing without video")
+        """Record the screen to ``<output_dir>/recording.mp4`` (see ``recorder.py``)."""
+        from apollo.config.paths import get_temp_dir
+        from apollo.runtime.runner_manager import registered_endpoint
+
+        if self._recorder and self._recorder.is_running:
+            logger.warning("Screen recording already running; ignoring second start")
+            return
+        await self._ensure()
+        out_dir = Path(output_dir) if output_dir else get_temp_dir("recordings")
+        endpoint = registered_endpoint(self._udid)
+        self._recorder = SimulatorRecorder(
+            self._udid,
+            out_dir / "recording.mp4",
+            wda=self._wda_client,
+            mjpeg_url=endpoint.mjpeg_url if endpoint else None,
+        )
+        await self._recorder.start()
 
     async def stop_video_recording(self) -> str | None:
-        return None
+        if self._recorder is None:
+            return None
+        recorder, self._recorder = self._recorder, None
+        path = await recorder.stop()
+        if path is None:
+            logger.warning("Screen recording produced no file")
+            return None
+        logger.info(f"Screen recording saved ({recorder.backend}): {path}")
+        return str(path)

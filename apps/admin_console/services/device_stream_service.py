@@ -16,10 +16,13 @@
 
 Provides real-time device screen frames over HTTP MJPEG for the console's live view.
 
-iOS: frames come from the WebDriverAgent MJPEG server when the runner is up (12 fps,
-no extra device load), otherwise from `simctl io screenshot` polling (~4 fps). Both
-run alongside the agent's own perception without interfering with it. The Android
-adb `screencap` path is kept for reference but is not used on this platform.
+iOS: the WebDriverAgent MJPEG server is the default source (12 fps, quality 40, half
+scale — ~50 KB/frame, no extra device load). The first listener provisions the runner
+in the background (cached bundle → a few seconds; a task's runner is reused when one is
+up) while `simctl io screenshot` polling (~4 fps) shows frames immediately and stays as
+the fallback whenever the runner is not answering. Both run alongside the agent's own
+perception without interfering with it. The Android adb `screencap` path is kept for
+reference but is not used on this platform.
 """
 
 import asyncio
@@ -31,7 +34,9 @@ from collections.abc import AsyncGenerator
 import httpx
 
 from apollo.clients import simctl
-from apollo.runtime.runner_manager import RunnerManager, registered_endpoint
+from apollo.clients.wda_client import WdaError
+from apollo.drivers.ios.recorder import MJPEG_SETTINGS
+from apollo.runtime.runner_manager import RunnerError, RunnerManager, registered_endpoint
 from apollo.toolchain import find_adb
 
 
@@ -95,6 +100,20 @@ class DeviceStreamService:
             logger.warning(f"Error checking adb devices: {e}")
         return None
 
+    async def _provision_runner(self, udid: str) -> None:
+        """Bring WDA up for streaming and apply the MJPEG settings (idempotent)."""
+        try:
+            client, _ = await RunnerManager().ensure_simulator_runner(udid, timeout=90.0)
+        except (RunnerError, simctl.SimctlError, OSError) as e:
+            logger.warning(f"[StreamService] Could not provision the WDA runner on {udid}: {e}")
+            return
+        try:
+            await client.set_settings(**MJPEG_SETTINGS)
+        except WdaError as e:
+            logger.debug(f"[StreamService] MJPEG settings not applied: {e}")
+        finally:
+            await client.aclose()
+
     async def _wda_mjpeg_loop(self, udid: str) -> bool:
         """Consume the runner's MJPEG stream while it answers. Returns False if unavailable."""
         # Tasks run in a separate runner process, so this process's registry is usually
@@ -126,8 +145,26 @@ class DeviceStreamService:
             return False
         return True
 
+    async def _ios_capture_loop(self, udid: str) -> None:
+        """MJPEG from the runner whenever it answers; `simctl` polling in between."""
+        provisioning = asyncio.create_task(self._provision_runner(udid))
+        try:
+            while self._active_listeners > 0:
+                if await self._wda_mjpeg_loop(udid):
+                    # Stream ended (listeners gone or runner restarted): re-evaluate.
+                    await asyncio.sleep(0.2)
+                    continue
+                await self._simctl_capture_loop(udid)
+        finally:
+            if not provisioning.done():
+                provisioning.cancel()
+
     async def _simctl_capture_loop(self, udid: str) -> None:
-        """Poll `simctl io screenshot` (~4 fps) while the runner is not streaming."""
+        """Poll `simctl io screenshot` (~4 fps) while the runner is not streaming.
+
+        Returns when the runner's MJPEG server answers (the caller switches to it)
+        or when the last listener leaves.
+        """
         bridge = simctl.SimBridge(udid)
         while self._active_listeners > 0:
             start_t = time.time()
@@ -145,8 +182,14 @@ class DeviceStreamService:
             # it answers only while a task has WDA running, so re-probe every few frames.
             probe_counter = getattr(self, "_mjpeg_probe_counter", 0) + 1
             self._mjpeg_probe_counter = probe_counter
-            if probe_counter % 8 == 0 and await self._wda_mjpeg_loop(udid):
-                if self._active_listeners <= 0:
+            if probe_counter % 8 == 0:
+                endpoint = registered_endpoint(udid) or RunnerManager().endpoint_for(udid)
+                try:
+                    async with httpx.AsyncClient(timeout=1.0) as client:
+                        ready = (await client.get(endpoint.base_url + "/status")).status_code == 200
+                except httpx.HTTPError:
+                    ready = False
+                if ready:
                     return
             await asyncio.sleep(max(0.05, 0.25 - (time.time() - start_t)))
 
@@ -156,7 +199,7 @@ class DeviceStreamService:
         serial = await self.get_device_serial()
         if serial and simctl.simctl_available() and "-" in serial and len(serial) == 36:
             try:
-                await self._simctl_capture_loop(serial)
+                await self._ios_capture_loop(serial)
             except asyncio.CancelledError:
                 pass
             logger.info("[StreamService] Stopping live screen capture loop (0 listeners).")

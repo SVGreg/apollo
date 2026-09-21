@@ -9,10 +9,10 @@ iOS Simulators and physical iPhones/iPads driven through WebDriverAgent, `xcrun 
   <img src="./docs/assets/apollo-demo.gif" alt="Apollo driving an iOS Simulator from the web console: a Maps task typed into the composer, executed step by step on the iPhone 17 Pro simulator" width="100%" />
 </p>
 
-> **Status: Phase 1b (simulator, all interfaces).** `apollo run`, the web console (`apollo ui`),
+> **Status: Phase 2 in progress (simulator parity).** `apollo run`, the web console (`apollo ui`),
 > `apollo doctor` and the MCP server (`apollo mcp --install claude`) all drive a booted iOS
-> Simulator through WebDriverAgent. Physical devices, recording and the Pro-profile long tasks are
-> next. See [`docs/development-plan.md`](docs/development-plan.md) for the roadmap and
+> Simulator through WebDriverAgent; recording and the 12 fps live view landed. Pro-profile long
+> tasks, `--app-path` and physical devices are next. See [`docs/development-plan.md`](docs/development-plan.md) for the roadmap and
 > [`docs/technical-design.md`](docs/technical-design.md) for the design.
 
 ## Quick start
@@ -105,7 +105,14 @@ iOS runtime but no model key.
 - The simulator's Settings has no Airplane Mode / Wi-Fi / Bluetooth / Cellular rows; ask for
   things the simulator has (General, Accessibility, Display, Calendar, Reminders, Contacts, Safari,
   Maps, Photos, Files, Messages). There is no Notes, Clock or Mail app on the iOS 26 runtime.
-- Screen recording is not available yet (Phase 2); the console's replay uses per-step screenshots.
+- Screen recording (`--with-video-recording-tools`, or `video_analyzer.enabled` in the config)
+  writes `recording.mp4` into the trace. With `ffmpeg` installed it is encoded from the WDA MJPEG
+  stream at a constant 12 fps (real-time timeline); without it, `simctl io recordVideo` is used
+  (variable frame rate — static screens produce few frames). `APOLLO_IOS_RECORDING_BACKEND=
+  auto|mjpeg|simctl` overrides. Video segment extraction for the Video Analyzer is not wired on iOS.
+- The console live view uses the WDA MJPEG server (~11 fps, half scale); opening it provisions
+  the runner on the booted simulator if no task has it up, with `simctl` screenshot polling as
+  the fallback.
 - `run_adb_command` is replaced by an allowlisted `simctl` host command on iOS
   (`simctl openurl …`, `simctl listapps`, `simctl privacy grant …`); there is no on-device shell.
 

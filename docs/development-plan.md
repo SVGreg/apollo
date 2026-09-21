@@ -168,6 +168,16 @@ Exit criteria: Pro profile passes a 30+ step cross-app task (e.g. "find the addr
 Calendar event and open it in Maps"); console live view at 12 fps; recording attached to the trace;
 `apollo run --app-path` installs and tests an iOSWorld app end to end.
 
+Status 2026-09-21: **live view and recording done.** `device_stream_service` provisions the WDA
+runner on first listener (background; `simctl` polling shows frames meanwhile) and streams its
+MJPEG at ~11 fps / half scale (WDA delivers 10.7–10.9 fps for a 12 fps setting; 80 KB frames on
+Settings, more on photo-heavy screens). `drivers/ios/recorder.py`: `auto` backend = `ffmpeg` over
+WDA MJPEG (constant 12 fps, wall-clock timestamps, even-size filter; 602×1310, ~50 KB/s) when
+`ffmpeg` is installed, else `simctl io recordVideo` (1206×2622 VFR, ~1 MB/s); the MJPEG settings
+are part of `DEFAULT_WDA_SETTINGS` because WDA resets them per session. `recording.mp4` lands in
+the trace folder and `data_engine.update_video_path` picks it up. Not done: segment extraction for
+the Video Analyzer on iOS (whole-file only), rolling on rotation.
+
 ---
 
 ## Phase 3 — Physical devices (weeks 7–9)
