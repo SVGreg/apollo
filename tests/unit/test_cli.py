@@ -14,10 +14,36 @@
 
 """Unit tests for APOLLO Unified CLI application."""
 
+import re
+
 from typer.testing import CliRunner
 from apollo.interfaces.cli.main import app
 
-runner = CliRunner()
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+class _PlainResult:
+    """CliRunner result whose ``output`` has ANSI styling stripped.
+
+    Typer forces colour output when GITHUB_ACTIONS is set and its option
+    highlighter splits ``--flag`` into separately styled spans, so substring
+    assertions must run on plain text.
+    """
+
+    def __init__(self, result):
+        self._result = result
+        self.output = _ANSI_RE.sub("", result.output)
+
+    def __getattr__(self, name):
+        return getattr(self._result, name)
+
+
+class _PlainRunner(CliRunner):
+    def invoke(self, *args, **kwargs):
+        return _PlainResult(super().invoke(*args, **kwargs))
+
+
+runner = _PlainRunner()
 
 
 def test_cli_help():

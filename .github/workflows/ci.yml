@@ -15,8 +15,10 @@ concurrency:
 env:
   PYTHONUTF8: "1"
   UV_NO_PROGRESS: "1"
-  # Several unit tests construct a Gemini client; any non-empty value satisfies the constructor.
+  # Unit tests build the default agent config, whose providers refuse an empty key; any
+  # non-empty value satisfies the constructors and no request is ever sent.
   GOOGLE_API_KEY: "ci-placeholder"
+  ANTHROPIC_API_KEY: "ci-placeholder"
 
 jobs:
   python-quality:
@@ -82,7 +84,6 @@ jobs:
     env:
       # Keep the WDA runner bundle cache (downloaded from the pinned manifest) in a known place.
       APOLLO_APP_DIR: ${{ github.workspace }}/.apollo-app
-      ANTHROPIC_API_KEY: "ci-placeholder"
 
     steps:
       - name: Check out repository
