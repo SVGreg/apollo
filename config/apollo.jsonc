@@ -100,11 +100,11 @@
 
     // 🔽 Hopper: Fast lightweight package name locator
     "hopper": {
-      "provider": "anthropic",
-      "model": "claude-haiku-4-5",
+      "provider": "google",
+      "model": "gemini-3.5-flash-lite",
       "fallback": {
-        "provider": "anthropic",
-        "model": "claude-sonnet-5"
+        "provider": "google",
+        "model": "gemini-3.8-flash"
       }
     },
 
@@ -151,7 +151,7 @@
       // replacing images only after strictly objective, high-density summaries are ready.
       "step_summarizer": {
         "enabled": true, // Whether background step summarization is active
-        "model": "claude-haiku-4-5", // Lightweight model for fast background inference
+        "model": "gemini-3.5-flash-lite", // Lightweight model for fast background inference (provider inferred from the name)
         "prune_history_xml": true // Prune outdated heavy XML trees from historical steps
       }
     },
@@ -252,7 +252,7 @@
         // call each); milestone closes are exempt, the hard line waives it.
         "min_steps": 3,
         "target_source_tokens": 2000,
-        "model": "claude-sonnet-5",
+        "model": "gemini-3.8-flash",
         "max_chunks": 8
         // "max_eras": 8 // independent era cap; omitted = follows max_chunks
       },

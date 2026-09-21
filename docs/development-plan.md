@@ -136,7 +136,12 @@ test_ios_simulator_smoke.py` (`-m ios_sim`: simctl → WDA provisioning → Sett
 hierarchy → HOME) → `apollo run` with `APOLLO_FAKE_LLM=1` on the same simulator; WDA bundle cached
 by manifest hash, traces + simulator diagnostics uploaded on failure). Locally: `make smoke-sim`.
 Quality-ratchet baseline raised 754 → 778 for the broad handlers Phase 1a/1b added (unpaid debt,
-not new code). Remaining 1b exit-criteria work: Photos/Messages/Files tasks and one Pro run.
+not new code). Later the same day: **Phase 1b exit criteria met** — task set 10/10 (Photos open,
+Messages compose-no-send, Files › On My iPhone added; Maps via the console demo) and the Pro
+profile passed Settings › General › About (planner → 6 operator steps → final checker 3/3), all on
+`google/gemini-3.8-flash`. The Anthropic key in `.env` returned 401 that day, so the lightweight
+nodes that still named Claude models (`hopper`, `flash.step_summarizer`, `memory.chunking`) were
+moved to Gemini; the Anthropic fallbacks remain and take effect once a valid key is set.
 
 ---
 
