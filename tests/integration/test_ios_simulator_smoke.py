@@ -51,6 +51,7 @@ async def test_settings_screen_round_trip(driver: IosDriver):
     width, height = driver.screen_size
     assert width > 0 and height > 0 and driver.scale in (2, 3)
 
+    await driver.stop_app(SETTINGS_BUNDLE)  # a resumed Settings may be scrolled or nested
     assert await driver.launch_app(SETTINGS_BUNDLE) is True
     assert await driver.get_current_package() == SETTINGS_BUNDLE
 
@@ -60,12 +61,33 @@ async def test_settings_screen_round_trip(driver: IosDriver):
     assert screen.screenshot_bytes[:4] in (b"\x89PNG", b"\xff\xd8\xff\xe0", b"\xff\xd8\xff\xe1")
     assert screen.ui_hierarchy_xml, "WDA /source returned nothing"
     texts = {str(el.get("text", "")) for el in screen.ui_elements}
-    assert any("General" in t for t in texts), (
+    known_rows = ("General", "Accessibility", "Privacy & Security", "Apps", "Screen Time")
+    assert any(row in t for t in texts for row in known_rows), (
         f"Settings rows not found in hierarchy: {sorted(texts)[:20]}"
     )
     assert all(
         el.get("package") == SETTINGS_BUNDLE for el in screen.ui_elements if el.get("package")
     )
+
+    # Hierarchy parity with the screenshot geometry: every element inside the screen,
+    # no inverted or negative bounds, and interactive rows carry a label.
+    import io
+    import re
+
+    from PIL import Image
+
+    shot_w, shot_h = Image.open(io.BytesIO(screen.screenshot_bytes)).size
+    assert (shot_w, shot_h) == (width, height), "screenshot pixels disagree with /wda/screen"
+    bounds_re = re.compile(r"\[(-?\d+),(-?\d+)\]\[(-?\d+),(-?\d+)\]")
+    labelled_clickable = 0
+    for el in screen.ui_elements:
+        m = bounds_re.match(str(el.get("bounds", "")))
+        assert m, f"element without bounds: {el}"
+        x1, y1, x2, y2 = map(int, m.groups())
+        assert 0 <= x1 < x2 <= width and 0 <= y1 < y2 <= height, f"bounds off-screen: {el}"
+        if el.get("clickable") == "true" and (el.get("text") or el.get("content-desc")):
+            labelled_clickable += 1
+    assert labelled_clickable >= 5, "expected labelled tappable rows on the Settings screen"
 
     assert await driver.press_key("HOME") is True
     assert await driver.get_current_package() == SPRINGBOARD_BUNDLE

@@ -200,6 +200,9 @@ the simulator through `apollo-client` (health → capabilities → devices → s
 verified over stdio on the simulator (launch_app, get_ui_hierarchy, take_screenshot, tap, back,
 press_key HOME). The implementation stays in `adb_server.py` for upstream merges; no shell tool
 on iOS — host commands go through the agent server's `run_adb_command` allowlist.
+Hierarchy parity in CI: the simulator smoke now asserts screenshot pixels == `/wda/screen`
+geometry, every normalized element has in-screen, non-inverted bounds, and the Settings root
+shows ≥5 labelled tappable rows (the fixture-based normalizer tests already run in the unit job).
 
 ---
 
