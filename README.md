@@ -11,8 +11,9 @@ iOS Simulators and physical iPhones/iPads driven through WebDriverAgent, `xcrun 
 
 > **Status: Phase 2 in progress (simulator parity).** `apollo run`, the web console (`apollo ui`),
 > `apollo doctor` and the MCP server (`apollo mcp --install claude`) all drive a booted iOS
-> Simulator through WebDriverAgent; recording and the 12 fps live view landed. Pro-profile long
-> tasks, `--app-path` and physical devices are next. See [`docs/development-plan.md`](docs/development-plan.md) for the roadmap and
+> Simulator through WebDriverAgent, with recording, a 12 fps live view, alert policy, the Pro
+> profile on 30-step cross-app tasks, `apollo runner`, the SDK and the raw device MCP server.
+> `--app-path` on an iOSWorld app and physical devices (Phase 3) are next. See [`docs/development-plan.md`](docs/development-plan.md) for the roadmap and
 > [`docs/technical-design.md`](docs/technical-design.md) for the design.
 
 ## Quick start

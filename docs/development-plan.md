@@ -203,6 +203,15 @@ on iOS — host commands go through the agent server's `run_adb_command` allowli
 Hierarchy parity in CI: the simulator smoke now asserts screenshot pixels == `/wda/screen`
 geometry, every normalized element has in-screen, non-inverted bounds, and the Settings root
 shows ≥5 labelled tappable rows (the fixture-based normalizer tests already run in the unit job).
+**30-step Pro cross-app task passed** (2026-09-21): Contacts create (name, mobile, email) →
+Reminders add → Calendar event tomorrow 15:00 → back to Contacts and report phone + email; 30
+steps, final checker 4/4, correct answer, 86 calls / 1.09 M prompt tokens (Gemini 3.8 Flash,
+26 % cached), 6.5-min recording attached, 2 Safety Net pixel fallbacks in 30 taps.
+
+**Phase 2 status:** all exit criteria met except `apollo run --app-path` on an iOSWorld app,
+which is wired (`simctl install` + WDA launch/lock) but unverified: building the iOSWorld Notes
+project needs a human-run `xcodebuild` (the assistant's sandbox refuses third-party builds).
+Segment extraction for the Video Analyzer on iOS and rolling recordings on rotation are deferred.
 
 ---
 
