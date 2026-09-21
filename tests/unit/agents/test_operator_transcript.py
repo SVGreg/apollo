@@ -54,8 +54,8 @@ from apollo.memory.transcript import (
 
 # SHA-256 snapshots of the legacy system message with the fixed inputs below.
 # Update these when an intentional template change alters the rendered prompt.
-GOLDEN_EMPTY_PLAN = "2b141756c241863e85769354f5163415565c33f6402aada89ee4a30c82bfb7c2"
-GOLDEN_SENTINEL_PLAN = "4e4868aa6bc44b7aa54255bfa226aa965a6f84c7b25b0f8b5c7c9aadd2313c89"
+GOLDEN_EMPTY_PLAN = "677bd30e3ed5a567aaf3b9db9fbefd9f2078c4271d78bb4530e25ce437d2e41c"
+GOLDEN_SENTINEL_PLAN = "f17f568a6c8c89b47b958a540c9ef1d89a5e7d2409bc38fe3a99ebce53c1a623"
 
 SCREENSHOT_B64 = base64.b64encode(b"fake-jpeg-bytes").decode("utf-8")
 
