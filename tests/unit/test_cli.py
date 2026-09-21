@@ -14,6 +14,7 @@
 
 """Unit tests for APOLLO Unified CLI application."""
 
+import json
 import re
 
 from typer.testing import CliRunner
@@ -1064,3 +1065,37 @@ def test_cli_doctor_fix_skips_heal_when_keys_are_healthy(monkeypatch):
     fakes["heal"].assert_not_awaited()
     assert "nothing to repair" in result.output
     assert "No stale device locks" in result.output
+
+
+def test_cli_runner_help():
+    """Verify 'apollo runner' exposes the WebDriverAgent runner commands."""
+    result = runner.invoke(app, ["runner", "--help"])
+    assert result.exit_code == 0
+    for command in ("status", "install", "stop", "uninstall"):
+        assert command in result.output
+    result = runner.invoke(app, ["runner", "install", "--help"])
+    assert result.exit_code == 0
+    assert "--force" in result.output and "--udid" in result.output
+
+
+def test_runner_status_json_reports_expected_version(monkeypatch):
+    from apollo.interfaces.cli.commands import runner as runner_cmd
+
+    async def fake_status(self, udid, *, port):
+        return {
+            "installed": True,
+            "ready": True,
+            "port": port,
+            "runner_version": self.reported_version,
+            "pinned_version": self.version,
+            "expected_runner_version": self.reported_version,
+            "os_version": "26.2",
+        }
+
+    monkeypatch.setattr(runner_cmd.RunnerManager, "status", fake_status)
+    result = runner.invoke(app, ["runner", "status", "--udid", "ABC-123", "--json"])
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["installed"] and payload["ready"]
+    assert payload["mjpeg_port"] == payload["port"] + 1000
+    assert payload["bundle_id"] == "com.facebook.WebDriverAgentRunner.xctrunner"

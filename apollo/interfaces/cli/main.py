@@ -23,6 +23,7 @@ from apollo.interfaces.cli.commands.helper import helper_app
 from apollo.interfaces.cli.commands.init import init_command
 from apollo.interfaces.cli.commands.mcp import mcp_command
 from apollo.interfaces.cli.commands.run import run_command
+from apollo.interfaces.cli.commands.runner import runner_app
 from apollo.interfaces.cli.commands.server import server_app
 from apollo.interfaces.cli.commands.server_lifecycle import (
     restart_command,
@@ -67,6 +68,7 @@ app.add_typer(trace_app, name="trace", help="Inspect and query execution traces.
 app.add_typer(
     helper_app, name="helper", help="Manage the Accessibility Helper APK on attached devices."
 )
+app.add_typer(runner_app, name="runner", help="Manage the WebDriverAgent runner on iOS Simulators.")
 
 
 def version_callback(value: bool):

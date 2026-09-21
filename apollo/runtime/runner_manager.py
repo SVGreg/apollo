@@ -104,6 +104,8 @@ class RunnerManager:
         self.manifest = manifest or load_manifest()
         self.bundle_id: str = self.manifest["bundle_id"]
         self.version: str = self.manifest["version"]
+        # What the pinned build answers in /status (release assets sometimes lag the tag).
+        self.reported_version: str = self.manifest.get("reported_version") or self.version
         ports = self.manifest.get("ports") or {}
         self.runner_base: int = int(ports.get("runner_base", 8100))
         self.mjpeg_base: int = int(ports.get("mjpeg_base", 9100))
@@ -238,6 +240,7 @@ class RunnerManager:
             "port": port,
             "runner_version": build.get("version"),
             "pinned_version": self.version,
+            "expected_runner_version": self.reported_version,
             "os_version": (info.get("os") or {}).get("version") if info else None,
         }
 

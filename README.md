@@ -83,6 +83,8 @@ uv run apollo ui                     # localhost:8000 — setup guide, device pa
 uv run apollo mcp --install claude   # registers mobile_run_task / mobile_manage_task /
                                      # mobile_inspect_trace / mobile_get_device_state / mobile_diagnose
                                      # (also: codex, cursor, antigravity, all)
+uv run apollo runner status          # WebDriverAgent on the booted simulator: installed/answering/
+                                     # version/ports; `install [--force]`, `stop`, `uninstall`
 ```
 
 `mobile_diagnose(launch_avd="iPhone 17 Pro")` boots a simulator from the IDE; `xcrun simctl boot

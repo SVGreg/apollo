@@ -184,6 +184,8 @@ the recording attached; a 30+-step run is still to be demonstrated. Found and fi
 live-XML precondition check timed out on every tap (1 s budget vs 0.5–1.1 s WDA `/source` plus the
 perception settle) — iOS now uses a source-only `get_ui_elements` fast path and a 2 s budget
 (`ui_hierarchy_timeout_for`), after which a Pro run showed zero pixel-validation fallbacks.
+`apollo runner status|install|stop|uninstall` added (the WDA v16.12.9 release assets answer
+`16.12.8` in `/status`; the manifest records that as `reported_version`).
 
 ---
 

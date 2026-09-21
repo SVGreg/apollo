@@ -1,6 +1,8 @@
 {
   "runner": "webdriveragent",
   "version": "16.12.9",
+  "reported_version": "16.12.8",
+  "reported_version_note": "The v16.12.9 release assets still carry 16.12.8 in /status build.version.",
   "bundle_id": "com.facebook.WebDriverAgentRunner.xctrunner",
   "source": "https://github.com/appium/WebDriverAgent",
   "simulator": {
