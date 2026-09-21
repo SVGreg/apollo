@@ -186,6 +186,8 @@ perception settle) — iOS now uses a source-only `get_ui_elements` fast path an
 (`ui_hierarchy_timeout_for`), after which a Pro run showed zero pixel-validation fallbacks.
 `apollo runner status|install|stop|uninstall` added (the WDA v16.12.9 release assets answer
 `16.12.8` in `/status`; the manifest records that as `reported_version`).
+Alerts policy done: `agent.ios.{alerts, recording_backend, wda_settings}` (`IosConfig`), applied
+by the driver before each perception — verified on Maps' location sheet (`accept` answered it).
 
 ---
 

@@ -112,6 +112,10 @@ iOS runtime but no model key.
   stream at a constant 12 fps (real-time timeline); without it, `simctl io recordVideo` is used
   (variable frame rate — static screens produce few frames). `APOLLO_IOS_RECORDING_BACKEND=
   auto|mjpeg|simctl` overrides. Video segment extraction for the Video Analyzer is not wired on iOS.
+- System permission sheets: by default the Operator sees them as elements and taps them
+  (`agent.ios.alerts: "observe"`); set `"accept"` or `"dismiss"` to have the driver answer them
+  through WDA before each perception. `simctl privacy grant <service> <bundle id>` is available
+  to the agent through `run_device_command` to pre-authorize instead.
 - The console live view uses the WDA MJPEG server (~11 fps, half scale); opening it provisions
   the runner on the booted simulator if no task has it up, with `simctl` screenshot polling as
   the fallback.

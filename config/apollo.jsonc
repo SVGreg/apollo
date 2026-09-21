@@ -139,6 +139,22 @@
   // ------------------------------------------------------------------------------
   "agent": {
     // ==========================================================================
+    // 📱 4.0 iOS driver options (simulators; devices in Phase 3)
+    // ==========================================================================
+    "ios": {
+      // System alert policy before each perception: "observe" (the Operator sees and taps
+      // permission sheets like any element), "accept" or "dismiss" (answered through WDA).
+      "alerts": "observe",
+      // Screen recorder: "auto" = ffmpeg over the WDA MJPEG server when ffmpeg is installed
+      // (constant 12 fps, real-time timeline), else "simctl" (recordVideo, variable frame rate).
+      "recording_backend": "auto",
+      // Extra WebDriverAgent session settings merged over the driver defaults, e.g.
+      // {"snapshotMaxDepth": 40, "waitForIdleTimeout": 2}. Dense screens (Calendar) take
+      // ~1 s per /source at the default depth 60.
+      "wda_settings": {}
+    },
+
+    // ==========================================================================
     // ⚡ 4.1 FLASH Profile Options (Reactive Single-Agent Lightweight Loop)
     // ==========================================================================
     // Best for: Simple, fast, deterministic tasks; runs unbounded by default.

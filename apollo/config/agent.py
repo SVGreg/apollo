@@ -854,8 +854,37 @@ class ProProfileConfig(BaseModel):
     model_config = {"extra": "allow"}
 
 
+class IosConfig(BaseModel):
+    """iOS driver options (simulators now, devices in Phase 3)."""
+
+    alerts: Literal["observe", "accept", "dismiss"] = Field(
+        default="observe",
+        description=(
+            "System alert policy applied before each perception: 'observe' leaves permission"
+            " sheets for the Operator to handle; 'accept' / 'dismiss' answer them through WDA."
+        ),
+    )
+    recording_backend: Literal["auto", "mjpeg", "simctl"] = Field(
+        default="auto",
+        description=(
+            "Screen recorder: 'mjpeg' (ffmpeg over the WDA MJPEG server, real-time timeline),"
+            " 'simctl' (recordVideo, variable frame rate), 'auto' = mjpeg when ffmpeg is present."
+            " APOLLO_IOS_RECORDING_BACKEND overrides."
+        ),
+    )
+    wda_settings: dict[str, Any] = Field(
+        default_factory=dict,
+        description=(
+            "Extra WebDriverAgent session settings merged over the driver defaults, e.g."
+            ' {"snapshotMaxDepth": 40, "waitForIdleTimeout": 2}.'
+        ),
+    )
+
+
 class AgentGlobalConfig(BaseModel):
     """Global configuration parsed from apollo.jsonc / agent_config.json."""
+
+    ios: IosConfig = Field(default_factory=IosConfig, description="iOS driver options.")
 
     # ⚡ Profile-categorized configurations
     flash: FlashProfileConfig = Field(

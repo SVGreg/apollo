@@ -65,7 +65,19 @@ def create_driver(ctx: "ApolloContext") -> BaseDeviceDriver:
     if platform == "ios" or getattr(platform, "value", None) == "ios":
         from apollo.drivers.ios.driver import IosDriver
 
-        return IosDriver(udid=ctx.device.device_id)
+        ios_cfg = None
+        try:
+            from apollo.config import load_agent_config
+
+            ios_cfg = load_agent_config().ios
+        except (OSError, ValueError, RuntimeError) as exc:
+            logger.debug(f"iOS config unavailable; using driver defaults: {exc}")
+        return IosDriver(
+            udid=ctx.device.device_id,
+            wda_settings=dict(ios_cfg.wda_settings) if ios_cfg else None,
+            alert_policy=ios_cfg.alerts if ios_cfg else "observe",
+            recording_backend=ios_cfg.recording_backend if ios_cfg else "auto",
+        )
 
     # 4. Default Android ADB driver
     if ctx.adb_client is None:

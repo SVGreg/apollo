@@ -50,12 +50,18 @@ class IosDriver(BaseDeviceDriver):
         *,
         screen: ScreenInfo | None = None,
         wda_settings: dict[str, Any] | None = None,
+        alert_policy: str = "observe",
+        recording_backend: str = "auto",
     ):
         self._udid = udid
         self._wda_client = wda
         self._bridge = bridge or SimBridge(udid)
         self._screen = screen
-        self._wda_settings = wda_settings or DEFAULT_WDA_SETTINGS
+        self._wda_settings = {**DEFAULT_WDA_SETTINGS, **(wda_settings or {})}
+        self._alert_policy = (
+            alert_policy if alert_policy in ("observe", "accept", "dismiss") else "observe"
+        )
+        self._recording_backend = recording_backend
         self._settings_applied = False
         self._current_bundle: str | None = None
         self._connect_lock = asyncio.Lock()
@@ -124,10 +130,33 @@ class IosDriver(BaseDeviceDriver):
 
     # ----------------------------------------------------------------- perception
 
+    async def handle_alert(self) -> str | None:
+        """Apply the ``ios.alerts`` policy; returns the alert text it answered, if any."""
+        if self._alert_policy == "observe":
+            return None
+        try:
+            text = await self._wda.alert_text()
+        except WdaError:
+            return None  # no alert on screen
+        if text is None:
+            return None
+        try:
+            if self._alert_policy == "accept":
+                await self._wda.alert_accept()
+            else:
+                await self._wda.alert_dismiss()
+            logger.info(f"Alert {self._alert_policy}ed by policy: {text[:80]!r}")
+            await asyncio.sleep(SETTLE_SECONDS)
+            return text
+        except WdaError as exc:
+            logger.debug(f"alert {self._alert_policy} failed: {exc}")
+            return None
+
     async def get_screen_data(self, skip_settling: bool = False) -> ScreenData:
         await self._ensure()
         if not skip_settling:
             await asyncio.sleep(SETTLE_SECONDS)
+        await self.handle_alert()
         width, height = self.screen_size
 
         # Screenshot then source back-to-back (WDA has no combined snapshot).
@@ -360,6 +389,7 @@ class IosDriver(BaseDeviceDriver):
             out_dir / "recording.mp4",
             wda=self._wda_client,
             mjpeg_url=endpoint.mjpeg_url if endpoint else None,
+            backend=self._recording_backend,
         )
         await self._recorder.start()
 

@@ -34,8 +34,9 @@ _EVEN_SIZE_FILTER = "scale=trunc(iw/2)*2:trunc(ih/2)*2"
 _STOP_TIMEOUT_S = 20.0
 
 
-def recording_backend() -> str:
-    value = (os.environ.get("APOLLO_IOS_RECORDING_BACKEND") or "auto").strip().lower()
+def recording_backend(configured: str = "auto") -> str:
+    """Backend to use: the environment override wins over the configured value."""
+    value = (os.environ.get("APOLLO_IOS_RECORDING_BACKEND") or configured or "auto").strip().lower()
     return value if value in ("auto", "simctl", "mjpeg") else "auto"
 
 
@@ -96,11 +97,13 @@ class SimulatorRecorder:
         *,
         wda: WdaClient | None = None,
         mjpeg_url: str | None = None,
+        backend: str = "auto",
     ):
         self._udid = udid
         self._output_path = Path(output_path)
         self._wda = wda
         self._mjpeg_url = mjpeg_url
+        self._configured_backend = backend
         self._process: asyncio.subprocess.Process | None = None
         self.backend: str | None = None
 
@@ -114,7 +117,7 @@ class SimulatorRecorder:
 
     async def start(self) -> None:
         self._output_path.parent.mkdir(parents=True, exist_ok=True)
-        wanted = recording_backend()
+        wanted = recording_backend(self._configured_backend)
         if wanted in ("auto", "mjpeg") and await self._start_mjpeg():
             return
         if wanted == "mjpeg":
