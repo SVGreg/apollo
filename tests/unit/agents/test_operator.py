@@ -1278,7 +1278,7 @@ async def test_operator_background_tasks_prompt_injection():
                 elif isinstance(m.content, str):
                     full_content += m.content + "\n"
 
-            assert "--- Active Background ADB Tasks ---" in full_content
+            assert "--- Active Background Device Command Tasks ---" in full_content
             assert "task_99999" in full_content
             assert "ping google.com" in full_content
             assert "term_xyz" in full_content

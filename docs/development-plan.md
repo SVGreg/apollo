@@ -188,6 +188,11 @@ perception settle) — iOS now uses a source-only `get_ui_elements` fast path an
 `16.12.8` in `/status`; the manifest records that as `reported_version`).
 Alerts policy done: `agent.ios.{alerts, recording_backend, wda_settings}` (`IosConfig`), applied
 by the driver before each perception — verified on Maps' location sheet (`accept` answered it).
+Prompt/vocabulary pass: the Pro Operator prompt gains the same iOS-conventions block as Flash
+(BACK/HOME/APP_SWITCH/Return semantics, bundle ids, permission sheets, Control/Notification
+Center, no intents or shell); Planner/Operator "ADB shell commands / ADB tools" wording became
+"host device commands (`xcrun simctl`)"; background-task headers renamed. Diffs kept to the
+template strings so upstream merges stay easy.
 
 ---
 

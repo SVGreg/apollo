@@ -621,7 +621,7 @@ class BackgroundTasksPromptComponent(PromptComponent):
         active_tasks = kwargs.get("active_background_tasks", [])
         if active_tasks:
             lines = [
-                "--- Active Background ADB Tasks ---",
+                "--- Active Background Device Command Tasks ---",
             ]
             for task in active_tasks:
                 lines.append(
@@ -635,7 +635,7 @@ class BackgroundTasksPromptComponent(PromptComponent):
         newly_finished_tasks = kwargs.get("newly_finished_tasks", [])
         if newly_finished_tasks:
             lines = [
-                "--- NEWLY FINISHED ADB TASKS (Since last step) ---",
+                "--- NEWLY FINISHED DEVICE COMMAND TASKS (Since last step) ---",
             ]
             for task in newly_finished_tasks:
                 task_id = task["task_id"]

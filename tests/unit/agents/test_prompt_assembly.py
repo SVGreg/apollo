@@ -151,7 +151,7 @@ def test_full_set_enum_slots_render_verbatim():
         " `press_key`, `manage_app`, or `wait_for_delay`)" in out
     )
     assert "Helper/Subagent tools (`ask_explorer`, `ask_diagnoser`, `video_analyzer`)" in out
-    assert "ADB/task tools (`run_adb_command`, `manage_task`)" in out
+    assert "device-command/task tools (`run_adb_command`, `manage_task`)" in out
     assert (
         "(`read_note`, `list_notes`, `search_history`, `replay_steps`, `get_step_screenshot`)"
         in out
