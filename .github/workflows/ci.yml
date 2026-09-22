@@ -111,7 +111,7 @@ jobs:
         run: >-
           uv run pytest tests/integration/test_ios_simulator_smoke.py
           tests/integration/test_sdk_ios_simulator.py
-          -m ios_sim -q -o faulthandler_timeout=300
+          -m ios_sim -q -o faulthandler_timeout=900
 
       - name: Flash loop on the simulator with the fake LLM (no model calls)
         env:

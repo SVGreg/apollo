@@ -21,7 +21,7 @@ import httpx
 import pytest
 
 from apollo.clients.simctl import list_devices_sync, simctl_available
-from apollo_client import ApolloClient, TaskRejectedError
+from apollo_client import ApolloClient, TaskRejectedError, TaskTimeoutError
 
 pytestmark = pytest.mark.ios_sim
 
@@ -105,7 +105,13 @@ async def test_sdk_runs_a_task_on_the_simulator(daemon_url):
     duplicate = await client.submit("Open Settings", task_id=task_id)
     assert duplicate.task_id == task_id  # idempotent resubmit
 
-    result = await client.wait_for_task(task_id, timeout=300)
+    # CI runners have needed more than a minute just to answer `simctl list`, and the
+    # worker provisions WDA before its first turn, so the budget is deliberately wide.
+    try:
+        result = await client.wait_for_task(task_id, timeout=600)
+    except TaskTimeoutError:  # report what the daemon thought it was doing
+        state = await client.get_task(task_id)
+        pytest.fail(f"task never finished; last state: {state.raw}")
     assert result.succeeded, result.error or result.raw
 
     deadline = time.monotonic() + 30
