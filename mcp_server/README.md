@@ -1,6 +1,8 @@
 # 🔌 Universal MCP Server for APOLLO
 
-This directory contains the **Model Context Protocol (MCP)** server for **APOLLO**. It exposes mobile device automation to clients such as **Antigravity**, **Cursor**, **Claude Code**, **OpenClaw**, and **Windsurf**.
+This directory contains the **Model Context Protocol (MCP)** server for **APOLLO**. It exposes iOS
+automation — simulators today, physical devices from Phase 3 — to clients such as **Claude Code**,
+**Cursor**, **Codex**, **Antigravity**, **OpenClaw** and **Windsurf**.
 
 ## 🏗️ Architecture
 
@@ -27,7 +29,7 @@ mcp_server/
 │   ├── inspect_trace.py  # mobile_inspect_trace
 │   └── diagnose.py       # mobile_diagnose
 └── utils/                # Environment and device utilities
-    ├── device_utils.py   # Cross-platform ADB and emulator resolver
+    ├── device_utils.py   # Legacy ADB helpers (unused on iOS; kept for upstream merges)
     └── env_utils.py      # Python interpreter and process manager
 ```
 
@@ -54,9 +56,9 @@ When connecting APOLLO to AI coding assistants like **Antigravity**, **Claude Co
 The included [`rules.md`](./rules.md) file contains the **Mobile Testing Mindset (APOLLO Integration)** guideline. It teaches the AI agent how to properly collaborate with APOLLO:
 
 1. **The Runnable Code Principle & Active Exploration**: Instructs the AI to never guess or hallucinate UI transitions. Instead, it must first explore the live app via APOLLO MCP tools (`mobile_run_task`, etc.) to discover and verify real-world interaction paths before writing test scripts.
-2. **Flash vs. Pro Routing Strategy**: Guides the AI to choose **Flash** for rapid, straightforward UI actions (no step cap by default) and **Pro** for tasks that need a persistent plan, verified checkpoints, polling loops, or ADB / video / log diagnosis.
+2. **Flash vs. Pro Routing Strategy**: Guides the AI to choose **Flash** for rapid, straightforward UI actions (no step cap by default) and **Pro** for tasks that need a persistent plan, verified checkpoints, polling loops, or video / log diagnosis.
 3. **Latency & Timing Compensation**: Clarifies the difference between AI exploratory latency (e.g., model decision intervals) and the deterministic timing requirements of final test code.
-4. **"Dynamic-First, Coordinate-Fallback" Locator Pattern**: Teaches the AI to prioritize dynamic UI locators (Resource IDs, OCR text, semantics) for layout resilience, while implementing absolute coordinate fallbacks for maximum execution reliability.
+4. **"Dynamic-First, Coordinate-Fallback" Locator Pattern**: Teaches the AI to prioritize dynamic UI locators (accessibility identifiers, labels, OCR text) for layout resilience, while implementing absolute coordinate fallbacks for maximum execution reliability.
 5. **Environment Self-Diagnosis**: Tells the AI to call `mobile_diagnose` first whenever a tool errors or the user says APOLLO is not working, and how to act on the returned fix list (run local commands itself, relay device prompts to the user, never move API keys through the chat, reload the MCP server after config changes).
 
 ### How Global Rules & MCP are Installed
@@ -77,14 +79,14 @@ When you run `uv run apollo mcp --install all` (or target a specific IDE like `-
 * **`mobile_manage_task`**: Manages task lifecycle (`status`, `stop`, `inject_instruction`), returning task state and assigned `device_serial`. Pass `release_loop=True` with `inject_instruction` to gracefully end a `[Loop:continuous]` monitoring task — this explicit signal (not "please stop" wording) is what unlocks the loop milestone's completion.
 * **`mobile_get_device_state`**: Real-time observer (`screenshot` or OCR+XML `hierarchy`) with optional `device_serial`.
 * **`mobile_inspect_trace`**: Granular trace inspection, visual action overlays, agent reasoning, and `device_serial` tracking.
-* **`mobile_diagnose`**: Environment doctor for the IDE. Reuses the readiness probes behind `apollo doctor` and the web console's device wizard (Python runtime, config, LLM credentials, ADB / devices / RSA keys / emulators, video toolchain) plus an MCP-host probe (server interpreter vs project `.venv`, detected MCP client, `.env` location, traces directory, daemon port collisions). Returns a `verdict` (`ready` | `degraded` | `blocked`), an ordered `next_steps` fix list the AI agent can act on (`Run:` one-command lines vs `Guidance:` for the user), scrubbed per-check details, `tasks` holding or waiting for devices, log paths, and the most recent failed task with its `recent_errors`. Optional deep checks: `verify_credentials=true` (live API-key validation, ~12s, result in `credentials`), `probe_device=true` (end-to-end screenshot + UIAutomator hierarchy, ~20s, result in `device_probe`), `launch_avd="<name>"` (boots an installed AVD in the background; re-run after ~60s). `attempt_fix=true` applies the safe self-heals (regenerate corrupted ADB keys, restart the ADB server, clear stale device locks / queue tickets left by crashed runners).
+* **`mobile_diagnose`**: Environment doctor for the IDE. Reuses the readiness probes behind `apollo doctor` and the web console's setup wizard (Python runtime, config, LLM credentials, Xcode & `simctl`, simulator runtimes and booted simulators, the WebDriverAgent runner, the recording/device toolchain, attached physical iPhones) plus an MCP-host probe (server interpreter vs project `.venv`, detected MCP client, `.env` location, traces directory, daemon port collisions). Returns a `verdict` (`ready` | `degraded` | `blocked`), an ordered `next_steps` fix list the AI agent can act on (`Run:` one-command lines vs `Guidance:` for the user), scrubbed per-check details, `tasks` holding or waiting for devices, log paths, and the most recent failed task with its `recent_errors`. Optional deep checks: `verify_credentials=true` (live API-key validation, ~12 s) and `launch_avd="iPhone 17 Pro"` (boots that simulator in the background; re-run after ~60 s). `attempt_fix=true` applies the safe self-heals (clearing stale device locks and queue tickets left by crashed runners).
 
 ### 📱 Device Selection & Multi-Device Execution
-APOLLO supports parallel execution across multiple connected Android devices and emulators:
-1. **Direct Device Specification**: Provide `device_serial` explicitly (e.g. `device_serial="63191FDKX00062"` or `device_serial="emulator-5554"`). Per-device execution locks allow distinct devices to run in parallel.
-2. **Automatic Device Selection**: Omit `device_serial` to let APOLLO auto-select an available ready device from the device pool.
-* **User Choice Priority**: When multiple devices/emulators are connected, AI agents should prioritize asking the user which device to run on.
-* **Device Diagnosis**: Inspect connected hardware, authorization status, and serials anytime via `adb devices` or `adb devices -l`.
+APOLLO runs tasks on booted iOS Simulators (physical devices arrive in Phase 3):
+1. **Direct Device Specification**: Pass `device_serial` with the simulator UDID (e.g. `device_serial="5A3587F9-040D-40C5-B3E8-6A29A4286978"`). Per-device execution locks let distinct simulators run in parallel.
+2. **Automatic Device Selection**: Omit `device_serial` and Apollo picks a ready device from the pool; when none is booted the tool says so instead of starting anything.
+* **User Choice Priority**: When several simulators are booted, ask the user which one to use.
+* **Booting one from the IDE**: `mobile_diagnose(launch_avd="iPhone 17 Pro")`, or `xcrun simctl boot <udid>` in a terminal; `xcrun simctl list devices` shows what exists. Never quit Simulator.app while a task runs — it shuts every simulator down.
 
 ## 🚀 How to Run & Configure
 

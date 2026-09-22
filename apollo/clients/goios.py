@@ -1,6 +1,6 @@
 """go-ios (`ios`) wrapper for physical iPhones over USB — the device counterpart of `simctl`.
 
-Phase 3 groundwork (see `docs/spikes.md` S4): device discovery, info, apps, install /
+Phase 3 groundwork (see `docs/device-setup.md`): device discovery, info, apps, install /
 launch / kill, screenshot, Developer Mode, the iOS 17+ userspace tunnel agent, port
 forwarding and `runwda`. Everything that touches an iOS 17+ device goes through the
 tunnel, so every call carries ``--tunnel-info-port`` pointing at the agent this module

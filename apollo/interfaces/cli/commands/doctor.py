@@ -424,8 +424,8 @@ def doctor_command(
         "--fix",
         "-f",
         help=(
-            "Automatically repair fixable environment issues (corrupted ADB authentication "
-            "keys, stale device locks left by crashed runners)."
+            "Automatically repair fixable environment issues (stale device locks and queue "
+            "tickets left by crashed runners)."
         ),
     ),
     json_output: bool = typer.Option(

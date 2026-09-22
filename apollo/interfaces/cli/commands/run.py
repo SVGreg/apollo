@@ -143,7 +143,7 @@ async def execute_task(
     )
     if not target_serial:
         try:
-            from apollo.runtime import device_pool
+            from apollo.runtime.device_pool import device_pool
 
             target_serial = device_pool.select_device()
         except Exception:

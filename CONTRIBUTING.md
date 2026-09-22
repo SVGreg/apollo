@@ -1,35 +1,48 @@
 # Contributing to Apollo
 
-Thank you for your interest in contributing to **Apollo**! We welcome and appreciate all forms of contributions—whether it's reporting bugs, proposing new features, improving documentation, or submitting code.
+Bug reports, feature ideas, documentation fixes and code are all welcome. Apollo is an iOS-only
+fork of [Artemis](https://github.com/google/artemis); changes that belong upstream are better sent
+there, so they reach Apollo through the [monthly sync](docs/upstream-sync.md).
 
----
+## Sending a change
 
-## 🤝 Ways to Contribute
+1. Fork the repository and branch (`git checkout -b feat/my-feature`).
+2. Make the change, then run the gates below.
+3. Open a pull request describing what changed and how you verified it. CI runs the same gates on
+   `macos-26` plus the simulator smoke.
 
-- **🐛 Report Bugs & Suggest Features**: If you find an issue or have an idea to improve Apollo, please open an issue in this repository.
-- **💡 Submit Pull Requests**:
-  1. Fork the repository and create your feature/fix branch (`git checkout -b feat/my-feature`).
-  2. Make your changes and verify with `make test`, `make lint`, and `make typecheck`.
-  3. Open a Pull Request with a brief summary of your work.
-- **💬 Community & Discussion**: Join our [Discord Community](https://discord.gg/wF2FN4WHGY) to chat with maintainers, ask questions, or share feedback.
+```sh
+make lint         # ruff format --check, ruff check, quality ratchet
+make test         # hermetic unit suite — no device, no credentials
+make typecheck    # pyright on the protected core
+```
 
----
+If your change touches the device layer, also run the integration smoke on a Mac with Xcode:
 
-Every contribution—big or small—helps make Apollo better. Thank you for building with us!
+```sh
+make smoke-sim    # boots a simulator, provisions WebDriverAgent, driver + SDK smoke, fake-LLM task
+```
+
+Keep edits to inherited Artemis files as small as possible — every line changed there is a line to
+re-resolve at the next upstream merge. Prefer adding an iOS file over editing a shared one.
 
 ## Test layers
 
-`make test` is the required, deterministic suite. It does not need an Android
-device, model credentials, or the optional private cloud service. This is the
-same suite used by pull-request CI.
+| Command | Scope | Needs |
+|---|---|---|
+| `make test` | deterministic unit suite; the required gate for every PR | nothing |
+| `make smoke-mock` | the agent loop against the in-memory mock driver and a fake LLM | nothing |
+| `make smoke-sim` | real simulator: WDA provisioning, driver smoke, hierarchy parity, SDK contract, one fake-LLM task | macOS + Xcode |
+| `make test-integration` | cross-component tests | may need model credentials |
+| `make test-all` | every tree | a fully provisioned machine |
 
-- `make test-integration` runs cross-component tests that may need configured
-  model credentials.
-- `make test-device` runs Android and end-to-end tests and therefore requires
-  an attached, authorized device or emulator.
-- `make test-all` collects every test tree and is intended for a fully
-  provisioned maintainer environment.
+Tests that need external state must carry the right marker so the default suite stays collectable
+without it: `ios_sim` (a booted simulator), `integration`, `e2e`, `cloud`, `manual`. The default
+`pytest` run deselects all of them.
 
-Tests that require external state must carry the appropriate `android`,
-`cloud`, `manual`, or `e2e` marker. They must remain safely collectable when
-that dependency is unavailable.
+## Conventions
+
+- Python 3.12, `ruff format` (line length as configured), type hints on new public functions.
+- No new broad `except Exception` handlers or `# type: ignore` comments — `scripts/quality_ratchet.py`
+  fails the build when the counts rise. Catch the specific error instead.
+- User-facing strings (CLI help, probe descriptions, prompts) should say what to do next.

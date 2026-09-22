@@ -58,9 +58,9 @@ test-integration: ## Run non-device integration tests (may require configured mo
 	@echo "🧪 Running integration tests..."
 	@uv run pytest tests/integration tests/tools -m "integration and not android and not cloud and not manual"
 
-test-device: ## Run device-bound and end-to-end tests explicitly (needs Android tooling until Phase 1)
+test-device: ## Run device-bound and end-to-end tests explicitly (needs a booted simulator)
 	@echo "📱 Running device and end-to-end tests..."
-	@uv run pytest tests/unit tests/integration tests/e2e -m "android or e2e"
+	@uv run pytest tests/integration tests/e2e -m "ios_sim or e2e"
 
 test-all: ## Run every test tree; external prerequisites must be available
 	@echo "🧪 Running the complete test tree..."

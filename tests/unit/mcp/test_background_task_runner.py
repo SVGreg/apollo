@@ -62,19 +62,25 @@ async def test_run_task_applies_pro_tuning_to_agent_config(
         task_desc="Audit checkout",
         model="Pro",
         conversation_id="",
-        device_serial="emulator-5554",
+        device_serial="sim-udid",
     )
 
     fake_builder = MagicMock()
     fake_builders = MagicMock()
     fake_builders.AgentConfig.with_default_profile.return_value = fake_builder
     fake_agent = MagicMock()
-    fake_agent._device_context = SimpleNamespace(device_id="emulator-5554")
+    fake_agent._device_context = SimpleNamespace(device_id="sim-udid")
     fake_agent.run_task = AsyncMock(return_value="done")
     fake_agent.clean = AsyncMock()
 
-    monkeypatch.setattr(bg.device_utils, "resolve_adb_path", lambda: "adb")
-    monkeypatch.setattr(bg.device_utils, "get_connected_devices", lambda _adb: ["emulator-5554"])
+    from apollo.runtime.device_pool import device_pool
+
+    monkeypatch.setattr(
+        device_pool,
+        "list_devices",
+        lambda: [SimpleNamespace(serial="sim-udid", state="device")],
+    )
+    monkeypatch.setattr(device_pool, "select_device", lambda preferred_serial=None: "sim-udid")
     monkeypatch.setattr(bg, "resolve_profile_file", lambda: None)
     monkeypatch.setattr(bg, "_initialize_agent", AsyncMock())
     monkeypatch.setattr(bg, "notify", MagicMock())
@@ -90,7 +96,7 @@ async def test_run_task_applies_pro_tuning_to_agent_config(
             task_desc="Audit checkout",
             model="Pro",
             conversation_id="",
-            device_serial="emulator-5554",
+            device_serial="sim-udid",
             **knobs,
         )
 

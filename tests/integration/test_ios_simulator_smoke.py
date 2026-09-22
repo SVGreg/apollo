@@ -10,7 +10,9 @@ the HOME button. It is what CI runs on ``macos-26``; locally, run it with
 or leave ``APOLLO_SIM_UDID`` unset to use the first booted iPhone simulator.
 """
 
+import asyncio
 import os
+import time
 
 import pytest
 import pytest_asyncio
@@ -36,6 +38,18 @@ def _select_udid() -> str:
     return booted[0].udid
 
 
+async def _wait_for_foreground(driver: IosDriver, bundle_id: str, *, timeout: float = 20.0) -> str:
+    """Poll activeAppInfo: a loaded CI host can report SpringBoard for a moment after a launch."""
+    deadline = time.monotonic() + timeout
+    current = None
+    while time.monotonic() < deadline:
+        current = await driver.get_current_package()
+        if current == bundle_id:
+            return current
+        await asyncio.sleep(0.5)
+    return current or ""
+
+
 @pytest_asyncio.fixture
 async def driver():
     drv = IosDriver(_select_udid())
@@ -53,7 +67,7 @@ async def test_settings_screen_round_trip(driver: IosDriver):
 
     await driver.stop_app(SETTINGS_BUNDLE)  # a resumed Settings may be scrolled or nested
     assert await driver.launch_app(SETTINGS_BUNDLE) is True
-    assert await driver.get_current_package() == SETTINGS_BUNDLE
+    assert await _wait_for_foreground(driver, SETTINGS_BUNDLE) == SETTINGS_BUNDLE
 
     screen = await driver.get_screen_data()
     assert screen.platform == "ios"
@@ -90,4 +104,4 @@ async def test_settings_screen_round_trip(driver: IosDriver):
     assert labelled_clickable >= 5, "expected labelled tappable rows on the Settings screen"
 
     assert await driver.press_key("HOME") is True
-    assert await driver.get_current_package() == SPRINGBOARD_BUNDLE
+    assert await _wait_for_foreground(driver, SPRINGBOARD_BUNDLE) == SPRINGBOARD_BUNDLE

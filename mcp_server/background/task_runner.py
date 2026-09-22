@@ -43,7 +43,6 @@ except Exception:
 
 from apollo.runtime import trace_store
 from mcp_server.notifiers import notify
-from mcp_server.utils import device_utils
 
 
 async def _initialize_agent(
@@ -154,7 +153,6 @@ async def run_task(
     print("--------------------------------------------------")
 
     agent = None
-    adb_path = device_utils.resolve_adb_path()
     target_serial = device_serial
 
     try:
@@ -168,38 +166,33 @@ async def run_task(
         from apollo.sdk.builders import Builders
         from apollo.sdk.types import AgentProfile
 
-        connected_devices = device_utils.get_connected_devices(adb_path)
+        # The device pool enumerates booted simulators (and, from Phase 3, USB devices).
+        from apollo.runtime.device_pool import device_pool
+
+        connected_devices = [d.serial for d in device_pool.list_devices() if d.state == "device"]
 
         if device_serial:
             target_serial = device_serial
             if connected_devices and device_serial not in connected_devices:
                 print(
-                    f"⚠️ Warning: Specified device serial '{device_serial}' was not detected in active ADB devices: {connected_devices}. "
-                    "Proceeding with target serial (will attempt direct ADB connection)..."
+                    f"⚠️ Warning: '{device_serial}' is not among the ready devices "
+                    f"{connected_devices}. Proceeding with it anyway."
                 )
             else:
                 print(f"✅ Using specified target device: '{device_serial}'.")
         else:
-            if connected_devices:
-                target_serial = settings.ADB_DEVICE_SERIAL or os.environ.get("ADB_DEVICE_SERIAL")
-                if not target_serial:
-                    try:
-                        # Optional path: pool-based selection falls back to the
-                        # first connected device on any import or query failure.
-                        from apollo.runtime import device_pool
-
-                        target_serial = device_pool.select_device()
-                    except Exception:
-                        target_serial = connected_devices[0]
-                print(
-                    f"✅ Detected active connected device(s): {connected_devices}. "
-                    f"Auto-selected device: '{target_serial}'."
+            target_serial = (
+                settings.ADB_DEVICE_SERIAL
+                or os.environ.get("ADB_DEVICE_SERIAL")
+                or device_pool.select_device()
+            )
+            if not target_serial:
+                raise RuntimeError(
+                    "No booted iOS Simulator found. Boot one with "
+                    '`xcrun simctl boot <udid>` or mobile_diagnose(launch_avd="iPhone 17 Pro"), '
+                    "then retry."
                 )
-            else:
-                print("❌ No active connected devices detected. Booting emulator...")
-                if not device_utils.ensure_emulator(adb_path=adb_path):
-                    raise RuntimeError("Failed to start or connect to the Android emulator.")
-                target_serial = "emulator-5554"
+            print(f"✅ Ready device(s): {connected_devices or '[]'}. Selected: '{target_serial}'.")
 
         if target_serial:
             trace_store.update_trace_device_serial(trace_id, target_serial)

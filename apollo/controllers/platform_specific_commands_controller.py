@@ -49,7 +49,7 @@ def get_first_device(
 ) -> tuple[str | None, DevicePlatform | None, None]:
     """Gets the first available device, prioritizing idle and unassigned devices."""
     try:
-        from apollo.runtime import device_pool
+        from apollo.runtime.device_pool import device_pool
 
         chosen = device_pool.select_device()
         if chosen:

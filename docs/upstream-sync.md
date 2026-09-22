@@ -1,7 +1,7 @@
 # Upstream sync — google/artemis
 
 Apollo is a fork of [google/artemis](https://github.com/google/artemis). The Android device layer
-is replaced (see `technical-design.md` §7), everything else is meant to track upstream.
+is replaced (see [`architecture.md`](architecture.md) §7), everything else is meant to track upstream.
 
 ## Baseline
 
@@ -34,25 +34,26 @@ Git's rename detection maps `artemis/**` → `apollo/**` and `packages/artemis-c
 substitution. Expect conflicts only in:
 
 - **Identifier text** — any upstream hunk that mentions `artemis`, `Artemis`, `ARTEMIS_`,
-  `artemis_client` in code or prose. Resolve by taking upstream's hunk and re-applying the
-  rename (`scripts/rename_upstream_hunk.sh` — TODO Phase 1; until then, apply the substitution
-  table below by hand).
-- **Files replaced by design** (`technical-design.md` §7): `apollo/drivers/factory.py`,
+  `artemis_client` in code or prose. Resolve by taking upstream's hunk and applying the
+  substitution table below.
+- **Files replaced by design** (see [`architecture.md`](architecture.md) §7):
+  `apollo/drivers/factory.py`, `apollo/drivers/ios/*`,
   `apollo/controllers/{unified_controller,platform_specific_commands_controller}.py`,
-  `apollo/mcp/{adb_server→device_server}.py`, `apollo/mcp/actuators/*`, `apollo/clients/*`,
-  `apollo/runtime/{helper_manager,awake_service}.py`, `apollo/core/diagnostics/*`,
-  `mcp_server/tools/diagnose.py`, `apollo/interfaces/cli/commands/{helper,doctor}.py`,
-  `apps/admin_console/services/device_stream_service.py`, `apollo/platform/*`, `start.sh`,
-  `Makefile`, `scripts/install_deps.sh`, `.github/workflows/ci.yml`, `README.md`, prompts under
-  `apollo/agents/*` and `mcp_server/rules.md`, `config/apollo.jsonc`, `pyproject.toml`, `uv.lock`.
+  `apollo/mcp/{adb_server,device_server}.py`, `apollo/clients/{wda_client,simctl,goios}.py`,
+  `apollo/runtime/runner_manager.py`, `apollo/core/diagnostics/*`,
+  `mcp_server/tools/diagnose.py`, `mcp_server/rules.md`,
+  `apollo/interfaces/cli/commands/{runner,doctor}.py`,
+  `apps/admin_console/services/device_stream_service.py`, `apps/showcase_ui/src/*`,
+  `start.sh`, `Makefile`, `scripts/install_deps.sh`, `.github/workflows/ci.yml`, `README.md`,
+  prompts under `apollo/agents/*`, `config/apollo.jsonc`, `pyproject.toml`, `uv.lock`.
   For these, read the upstream diff and port the intent; do not take upstream's version.
 - **Deleted in Apollo**: `packages/artemis-accessibility-helper/`, `playground/`, `Dockerfile`,
   `.dockerignore`, `start.bat`, `scripts/*.ps1`. Upstream changes there are dropped
   (`git rm` on conflict).
 
-After resolving: `uv lock`, `uv sync --dev --locked`, `make lint`, `uv run pytest`, the mock smoke
-(`APOLLO_MOCK_DRIVER=1 APOLLO_FAKE_LLM=1 uv run apollo run "open settings"`), then update the
-**Last synced** row and the imported SHA above in the same commit.
+After resolving: `uv lock`, `uv sync --dev --locked`, `make lint`, `make test`, `make typecheck`,
+`make smoke-mock` and `make smoke-sim` (needs a Mac with Xcode), then update the **Last synced**
+row above in the same commit. CI runs the same gates on the sync branch.
 
 ## Substitution table (rename commit)
 
