@@ -150,7 +150,9 @@ iOS runtime but no model key.
   writes `recording.mp4` into the trace. With `ffmpeg` installed it is encoded from the WDA MJPEG
   stream at a constant 12 fps (real-time timeline); without it, `simctl io recordVideo` is used
   (variable frame rate — static screens produce few frames). `APOLLO_IOS_RECORDING_BACKEND=
-  auto|mjpeg|simctl` overrides. Video segment extraction for the Video Analyzer is not wired on iOS.
+  auto|mjpeg|simctl` overrides. The ffmpeg path writes a fragmented MP4, so the Video Analyzer can
+  cut segments out of a recording while the task is still running; the `simctl` path cannot (its
+  file is finalized only when recording stops).
 - System permission sheets: by default the Operator sees them as elements and taps them
   (`agent.ios.alerts: "observe"`); set `"accept"` or `"dismiss"` to have the driver answer them
   through WDA before each perception. `simctl privacy grant <service> <bundle id>` is available

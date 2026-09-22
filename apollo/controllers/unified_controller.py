@@ -300,6 +300,76 @@ class UnifiedMobileController:
             return self.ctx.device.device_id
         return getattr(self._driver, "device_id", None) or "default"
 
+    async def _extract_ios_segment(
+        self, start_time: float, end_time: float | None
+    ) -> VideoRecordingResult:
+        """Trim a window out of the still-growing iOS recording.
+
+        The MJPEG recorder writes a fragmented MP4 precisely so this can run mid-task;
+        `simctl recordVideo` finalizes its file only on stop, so it has no segments.
+        """
+        from apollo.drivers.ios.recorder import SEGMENT_SAFETY_S, probe_duration
+
+        info = getattr(self._driver, "recording_info", None)
+        if not info:
+            return VideoRecordingResult(success=False, message="No active iOS recording")
+        if not info["supports_live_segments"]:
+            return VideoRecordingResult(
+                success=False,
+                message=(
+                    f"The {info['backend']} recorder cannot be read while it records; "
+                    "install ffmpeg for segment extraction (APOLLO_IOS_RECORDING_BACKEND=mjpeg)."
+                ),
+            )
+
+        path: Path = info["path"]
+        readable = await asyncio.to_thread(probe_duration, path)
+        if not readable:
+            return VideoRecordingResult(
+                success=False, message="Recording has no readable fragment yet; retry shortly"
+            )
+
+        # T0 is the DataEngine session start; the file's t=0 is when recording began.
+        engine_start = getattr(getattr(self.ctx, "data_engine", None), "session_start_time", None)
+        offset = max(0.0, (info["started_at"] or 0.0) - engine_start) if engine_start else 0.0
+        safe_end = max(0.0, readable - SEGMENT_SAFETY_S)
+        rel_start = max(0.0, start_time - offset)
+        rel_end = safe_end if end_time is None else min(end_time - offset, safe_end)
+        warning = None
+        if end_time is not None and end_time - offset > safe_end:
+            warning = (
+                f"Video segment truncated: {end_time:.1f}s is beyond the {safe_end + offset:.1f}s "
+                "written so far."
+            )
+        if rel_start >= rel_end:
+            return VideoRecordingResult(
+                success=False,
+                message=(
+                    f"Invalid or too-recent range; {safe_end:.1f}s of video is available "
+                    f"(requested {rel_start:.1f}s–{rel_end:.1f}s)."
+                ),
+            )
+
+        out_dir = tempfile.mkdtemp(prefix="video_trimmed_", dir=get_temp_dir("trimmed_videos"))
+        out_path = Path(out_dir) / "segment.mp4"
+        ok = await render_timeline_clip(
+            [{"path": path, "start": 0.0, "end": readable}], rel_start, rel_end, out_path
+        )
+        if not ok or not out_path.exists():
+            return VideoRecordingResult(success=False, message="Failed to trim the iOS recording")
+        return VideoRecordingResult(
+            success=True,
+            message=(
+                f"Video segment retrieved for range {rel_start + offset:.1f}s to "
+                f"{rel_end + offset:.1f}s"
+            ),
+            video_path=out_path,
+            file_size_mb=round(out_path.stat().st_size / (1024 * 1024), 2),
+            duration_seconds=round(rel_end - rel_start, 2),
+            actual_start_relative_time=rel_start + offset,
+            warning=warning,
+        )
+
     async def extract_segment_metadata(
         self,
         start_time: float,
@@ -310,10 +380,7 @@ class UnifiedMobileController:
         device_id = self._get_device_id()
 
         if self._is_ios():
-            return VideoRecordingResult(
-                success=False,
-                message="Video segment extraction is not available on iOS (whole recording only)",
-            )
+            return await self._extract_ios_segment(start_time, end_time)
 
         # Handle mock driver
         if (

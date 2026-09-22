@@ -16,6 +16,8 @@ import asyncio
 import os
 import shutil
 import signal
+import subprocess
+import time
 from pathlib import Path
 
 from apollo.clients.simctl import find_xcrun
@@ -32,6 +34,14 @@ MJPEG_SETTINGS = {
 # 50 % scale of a 3x device is odd-sized (603×1311); x264 needs even dimensions.
 _EVEN_SIZE_FILTER = "scale=trunc(iw/2)*2:trunc(ih/2)*2"
 _STOP_TIMEOUT_S = 20.0
+#: Keyframe every 2 s. The MJPEG recording is written as a fragmented MP4 so the Video
+#: Analyzer can trim segments while the task is still running; a fragment is flushed at
+#: each keyframe, so x264's default ~20 s GOP would leave the file unreadable for most
+#: of a run. The cost is a slightly larger file.
+KEYFRAME_INTERVAL_S = 2
+#: A fragment lands a beat after the frames it holds; keep segment ends this far from the
+#: file's readable end.
+SEGMENT_SAFETY_S = 0.5
 
 
 def recording_backend(configured: str = "auto") -> str:
@@ -68,8 +78,10 @@ def build_mjpeg_command(ffmpeg: str, mjpeg_url: str, output_path: Path) -> list[
         "veryfast",
         "-pix_fmt",
         "yuv420p",
+        "-g",
+        str(KEYFRAME_INTERVAL_S * int(MJPEG_SETTINGS["mjpegServerFramerate"])),
         "-movflags",
-        "+faststart",
+        "+frag_keyframe+empty_moov+default_base_moof",
         str(output_path),
     ]
 
@@ -106,6 +118,8 @@ class SimulatorRecorder:
         self._configured_backend = backend
         self._process: asyncio.subprocess.Process | None = None
         self.backend: str | None = None
+        #: Wall-clock time of the recording's first frame (its t=0), set on start.
+        self.started_at: float | None = None
 
     @property
     def output_path(self) -> Path:
@@ -147,6 +161,7 @@ class SimulatorRecorder:
             self._process = None
             return False
         self.backend = "mjpeg"
+        self.started_at = time.time()
         logger.info(f"Recording {self._udid} from WDA MJPEG via ffmpeg → {self._output_path}")
         return True
 
@@ -166,6 +181,7 @@ class SimulatorRecorder:
             self._process = None
             raise RuntimeError(f"simctl recordVideo exited immediately: {err.strip()[:300]}")
         self.backend = "simctl"
+        self.started_at = time.time()
         logger.info(f"Recording {self._udid} with simctl recordVideo → {self._output_path}")
 
     async def stop(self) -> Path | None:
@@ -197,7 +213,42 @@ class SimulatorRecorder:
                 logger.debug(f"Recorder ({self.backend}) stderr: {err[:400]}")
         return self._existing_output()
 
+    @property
+    def supports_live_segments(self) -> bool:
+        """Only the fragmented MJPEG file can be read while it is still being written."""
+        return self.backend == "mjpeg"
+
     def _existing_output(self) -> Path | None:
         if self._output_path.exists() and self._output_path.stat().st_size > 0:
             return self._output_path
         return None
+
+
+def probe_duration(path: Path) -> float | None:
+    """Readable duration of a (possibly still-growing) recording, via ffprobe."""
+    ffprobe = shutil.which("ffprobe")
+    if not ffprobe or not path.exists():
+        return None
+    try:
+        res = subprocess.run(
+            [
+                ffprobe,
+                "-v",
+                "error",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "default=nw=1:nk=1",
+                str(path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    try:
+        return float(res.stdout.strip())
+    except ValueError:
+        return None  # no readable fragment yet

@@ -373,6 +373,19 @@ class IosDriver(BaseDeviceDriver):
     def recording_path(self) -> Path | None:
         return self._recorder.output_path if self._recorder else None
 
+    @property
+    def recording_info(self) -> dict[str, Any] | None:
+        """Live recording facts the Video Analyzer needs to cut a segment, or None."""
+        rec = self._recorder
+        if rec is None or not rec.is_running:
+            return None
+        return {
+            "path": rec.output_path,
+            "started_at": rec.started_at,
+            "backend": rec.backend,
+            "supports_live_segments": rec.supports_live_segments,
+        }
+
     async def start_video_recording(self, output_dir: Path | None = None) -> None:
         """Record the screen to ``<output_dir>/recording.mp4`` (see ``recorder.py``)."""
         from apollo.config.paths import get_temp_dir

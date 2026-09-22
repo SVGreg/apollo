@@ -83,3 +83,39 @@ def test_safety_net_hierarchy_budget_is_wider_on_ios():
     assert ui_hierarchy_timeout_for("ios") == VALIDATOR_UI_HIERARCHY_TIMEOUT_IOS
     assert ui_hierarchy_timeout_for(DevicePlatform.ANDROID) == VALIDATOR_UI_HIERARCHY_TIMEOUT
     assert ui_hierarchy_timeout_for(None) == VALIDATOR_UI_HIERARCHY_TIMEOUT
+
+
+def test_mjpeg_command_is_fragmented_so_segments_can_be_cut_mid_run(tmp_path):
+    from apollo.drivers.ios.recorder import KEYFRAME_INTERVAL_S
+
+    cmd = build_mjpeg_command("/usr/bin/ffmpeg", "http://127.0.0.1:9100", tmp_path / "rec.mp4")
+    movflags = cmd[cmd.index("-movflags") + 1]
+    assert "frag_keyframe" in movflags and "empty_moov" in movflags
+    assert "faststart" not in movflags  # faststart finalizes only on exit
+    gop = int(cmd[cmd.index("-g") + 1])
+    assert gop == KEYFRAME_INTERVAL_S * int(MJPEG_SETTINGS["mjpegServerFramerate"])
+
+
+def test_probe_duration_returns_none_for_an_unreadable_file(tmp_path):
+    from apollo.drivers.ios.recorder import probe_duration
+
+    missing = tmp_path / "nope.mp4"
+    assert probe_duration(missing) is None
+    empty = tmp_path / "empty.mp4"
+    empty.write_bytes(b"")
+    assert probe_duration(empty) is None
+
+
+@pytest.mark.asyncio
+async def test_only_the_mjpeg_backend_advertises_live_segments(monkeypatch, tmp_path):
+    monkeypatch.delenv("APOLLO_IOS_RECORDING_BACKEND", raising=False)
+    monkeypatch.setattr(recorder, "ffmpeg_path", lambda: None)
+
+    async def fake_simctl(self):
+        self.backend = "simctl"
+        self.started_at = 123.0
+
+    monkeypatch.setattr(SimulatorRecorder, "_start_simctl", fake_simctl)
+    rec = SimulatorRecorder(UDID, tmp_path / "rec.mp4")
+    await rec.start()
+    assert rec.backend == "simctl" and rec.supports_live_segments is False

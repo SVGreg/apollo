@@ -211,7 +211,16 @@ steps, final checker 4/4, correct answer, 86 calls / 1.09 M prompt tokens (Gemin
 **Phase 2 status:** all exit criteria met except `apollo run --app-path` on an iOSWorld app,
 which is wired (`simctl install` + WDA launch/lock) but unverified: building the iOSWorld Notes
 project needs a human-run `xcodebuild` (the assistant's sandbox refuses third-party builds).
-Segment extraction for the Video Analyzer on iOS and rolling recordings on rotation are deferred.
+Rolling recordings on rotation remain deferred (iOS simulators do not rotate mid-task in our set).
+
+Video Analyzer segments on iOS (2026-09-22): `extract_segment_metadata` works while a task runs.
+The MJPEG recorder now writes a **fragmented** MP4 (`+frag_keyframe+empty_moov+default_base_moof`,
+keyframe every 2 s) because a `+faststart` file has no moov atom until ffmpeg exits — nothing could
+be read mid-run. Segments are cut with the shared `render_timeline_clip`, shifted by
+(recording start − DataEngine T0), clamped to the readable duration minus 0.5 s, and a too-late end
+returns the clip plus a truncation warning. The `simctl` backend finalizes only on stop, so it
+reports why it has no segments. Verified live: 1–5 s mid-run → 4.0 s / 0.17 MB clip; the finalized
+file stays valid H.264 and seekable.
 
 **Phase 3 groundwork landed early** (2026-09-21, nothing that needs signing): `apollo/clients/goios.py`
 (list/info/apps/install/launch/kill/screenshot/devmode, `TunnelAgent` for `ios tunnel start
