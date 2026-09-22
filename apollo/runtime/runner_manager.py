@@ -20,7 +20,7 @@ from typing import Any
 
 import httpx
 
-from apollo.clients.simctl import SimBridge
+from apollo.clients.simctl import SimBridge, SimctlError
 from apollo.clients.wda_client import WdaClient
 from apollo.config.paths import get_app_dir
 from apollo.utils.logger import get_logger
@@ -160,14 +160,26 @@ class RunnerManager:
         await bridge.install(app_path)
 
     async def launch(self, bridge: SimBridge, endpoint: RunnerEndpoint) -> None:
-        await bridge.launch(
-            self.bundle_id,
-            child_env={
-                "USE_PORT": str(endpoint.port),
-                "MJPEG_SERVER_PORT": str(endpoint.mjpeg_port),
-            },
-            terminate_running=True,
-        )
+        """Start the runner. Readiness is `/status`, not this command's return.
+
+        On a loaded host `simctl launch` can sit past its timeout while the XCTest
+        bundle is already coming up, so a timeout here is logged and left to
+        ``wait_ready`` to confirm or reject; any other simctl failure (not installed,
+        bad bundle id) still raises.
+        """
+        try:
+            await bridge.launch(
+                self.bundle_id,
+                child_env={
+                    "USE_PORT": str(endpoint.port),
+                    "MJPEG_SERVER_PORT": str(endpoint.mjpeg_port),
+                },
+                terminate_running=True,
+            )
+        except SimctlError as exc:
+            if "timed out" not in str(exc):
+                raise
+            logger.warning(f"simctl launch did not return in time ({exc}); polling /status anyway")
 
     async def wait_ready(self, endpoint: RunnerEndpoint, *, timeout: float = 60.0) -> WdaClient:
         client = WdaClient(endpoint.base_url)

@@ -147,7 +147,9 @@ automatically on an invalid-session error; transport failures surface as `WdaErr
 can fall back to `simctl` (launching an app, taking a screenshot) instead of failing the step.
 
 CoreSimulator is slow for tens of seconds after a boot on a loaded host, so `simctl` timeouts are
-generous and CI warms the subsystem before the tests run. Quitting Simulator.app shuts down every
+generous and CI warms the subsystem before the tests run. Readiness is always the runner's
+`/status`, never a `simctl` command's return: a `simctl launch` that overruns its timeout while
+the XCTest bundle is already starting is logged and left to the status poll to confirm or reject. Quitting Simulator.app shuts down every
 simulator, including leased ones.
 
 ## 7. What changed in the inherited code
