@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 from apollo.agents.planner.planner import PlannerNode
 from apollo.context import DevicePlatform, ApolloContext
@@ -70,7 +70,15 @@ async def test_planner_initial_plan(mock_context):
     mock_llm.astream.side_effect = mock_astream
     mock_llm.bind_tools = Mock(return_value=mock_llm)
 
-    with patch("apollo.agents.planner.planner.get_llm", return_value=mock_llm):
+    # The planner takes its own screenshot when the state has none; keep that off
+    # the host's devices (a unit test must not depend on a booted simulator).
+    with (
+        patch("apollo.agents.planner.planner.get_llm", return_value=mock_llm),
+        patch(
+            "apollo.agents.planner.planner.UnifiedMobileController.take_screenshot",
+            new=AsyncMock(return_value="dummy_base64_string"),
+        ),
+    ):
         await node(state)
 
         assert mock_llm.astream.called
