@@ -25,7 +25,7 @@ from apps.admin_console.core.state import state
 from apps.admin_console.routers.tasks import get_status
 from apps.admin_console.services.task_queue_service import TaskQueueService, task_queue_service
 from apollo.runtime.device_lock import DeviceLockOwner
-from apollo.runtime.adb_endpoint import AdbEndpoint
+from apollo.runtime import DeviceTarget
 
 
 @pytest.fixture(autouse=True)
@@ -102,34 +102,22 @@ async def test_get_next_pending_task():
 
 
 @pytest.mark.asyncio
-async def test_enqueued_task_keeps_its_adb_endpoint_snapshot():
-    original = AdbEndpoint.create("127.0.0.1", 5038)
-    changed = AdbEndpoint.local()
+async def test_enqueued_task_records_its_device_target():
     with (
         patch.object(TaskQueueService, "ensure_worker_running"),
         patch(
-            "apps.admin_console.services.task_queue_service.current_adb_endpoint",
-            return_value=original,
-        ),
-        patch(
             "apollo.runtime.device_pool.device_pool.select_device_async",
-            return_value="emulator-5554",
+            return_value="sim-udid",
         ),
     ):
-        result = await TaskQueueService.enqueue_tasks(["Keep endpoint"])
+        result = await TaskQueueService.enqueue_tasks(["Keep target"])
 
     task_item = result["tasks"][0]
-    assert task_item["adb_endpoint"]["identity"] == original.identity
+    assert task_item["device_target"] == {"scope": "local", "serial": "sim-udid"}
 
-    with patch(
-        "apps.admin_console.services.task_queue_service.current_adb_endpoint",
-        return_value=changed,
-    ):
-        target = TaskQueueService._task_target(task_item)
-
-    assert target.endpoint == original
-    assert target.serial == "emulator-5554"
-    assert target.lock_key == f"{original.identity}/emulator-5554"
+    target = TaskQueueService._task_target(task_item)
+    assert target == DeviceTarget(serial="sim-udid")
+    assert target.lock_key == "local:sim-udid"
 
 
 @pytest.mark.parametrize(
@@ -320,11 +308,8 @@ async def test_queue_worker_cmd_construction():
             executed_kwargs[0]["env"]["APOLLO_DEVICE_QUEUE_TICKET"]
             == (enqueue_result["tasks"][0]["queue_ticket"])
         )
-        endpoint = enqueue_result["tasks"][0]["adb_endpoint"]
-        assert executed_kwargs[0]["env"]["ADB_HOST"] == endpoint["host"]
-        assert executed_kwargs[0]["env"]["ADB_PORT"] == str(endpoint["port"])
-        assert executed_kwargs[0]["env"]["ADB_SERVER_SOCKET"] == endpoint["socket"]
-        assert executed_kwargs[0]["env"]["APOLLO_ADB_ENDPOINT_ID"] == endpoint["identity"]
+        assert enqueue_result["tasks"][0]["device_target"]["scope"] == "local"
+        assert executed_kwargs[0]["env"]["APOLLO_ADB_ENDPOINT_ID"] == "local"
         if sys.platform == "win32":
             assert executed_kwargs[0]["creationflags"] == (
                 subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW

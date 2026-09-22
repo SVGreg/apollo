@@ -27,7 +27,6 @@ from mcp_server.base import mcp as agent_mcp
 import mcp_server.tools  # noqa: F401
 from mcp_server.utils import env_utils
 from apollo.mcp.adb_server import mcp as adb_mcp
-from apollo.runtime import shutdown_awake_service, start_awake_service
 from apollo.utils.logger import get_logger
 from rich.console import Console
 from rich.syntax import Syntax
@@ -824,7 +823,6 @@ def mcp_command(
         console.print(syntax)
         raise typer.Exit(0)
 
-    threading.Thread(target=start_awake_service, daemon=True, name="apollo-awake-init").start()
     try:
         st = server_type.lower()
         if st in ("agent", "mobile", "apollo", "default"):
@@ -855,8 +853,8 @@ def mcp_command(
                 xml_mcp.run(transport="stdio")
         else:
             logger.error(
-                f"Unsupported MCP server type: {server_type}. Use 'agent', 'adb', or 'xml'."
+                f"Unsupported MCP server type: {server_type}. Use 'agent', 'device', or 'xml'."
             )
             raise typer.Exit(1)
-    finally:
-        shutdown_awake_service()
+    except KeyboardInterrupt:
+        logger.info("MCP server stopped.")

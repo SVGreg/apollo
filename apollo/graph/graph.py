@@ -448,13 +448,6 @@ async def exit_settlement_node(state: State, ctx: ApolloContext):
         update["run_outcome"] = outcome.model_dump()
         # BLOCKED/partial wrap-ups carry the last findings in the metadata file.
         extra: dict = {"last_findings": blocked_findings} if blocked_findings else {}
-        # Which UI-hierarchy source served the run, so a report reader can tell a
-        # helper run from a UIAutomator2 fallback without reading logs.
-        from apollo.clients.screen_client_factory import hierarchy_backend_summary
-
-        environment = hierarchy_backend_summary(getattr(ctx, "ui_adb_client", None))
-        if environment:
-            extra["environment"] = environment
         write_run_outcome(base_dir, outcome, extra or None)
         publish_checker_event(
             ctx,

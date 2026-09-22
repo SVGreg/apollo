@@ -19,7 +19,6 @@ from typing import Annotated
 from apollo._version import __version__
 from apollo.interfaces.cli.commands.batch import batch_command
 from apollo.interfaces.cli.commands.doctor import doctor_command
-from apollo.interfaces.cli.commands.helper import helper_app
 from apollo.interfaces.cli.commands.init import init_command
 from apollo.interfaces.cli.commands.mcp import mcp_command
 from apollo.interfaces.cli.commands.run import run_command
@@ -65,9 +64,6 @@ app.command(name="batch", help="Execute a batch sequence of automation tasks.")(
 app.command(name="mcp", help="Start the Apollo Model Context Protocol (MCP) server.")(mcp_command)
 app.add_typer(server_app, name="server", help="Cloud Run proxy and web dashboard server.")
 app.add_typer(trace_app, name="trace", help="Inspect and query execution traces.")
-app.add_typer(
-    helper_app, name="helper", help="Manage the Accessibility Helper APK on attached devices."
-)
 app.add_typer(runner_app, name="runner", help="Manage the WebDriverAgent runner on iOS Simulators.")
 
 

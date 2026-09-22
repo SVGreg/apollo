@@ -16,17 +16,12 @@ import sys
 
 from typing import Any
 
-try:
-    from adbutils import AdbClient
-except ImportError:  # Android tooling is optional in Apollo
-    AdbClient = Any
 from rich.console import Console
 
 
-def display_device_status(console: Console, adb_client: AdbClient | None = None):
-    """Checks for connected devices and displays the status."""
+def display_device_status(console: Console) -> None:
+    """Show which simulators are booted, and how to boot one when none is."""
     console.print("\n[bold]📱 Device Status[/bold]")
-    # iOS simulators (booted ones are targets; shutdown ones are listed as hints).
     try:
         from apollo.clients import simctl
 
@@ -38,28 +33,14 @@ def display_device_status(console: Console, adb_client: AdbClient | None = None)
         console.print("✅ [bold green]iOS simulator(s) booted:[/bold green]")
         for dev in booted:
             console.print(f"  - {dev.udid}  {dev.name} (iOS {dev.os_version})")
-    elif sims:
+        return
+    if sims:
         console.print("⚠️  [yellow]No iOS simulator is booted.[/yellow] Available:")
         for dev in sims[:6]:
             console.print(f"  - {dev.udid}  {dev.name} (iOS {dev.os_version})")
         console.print("Boot one with: [bold]xcrun simctl boot <udid>[/bold]")
-    devices = None
-    if adb_client is not None:
-        try:
-            devices = adb_client.device_list()
-        except Exception:  # pylint: disable=broad-exception-caught
-            devices = None
-    if booted and not devices:
         return
-    if devices:
-        console.print("✅ [bold green]Android device(s) connected:[/bold green]")
-        for device in devices:
-            console.print(f"  - {device.serial}")
-    else:
-        console.print("❌ [bold red]No Android device found.[/bold red]")
-        command = "emulator -avd <avd_name>"
-        if sys.platform not in ["win32", "darwin"]:
-            command = f"./{command}"
-            console.print(
-                f"You can start an emulator using a command like: [bold]'{command}'[/bold]"
-            )
+    console.print(
+        "❌ [bold red]No iOS simulator found.[/bold red] Install a runtime in Xcode › Settings "
+        "› Components, then boot one with [bold]xcrun simctl boot <udid>[/bold]."
+    )

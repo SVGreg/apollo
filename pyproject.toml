@@ -215,11 +215,10 @@ addopts = [
     "--strict-config",      # reject misspelled or stale pytest configuration
     "--strict-markers",     # strict marker checking
     "-m",                   # keep the default suite hermetic
-    "not integration and not e2e and not cloud and not manual and not android and not ios_sim",
+    "not integration and not e2e and not cloud and not manual and not ios_sim",
 ]
 
 markers = [
-    "android: tests requiring Android device or emulator",
     "ios_sim: tests requiring a booted iOS Simulator (WDA is provisioned on demand)",
     "integration: tests spanning multiple Apollo components",
     "e2e: end-to-end tests requiring a running Apollo environment",

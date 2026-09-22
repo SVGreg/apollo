@@ -35,16 +35,13 @@ from typing import Any
 from mcp_server.base import mcp
 from mcp_server.utils import env_utils
 from apollo.core.diagnostics import readiness_engine
-from apollo.core.diagnostics.device_smoke import smoke_test_device
 from apollo.core.diagnostics.readiness import (
-    adb_keys_corrupted,
     base_verdict,
     collect_readiness,
     sort_by_fix_order,
 )
 from apollo.core.diagnostics.schema import ProbeResult, ProbeStatus, SystemReadinessReport
 from apollo.runtime import DeviceExecutionLock, trace_store
-from apollo.runtime.helper_manager import helper_manager
 from apollo.utils.credentials_validator import validate_api_key
 from apollo.utils.logger import get_logger
 
@@ -109,8 +106,8 @@ def _scrub(value: Any) -> Any:
 
 
 def _find_device_probe(results):
-    """The device probe: iOS ("ios_device") on Apollo, "android_adb" upstream."""
-    return _find(results, "ios_device") or _find(results, "android_adb")
+    """The iOS device probe (simulators and, from Phase 3, USB devices)."""
+    return _find(results, "ios_device")
 
 
 def _find(results: list[ProbeResult], probe_id: str) -> ProbeResult | None:
@@ -477,214 +474,6 @@ def _credential_verification_steps(
 # --------------------------------------------------------------------------- #
 
 
-def _probe_unavailable(serial: str | None, error: str) -> dict[str, Any]:
-    return {
-        "ok": False,
-        "serial": serial,
-        "elapsed_seconds": 0.0,
-        "screenshot_bytes": None,
-        "element_count": None,
-        "error": error,
-        "fix": [],
-    }
-
-
-async def _device_smoke_test(device_serial: str | None) -> dict[str, Any]:
-    """Drive the device end to end (screenshot + UI hierarchy) through the shared smoke test."""
-    return await smoke_test_device(device_serial)
-
-
-async def _run_device_probe(
-    adb_result: ProbeResult | None, requested_device: str | None
-) -> dict[str, Any]:
-    devices = (adb_result.metadata.get("devices") if adb_result else None) or []
-    ready = [str(d.get("serial")) for d in devices if d.get("state") == "device"]
-    if requested_device and requested_device not in ready:
-        return _probe_unavailable(
-            requested_device,
-            f"requested device '{requested_device}' is not attached and authorized; nothing to probe",
-        )
-    if not ready:
-        return _probe_unavailable(None, "no authorized device is attached; nothing to probe")
-    serial = requested_device or (ready[0] if len(ready) == 1 else None)
-    try:
-        return await _device_smoke_test(serial)
-    except Exception as exc:
-        return _probe_unavailable(
-            serial, f"device smoke test raised {exc.__class__.__name__}: {exc}"
-        )
-
-
-def _device_probe_steps(device_probe: dict[str, Any] | None) -> list[str]:
-    if device_probe is None or device_probe.get("ok"):
-        return []
-    serial = device_probe.get("serial") or "the attached device"
-    steps = [f"[REQUIRED] Device probe failed on {serial}: {device_probe.get('error')}"]
-    steps.extend(f"  Guidance: {fix}" for fix in device_probe.get("fix") or [])
-    return steps
-
-
-# --------------------------------------------------------------------------- #
-# Accessibility helper (UI hierarchy backend)
-# --------------------------------------------------------------------------- #
-
-
-def _hierarchy_backend() -> str:
-    try:
-        from apollo.clients.screen_client_factory import resolve_backend
-
-        return resolve_backend().value
-    except (ImportError, ValueError):
-        return "auto"
-
-
-def _helper_target(adb_result: ProbeResult | None, requested_device: str | None) -> str | None:
-    """The one ready device whose helper state is worth reporting, or None."""
-    if adb_result is not None and adb_result.id == "ios_device":
-        # iOS: the WebDriverAgent runner is reported in the device probe's `runner` facts.
-        return None
-    devices = (adb_result.metadata.get("devices") if adb_result else None) or []
-    ready = [str(d.get("serial")) for d in devices if d.get("state") == "device"]
-    if requested_device:
-        return requested_device if requested_device in ready else None
-    return ready[0] if len(ready) == 1 else None
-
-
-def _helper_status(serial: str) -> dict[str, Any]:
-    try:
-        status = helper_manager.status(serial)
-    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as exc:
-        return {"serial": serial, "error": f"{exc.__class__.__name__}: {exc}"}
-    status["serial"] = serial
-    status["backend"] = _hierarchy_backend()
-    return status
-
-
-def _helper_needs_provision(status: dict[str, Any] | None) -> bool:
-    if not status or status.get("error"):
-        return False
-    return not status.get("installed") or bool(status.get("outdated")) or not status.get("enabled")
-
-
-def _helper_fix(
-    adb_result: ProbeResult | None, requested_device: str | None
-) -> dict[str, Any] | None:
-    """Install / upgrade / enable the helper on the idle target device (attempt_fix only)."""
-    serial = _helper_target(adb_result, requested_device)
-    if serial is None or _hierarchy_backend() == "uiautomator":
-        return None
-    status = _helper_status(serial)
-    if not _helper_needs_provision(status):
-        return None
-    if not status.get("bundled_apk_present"):
-        return {
-            "fix": "install_accessibility_helper",
-            "success": False,
-            "skipped": True,
-            "message": "Skipped: the bundled ApolloAccessibilityHelper.apk is missing from the checkout.",
-        }
-    wanted = _normalize_serial(serial)
-    if any(_normalize_serial(entry.get("device")) == wanted for entry in _task_state()["active"]):
-        return {
-            "fix": "install_accessibility_helper",
-            "success": False,
-            "skipped": True,
-            "message": f"Skipped: a task is running on {serial}; install it after the task finishes.",
-        }
-    try:
-        result = helper_manager.provision(serial)
-    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as exc:
-        return {
-            "fix": "install_accessibility_helper",
-            "success": False,
-            "skipped": False,
-            "message": f"provisioning raised {exc.__class__.__name__}: {exc}",
-        }
-    message = (
-        f"{result.action} (installed version {result.installed_version}, "
-        f"bundled {result.bundled_version}, service enabled={result.enabled})"
-    )
-    if result.error:
-        message += f": {result.error}"
-    return {
-        "fix": "install_accessibility_helper",
-        "success": result.ok,
-        "skipped": False,
-        "message": message,
-    }
-
-
-def _helper_steps(status: dict[str, Any] | None, *, attempt_fix: bool) -> list[str]:
-    if not status:
-        return []
-    serial = status.get("serial") or "the device"
-    backend = status.get("backend") or "auto"
-    if backend == "uiautomator":
-        return []
-    if status.get("error"):
-        return [
-            f"[OPTIONAL] Accessibility helper state on {serial} could not be read: {status['error']}"
-        ]
-    healthy = status.get("installed") and not status.get("outdated") and status.get("enabled")
-    if healthy and status.get("reachable"):
-        return []
-    if not status.get("installed"):
-        problem = "is not installed"
-    elif status.get("outdated"):
-        problem = (
-            f"is outdated (device has version {status.get('installed_version')}, "
-            f"bundled is {status.get('bundled_version')})"
-        )
-    elif not status.get("enabled"):
-        problem = "is installed but its accessibility service is disabled"
-    elif status.get("newer_than_bundled") and status.get("reachable"):
-        return []  # a newer dev build is fine; nothing to do
-    else:
-        problem = "is installed and enabled but not answering on its loopback port"
-    tag = "REQUIRED" if backend == "helper" else "OPTIONAL"
-    consequence = (
-        "tasks cannot read the UI hierarchy until it is fixed"
-        if backend == "helper"
-        else "tasks fall back to UIAutomator2 (slower dumps, conflicts with Appium/Mobly)"
-    )
-    steps = [f"[{tag}] Accessibility helper on {serial} {problem}; {consequence}."]
-    if not status.get("bundled_apk_present"):
-        steps.append(
-            "  Guidance: the bundled APK is missing; build it with "
-            "packages/apollo-accessibility-helper/build_apk.sh."
-        )
-        return steps
-    if problem.startswith("is installed and enabled"):
-        steps.append(
-            "  Guidance: unlock the phone; if the helper still does not answer, reinstall it with "
-            "the command below (add --force)."
-        )
-        steps.append(f"  Run: uv run apollo helper install --serial {serial} --force")
-        return steps
-    if not attempt_fix:
-        steps.append(
-            "  Guidance: call mobile_diagnose(attempt_fix=true) to install and enable it "
-            "without touching the phone, or run the command below."
-        )
-    steps.append(f"  Run: uv run apollo helper install --serial {serial}")
-    if problem.startswith("is installed but"):
-        # Enabling from adb was already attempted once by whoever installed it;
-        # on ROMs that reject it only a person can flip the switch.
-        from apollo.runtime.helper_manager import MANUAL_ENABLE_PATH
-
-        steps.append(
-            "  Guidance: if the command reports that this device rejected enabling the "
-            f"service, ask the user to turn it on by hand: {MANUAL_ENABLE_PATH} "
-            "(the command opens that settings screen on the phone)."
-        )
-    return steps
-
-
-# --------------------------------------------------------------------------- #
-# next_steps
-# --------------------------------------------------------------------------- #
-
-
 def _device_steps(
     adb_result: ProbeResult | None,
     *,
@@ -755,8 +544,6 @@ def _next_steps(
     launch_steps: list[str],
     credentials: list[dict[str, Any]] | None,
     tasks: dict[str, list[dict[str, Any]]],
-    device_probe: dict[str, Any] | None,
-    accessibility_helper: dict[str, Any] | None = None,
 ) -> list[str]:
     steps: list[str] = []
     needs_restart = False
@@ -809,8 +596,6 @@ def _next_steps(
         )
     )
     steps.extend(launch_steps)
-    steps.extend(_device_probe_steps(device_probe))
-    steps.extend(_helper_steps(accessibility_helper, attempt_fix=attempt_fix))
 
     for fix in fixes_applied:
         outcome = "applied" if fix.get("success") else "did not help"
@@ -941,45 +726,13 @@ async def _apply_safe_fixes(
     cleanup = _cleanup_stale_locks()
     if cleanup is not None:
         applied.append(cleanup)
-
-    adb = _find_device_probe(report.probes)
-    if adb is None or not adb.metadata.get("installed"):
-        return applied
-
-    if adb_keys_corrupted(report.probes):
-        result = await readiness_engine.heal_adb_keys()
-        applied.append(_public_fix_result("heal_adb_keys", result))
-        return applied  # healing already restarted the ADB server
-
-    devices = adb.metadata.get("devices") or []
-    if any(d.get("state") == "device" for d in devices):
-        # A ready device exists; nothing to restart. Provision the accessibility
-        # helper on it when it is idle and missing, outdated or disabled.
-        helper_fix = await asyncio.to_thread(_helper_fix, adb, requested_device)
-        if helper_fix is not None:
-            applied.append(helper_fix)
-        return applied
-    if DeviceExecutionLock.get_active_owners():
-        applied.append(
-            {
-                "fix": "restart_adb_server",
-                "success": False,
-                "skipped": True,
-                "message": "Skipped: an Apollo task currently holds a device lock.",
-            }
-        )
-        return applied
-    result = await readiness_engine.restart_adb_server()
-    applied.append(_public_fix_result("restart_adb_server", result))
     return applied
 
 
 def _probes_changed(fixes_applied: list[dict[str, Any]]) -> bool:
     """Only ADB-side fixes can change probe results; lock cleanup does not warrant a re-run."""
     return any(
-        fix.get("success")
-        and not fix.get("skipped")
-        and fix.get("fix") not in ("cleanup_stale_locks", "install_accessibility_helper")
+        fix.get("success") and not fix.get("skipped") and fix.get("fix") != "cleanup_stale_locks"
         for fix in fixes_applied
     )
 
@@ -999,9 +752,8 @@ async def _run_extras(
     requested_device: str | None,
     launch_avd: str | None,
     verify_credentials: bool,
-    probe_device: bool,
 ) -> dict[str, Any]:
-    """Optional, slower work: emulator launch, live key checks, device smoke test, lock state."""
+    """Optional, slower work: simulator boot, live key checks, lock state."""
     adb_result = _find_device_probe(results)
     launch_steps: list[str] = []
     if launch_avd:
@@ -1009,18 +761,13 @@ async def _run_extras(
     else:
         emulator = _emulator_status()
 
-    helper_serial = _helper_target(adb_result, requested_device)
-    credentials, device_probe, accessibility_helper = await asyncio.gather(
-        _verify_credentials(_find(results, "gemini_api_key")) if verify_credentials else _none(),
-        _run_device_probe(adb_result, requested_device) if probe_device else _none(),
-        asyncio.to_thread(_helper_status, helper_serial) if helper_serial else _none(),
+    credentials = await (
+        _verify_credentials(_find(results, "gemini_api_key")) if verify_credentials else _none()
     )
     return {
         "emulator": emulator,
         "launch_steps": launch_steps,
         "credentials": credentials,
-        "device_probe": device_probe,
-        "accessibility_helper": accessibility_helper,
         "tasks": _task_state(),
     }
 
@@ -1041,8 +788,6 @@ def _verdict(
     *,
     requested_device: str | None,
     credentials: list[dict[str, Any]] | None,
-    device_probe: dict[str, Any] | None,
-    accessibility_helper: dict[str, Any] | None = None,
 ) -> str:
     verdict = base_verdict(results)
     if verdict == "blocked" or not _requested_device_ready(results, requested_device):
@@ -1050,15 +795,8 @@ def _verdict(
     primary = _primary_credential(credentials)
     if primary is not None and not primary.get("valid"):
         return "blocked"
-    if device_probe is not None and not device_probe.get("ok"):
-        return "blocked"
-    helper_backend = (accessibility_helper or {}).get("backend")
-    if helper_backend == "helper" and not accessibility_helper.get("reachable"):
-        return "blocked"
     if any(not entry.get("valid") for entry in credentials or []):
         return "degraded"
-    if helper_backend == "auto" and _helper_needs_provision(accessibility_helper):
-        return "degraded" if verdict == "ready" else verdict
     return verdict
 
 
@@ -1067,7 +805,6 @@ def _summary(
     verdict: str,
     *,
     credentials: list[dict[str, Any]] | None,
-    device_probe: dict[str, Any] | None,
 ) -> str:
     blockers = [r for r in results if r.is_blocker]
     passed = [r for r in blockers if r.status is ProbeStatus.PASS]
@@ -1082,8 +819,6 @@ def _summary(
         for entry in credentials or []
         if not entry.get("valid")
     )
-    if device_probe is not None and not device_probe.get("ok"):
-        failing.append(f"Device probe: {device_probe.get('error')}")
     if failing:
         line += " Attention: " + "; ".join(failing) + "."
     return line
@@ -1108,7 +843,6 @@ def _timeout_response(fixes_applied: list[dict[str, Any]]) -> dict[str, Any]:
         "emulator": _emulator_status(),
         "tasks": _task_state(),
         "credentials": None,
-        "device_probe": None,
         "fixes_applied": fixes_applied,
         "logs": _collect_logs({}),
     }
@@ -1120,7 +854,6 @@ async def mobile_diagnose(
     device_serial: str | None = None,
     launch_avd: str | None = None,
     verify_credentials: bool = False,
-    probe_device: bool = False,
 ) -> dict[str, Any]:
     """Diagnoses why APOLLO cannot run tasks from this IDE and returns the fixes.
 
@@ -1128,9 +861,9 @@ async def mobile_diagnose(
     start, no device is found, or the user says APOLLO "does not work".
     It checks, in fix order: Python runtime, config file, the MCP host
     (interpreter vs project venv, .env location, traces directory, daemon
-    port), LLM credentials, ADB + devices (authorization, lock screen, RSA
-    keys, emulators), and the optional video toolchain. A plain call takes a
-    few seconds; the optional extras cost more (see Args).
+    port), LLM credentials, Xcode and simulators, the WebDriverAgent runner,
+    attached iPhones, and the optional video/device toolchain. A plain call
+    takes a few seconds; the optional extras cost more (see Args).
 
     Returns a dict:
       - `verdict`: "ready" | "degraded" (optional pieces missing) | "blocked".
@@ -1149,25 +882,18 @@ async def mobile_diagnose(
         runner_python, interpreter_matches_venv, env_file, env_file_exists,
         traces_dir, mcp_client (when known), daemon {port, reachable,
         port_held_by_other_process, log_path}.
-      - `device`: the device a task would use ({serial, state, model,
-        android_version, is_locked, is_emulator, accessibility_helper}) or
-        null. `accessibility_helper` describes the Apollo UI-hierarchy
-        helper APK on that device ({installed, installed_version,
-        bundled_version, outdated, enabled, forward_port, reachable,
-        backend}); with backend "auto" a missing helper only degrades
-        (UIAutomator2 fallback), with backend "helper" it blocks.
-      - `emulator`: background emulator launch state ({avd_name, status,
+      - `device`: the simulator or device a task would use ({serial, state,
+        model, os_version}) or null.
+      - `emulator`: background simulator boot state ({avd_name, status,
         stage_message, error, serial, elapsed_seconds, progress_percent}) or
-        null when nothing was launched. `status` is starting /
-        waiting_for_adb / booting while it boots, then ready or failed.
+        null when nothing was launched. `status` is starting / booting while
+        it boots, then ready or failed.
       - `tasks`: {"active": [...], "queued": [...]} APOLLO tasks holding or
         waiting for a device (device, session_id, pid, description, ingress,
         started_at/created_at). Stop a stuck one with
         mobile_manage_task(action="stop", trace_id=<session_id>).
       - `credentials`: null unless verify_credentials; else
         [{provider, label, valid, message}] per configured key.
-      - `device_probe`: null unless probe_device; else {ok, serial,
-        elapsed_seconds, screenshot_bytes, element_count, error, fix}.
       - `fixes_applied`: what `attempt_fix` did ({fix, success, skipped, message}).
       - `logs`: paths to the MCP server logs and the daemon log, recent
         error lines, and the most recent failed task with its error, log
@@ -1175,12 +901,8 @@ async def mobile_diagnose(
 
     Args:
         attempt_fix: When true, applies the safe self-heals the APOLLO
-          console offers: remove device locks left by dead processes,
-          regenerate corrupted ADB RSA keys, restart the ADB server (only
-          when no device is ready and no task holds a device), and install,
-          upgrade or enable the Apollo accessibility helper APK on the idle
-          target device when it is missing, outdated or disabled. Then
-          re-runs the checks. Nothing else is changed.
+          console offers: remove device locks and queue tickets left by dead
+          processes, then re-run the checks. Nothing else is changed.
         device_serial: Optional serial the user wants to use; the report
           then states explicitly whether that device is attached, authorized
           and idle.
@@ -1196,11 +918,6 @@ async def mobile_diagnose(
           case, keys stay on the server). Use it when tasks fail with
           authentication, quota or model errors although the key check
           passes. An invalid primary key makes the verdict "blocked".
-        probe_device: When true, drives the attached device end to end
-          (screenshot + UI hierarchy, about 20 seconds) to prove a task can
-          really start. Use it when the checks pass but tasks still fail on
-          the device, or the screen stays black. A failed probe makes the
-          verdict "blocked" and lists the fix.
     """
     fixes_applied: list[dict[str, Any]] = []
     requested_device = device_serial.strip() if device_serial and device_serial.strip() else None
@@ -1224,7 +941,6 @@ async def mobile_diagnose(
                 requested_device=requested_device,
                 launch_avd=avd_name,
                 verify_credentials=verify_credentials,
-                probe_device=probe_device,
             ),
             timeout=DIAGNOSIS_TIMEOUT_SECONDS,
         )
@@ -1232,22 +948,16 @@ async def mobile_diagnose(
         return _timeout_response(fixes_applied)
 
     credentials: list[dict[str, Any]] | None = extras["credentials"]
-    device_probe: dict[str, Any] | None = extras["device_probe"]
-    accessibility_helper: dict[str, Any] | None = extras.get("accessibility_helper")
     verdict = _verdict(
         results,
         requested_device=requested_device,
         credentials=credentials,
-        device_probe=device_probe,
-        accessibility_helper=accessibility_helper,
     )
     device = _compact_device(report)
-    if device is not None and accessibility_helper is not None:
-        device["accessibility_helper"] = accessibility_helper
     env_file = host.metadata.get("env_file")
     return {
         "verdict": verdict,
-        "summary": _summary(results, verdict, credentials=credentials, device_probe=device_probe),
+        "summary": _summary(results, verdict, credentials=credentials),
         "next_steps": _next_steps(
             results,
             attempt_fix=attempt_fix,
@@ -1258,8 +968,6 @@ async def mobile_diagnose(
             launch_steps=extras["launch_steps"],
             credentials=credentials,
             tasks=extras["tasks"],
-            device_probe=device_probe,
-            accessibility_helper=accessibility_helper,
         ),
         "checks": [_render_check(r) for r in sort_by_fix_order(results)],
         "host": _compact_host(host.metadata),
@@ -1267,7 +975,6 @@ async def mobile_diagnose(
         "emulator": extras["emulator"],
         "tasks": extras["tasks"],
         "credentials": credentials,
-        "device_probe": device_probe,
         "fixes_applied": fixes_applied,
         "logs": _collect_logs(host.metadata),
     }

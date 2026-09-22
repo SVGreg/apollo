@@ -20,7 +20,6 @@ import subprocess
 import time
 from typing import Any
 
-from apollo.core.diagnostics.adb_server_connection import adb_server_connection
 from apollo.core.diagnostics.probes.ios_probe import (
     IosDeviceProbe,
     IosPhysicalDeviceProbe,
@@ -293,74 +292,6 @@ class ReadinessEngine:
             metadata={"exception_type": type(exc).__name__, "exception": str(exc)},
         )
 
-    async def heal_adb_keys(self, force: bool = False) -> dict[str, Any]:
-        """Auto-heal corrupted or 0-byte ADB authentication keys."""
-        from apollo.core.diagnostics.adb_keys import heal_adb_keys
-
-        logger.info("[ReadinessEngine] Auto-healing ADB authentication keys...")
-        return await asyncio.to_thread(heal_adb_keys, None, force)
-
-    async def restart_adb_server(self) -> dict[str, Any]:
-        """Execute adb kill-server && adb start-server to recover connectivity, auto-healing corrupted keys if needed."""
-        from apollo.core.diagnostics.adb_keys import heal_adb_keys, inspect_adb_keys
-
-        endpoint = adb_server_connection.current_endpoint()
-        if not endpoint.is_local_default:
-            return {
-                "success": True,
-                "skipped": True,
-                "message": (
-                    "Remote ADB is active. Apollo refreshed device discovery without stopping "
-                    "the active ADB server endpoint."
-                ),
-                "endpoint": endpoint.to_dict(),
-            }
-
-        adb_path = toolchain.resolve("adb") or "adb"
-
-        def _restart_sync():
-            # If keys are corrupted, heal them first
-            key_status = inspect_adb_keys()
-            if key_status.is_corrupted:
-                logger.warning(
-                    f"[ReadinessEngine] Corrupted ADB keys detected ({key_status.error_reason}). Auto-healing..."
-                )
-                return heal_adb_keys(adb_path=adb_path)
-
-            try:
-                clean_env = os.environ.copy()
-                clean_env.pop("ADB_SERVER_SOCKET", None)
-                subprocess.run(
-                    [adb_path, "kill-server"],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    timeout=5,
-                    env=clean_env,
-                )
-                res = subprocess.run(
-                    [adb_path, "start-server"],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    timeout=5,
-                    env=clean_env,
-                )
-                success = res.returncode == 0
-                return {
-                    "success": success,
-                    "message": "ADB server restarted successfully"
-                    if success
-                    else "Failed to restart ADB",
-                    "output": "",
-                }
-            except Exception as exc:
-                return {
-                    "success": False,
-                    "message": f"Error executing ADB restart: {exc}",
-                }
-
-        logger.info("[ReadinessEngine] Restarting ADB server...")
-        return await asyncio.to_thread(_restart_sync)
-
     async def launch_emulator(self, avd_name: str) -> dict[str, Any]:
         """Boot an iOS Simulator by name or UDID in the background and track its lifecycle.
 
@@ -393,45 +324,6 @@ class ReadinessEngine:
         from apollo.core.diagnostics.simulator_manager import simulator_manager
 
         return simulator_manager.dismiss()
-
-    async def connect_wireless_adb(self, host: str, port: int = 5555) -> dict[str, Any]:
-        """Connect to an Android device over Wi-Fi via adb connect."""
-        if not adb_server_connection.current_endpoint().is_local_default:
-            return {
-                "success": False,
-                "message": "Switch to local ADB before connecting a Wireless ADB device.",
-            }
-        clean_host = host.strip()
-        if not clean_host:
-            return {"success": False, "message": "Host IP address cannot be empty"}
-        target = f"{clean_host}:{port}"
-        adb_path = toolchain.resolve("adb") or "adb"
-
-        def _connect_sync():
-            try:
-                res = subprocess.run(
-                    [adb_path, "connect", target],
-                    capture_output=True,
-                    text=True,
-                    timeout=8,
-                )
-                output = (res.stdout + "\n" + res.stderr).strip()
-                success = "connected to" in output.lower() and "failed" not in output.lower()
-                return {
-                    "success": success,
-                    "target": target,
-                    "output": output,
-                    "message": f"Connected to {target}" if success else output,
-                }
-            except Exception as exc:
-                return {
-                    "success": False,
-                    "target": target,
-                    "message": f"Connection error: {exc}",
-                }
-
-        logger.info(f"[ReadinessEngine] Connecting to wireless ADB target '{target}'...")
-        return await asyncio.to_thread(_connect_sync)
 
 
 # Global singleton instance

@@ -47,9 +47,14 @@ substitution. Expect conflicts only in:
   `start.sh`, `Makefile`, `scripts/install_deps.sh`, `.github/workflows/ci.yml`, `README.md`,
   prompts under `apollo/agents/*`, `config/apollo.jsonc`, `pyproject.toml`, `uv.lock`.
   For these, read the upstream diff and port the intent; do not take upstream's version.
-- **Deleted in Apollo**: `packages/artemis-accessibility-helper/`, `playground/`, `Dockerfile`,
-  `.dockerignore`, `start.bat`, `scripts/*.ps1`. Upstream changes there are dropped
-  (`git rm` on conflict).
+- **Deleted in Apollo**: the whole Android device layer — `artemis/drivers/android/`,
+  `clients/{accessibility_client,ui_automator_client,screen_client_factory,adb_tunnel}.py`,
+  `runtime/{helper_manager,awake_service,awake_lease,adb_endpoint}.py`,
+  `core/diagnostics/{adb_keys,adb_server_connection,emulator_manager,device_smoke,hierarchy_parity}.py`,
+  `core/diagnostics/probes/adb_probe.py`, `interfaces/cli/commands/helper.py`,
+  `mcp_server/utils/device_utils.py` — plus `packages/artemis-accessibility-helper/`,
+  `playground/`, `Dockerfile`, `.dockerignore`, `start.bat`, `scripts/*.ps1`. Upstream changes
+  there are dropped (`git rm` on conflict); take only bug fixes that also apply to the iOS layer.
 
 After resolving: `uv lock`, `uv sync --dev --locked`, `make lint`, `make test`, `make typecheck`,
 `make smoke-mock` and `make smoke-sim` (needs a Mac with Xcode), then update the **Last synced**

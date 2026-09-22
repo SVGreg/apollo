@@ -288,10 +288,4 @@ def search_by_coordinates(image_hash: str, x: int, y: int) -> str:
 
 
 if __name__ == "__main__":
-    from apollo.runtime import shutdown_awake_service, start_awake_service
-
-    start_awake_service()
-    try:
-        mcp.run()
-    finally:
-        shutdown_awake_service()
+    mcp.run()

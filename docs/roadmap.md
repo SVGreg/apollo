@@ -102,7 +102,10 @@ honestly if not).
 
 ## Open decisions
 
-1. Keep the disabled Android driver in-tree (`apollo/drivers/android/`, `apollo helper`) or delete
-   it and rely on the upstream remote. Leaning delete — it is dead weight on an iOS-only fork.
-2. DeviceKit as an optional backend, or drop it. Evaluate during Phase 4.
-3. Linux/Windows device-only mode through go-ios. Not planned for v1.
+1. DeviceKit as an optional backend, or drop it. Evaluate during Phase 4.
+2. Linux/Windows device-only mode through go-ios. Not planned for v1.
+
+Settled: the Android device layer was **deleted** on 2026-09-22 (drivers, adb clients, helper-APK
+provisioning, adb diagnostics, `apollo helper`, the `android` pytest marker). `upstream` still
+carries it. The console's legacy "ADB" connection panel is the last Android-shaped thing left; its
+endpoints now answer "not applicable" and the panel goes with the next Angular pass.

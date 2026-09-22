@@ -24,7 +24,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from apollo.core.diagnostics.emulator_manager import EmulatorLaunchStage
+from apollo.core.diagnostics.simulator_manager import EmulatorLaunchStage
 from apollo.core.diagnostics.probes.host_probe import IntegrationHostProbe
 from apollo.core.diagnostics.schema import (
     DeviceInfo,
@@ -149,17 +149,17 @@ def _healthy_probes() -> list[ProbeResult]:
             "vision_ocr_key", ProbeStatus.PASS, blocker=False, category=ProbeCategory.CREDENTIALS
         ),
         _probe(
-            "android_adb",
+            "ios_device",
             ProbeStatus.PASS,
             category=ProbeCategory.DEVICE,
             metadata={
                 "installed": True,
-                "adb_keys": {"is_corrupted": False},
                 "installed_avds": [],
                 "devices": [
                     {
-                        "serial": "pixel-1",
+                        "serial": "sim-1",
                         "state": "device",
+                        "name": "iPhone 17 Pro",
                         "installed_packages": ["a", "b", "c"],
                     }
                 ],
@@ -175,29 +175,29 @@ def _no_device_probes(installed_avds: list[str] | None = None) -> list[ProbeResu
         ProbeAction(
             action_type="command",
             label=f"Launch {avd}",
-            payload=f"C:/Android/Sdk/emulator/emulator.exe -avd {avd}",
+            payload=f"xcrun simctl boot {avd}",
         )
         for avd in avds
     ] or [
         ProbeAction(
             action_type="command",
             label="Start Default Emulator",
-            payload="emulator -avd Pixel_8_API_34",
+            payload="xcrun simctl boot 'iPhone 17 Pro'",
         )
     ]
     actions.append(
         ProbeAction(
             action_type="hint",
             label="Connect via USB",
-            payload="Connect your Android phone via USB cable and enable USB Debugging.",
+            payload="Connect an iPhone via USB and trust this Mac.",
         )
     )
     probes[5] = _probe(
-        "android_adb",
+        "ios_device",
         ProbeStatus.WARN,
         category=ProbeCategory.DEVICE,
         summary="No Device",
-        description="ADB is ready, but no active Android device or emulator was detected.",
+        description="No booted simulator or attached device was detected.",
         metadata={
             "installed": True,
             "adb_keys": {"is_corrupted": False},
@@ -252,7 +252,7 @@ def _report(probes: list[ProbeResult], active_device: DeviceInfo | None = None):
     )
 
 
-def _owner(device_id: str = "pixel-1", session_id: str = "trace-123") -> DeviceLockOwner:
+def _owner(device_id: str = "sim-1", session_id: str = "trace-123") -> DeviceLockOwner:
     return DeviceLockOwner(
         pid=777,
         process_created_at=1.0,
@@ -278,22 +278,10 @@ def _run(
     queued=None,
     cleanup=0,
     validate=None,
-    smoke=None,
-    helper_status=None,
-    helper_provision=None,
-    backend="auto",
     **kwargs,
 ):
     """Run the tool with every side-effecting collaborator stubbed."""
     with ExitStack() as stack:
-        fake_helper = MagicMock()
-        fake_helper.status = MagicMock(
-            side_effect=lambda serial: dict(helper_status or _helper_healthy(serial))
-        )
-        fake_helper.provision = helper_provision or MagicMock(return_value=_provision_ok())
-        stack.enter_context(patch.object(diagnose, "helper_manager", fake_helper))
-        stack.enter_context(patch.object(diagnose, "_hierarchy_backend", lambda: backend))
-        kwargs["_fake_helper"] = fake_helper
         stack.enter_context(
             patch.object(
                 diagnose.readiness_engine,
@@ -346,154 +334,12 @@ def _run(
                 validate or AsyncMock(return_value=(True, "verified")),
             )
         )
-        stack.enter_context(
-            patch.object(
-                diagnose,
-                "_device_smoke_test",
-                smoke or AsyncMock(return_value=_smoke_ok()),
-            )
-        )
-        fake_helper = kwargs.pop("_fake_helper")
-        result = asyncio.run(mobile_diagnose(**kwargs))
-        result["_fake_helper"] = fake_helper
-        return result
-
-
-def _helper_healthy(serial: str = "pixel-1") -> dict:
-    return {
-        "package": "com.apollo.helper",
-        "installed": True,
-        "installed_version": 2,
-        "bundled_version": 2,
-        "bundled_apk_present": True,
-        "outdated": False,
-        "enabled": True,
-        "forward_port": 41234,
-        "reachable": True,
-        "reported_version": 2,
-        "transport_id": "7",
-        "session": None,
-    }
-
-
-def _provision_ok():
-    from apollo.runtime.helper_manager import ProvisionResult
-
-    return ProvisionResult(
-        ok=True, action="installed", installed_version=2, bundled_version=2, enabled=True
-    )
-
-
-def _smoke_ok(serial: str = "pixel-1") -> dict:
-    return {
-        "ok": True,
-        "serial": serial,
-        "elapsed_seconds": 3.2,
-        "screenshot_bytes": 120_000,
-        "element_count": 42,
-        "error": None,
-        "fix": [],
-    }
+        return asyncio.run(mobile_diagnose(**kwargs))
 
 
 # --------------------------------------------------------------------------- #
 # Schema / shape
 # --------------------------------------------------------------------------- #
-
-
-def test_tool_signature_and_registration():
-    sig = inspect.signature(mobile_diagnose)
-    assert sig.parameters["attempt_fix"].default is False
-    assert sig.parameters["device_serial"].default is None
-    assert sig.parameters["launch_avd"].default is None
-    assert sig.parameters["verify_credentials"].default is False
-    assert sig.parameters["probe_device"].default is False
-    doc = mobile_diagnose.__doc__ or ""
-    for field in (
-        "next_steps",
-        "checks",
-        "host",
-        "device",
-        "emulator",
-        "tasks",
-        "credentials",
-        "device_probe",
-        "fixes_applied",
-        "logs",
-        "launch_avd",
-        "verify_credentials",
-        "probe_device",
-    ):
-        assert field in doc
-
-    from mcp_server.base import mcp
-
-    tool_names = {t.name for t in asyncio.run(mcp.list_tools())}
-    assert "mobile_diagnose" in tool_names
-
-
-def test_ready_environment_reports_ready_with_slim_shape(temp_trace_env):
-    device = DeviceInfo(
-        serial="pixel-1",
-        model="Pixel 8",
-        android_version="15",
-        is_locked=False,
-        installed_packages=["a", "b"],
-        screen_resolution="1080x2400",
-    )
-    result = _run(_healthy_probes(), report=_report(_healthy_probes(), active_device=device))
-
-    assert result["verdict"] == "ready"
-    assert "overall_ready" not in result
-    assert "active_device" not in result
-    assert result["next_steps"] == [
-        "Environment is ready. Use mobile_run_task to delegate a task; pass device_serial "
-        "when more than one device is attached."
-    ]
-    assert "SECRET" not in repr(result)
-
-    # Passing checks are one line each: no detail / fix / facts.
-    for check in result["checks"]:
-        assert check["status"] == "pass"
-        assert set(check) == {"id", "title", "status", "required", "summary"}
-
-    # Fix order: runtime first, then host, credentials, device, toolchain.
-    assert [c["id"] for c in result["checks"]][:5] == [
-        "python_runtime",
-        "system_config",
-        "integration_host",
-        "gemini_api_key",
-        "android_adb",
-    ]
-    assert result["device"] == {
-        "serial": "pixel-1",
-        "state": "device",
-        "model": "Pixel 8",
-        "android_version": "15",
-        "is_locked": False,
-        "is_emulator": False,
-        "accessibility_helper": {**_helper_healthy(), "serial": "pixel-1", "backend": "auto"},
-    }
-    assert result["host"] == {
-        "server_python": "/proj/.venv/bin/python",
-        "runner_python": "/proj/.venv/bin/python",
-        "interpreter_matches_venv": True,
-        "env_file": "/proj/.env",
-        "env_file_exists": True,
-        "traces_dir": "/proj/traces",
-        "daemon": {
-            "port": 8000,
-            "reachable": False,
-            "port_held_by_other_process": False,
-            "log_path": "/logs/daemon.log",
-        },
-    }
-    assert result["emulator"] is None
-    assert result["credentials"] is None
-    assert result["device_probe"] is None
-    assert result["tasks"] == {"active": [], "queued": []}
-    assert result["logs"]["mcp_stderr_log"].endswith("mcp_stderr.log")
-    assert result["logs"]["daemon_log"] == "/logs/daemon.log"
 
 
 def test_host_mcp_client_is_forwarded_when_probe_reports_it(temp_trace_env):
@@ -518,7 +364,7 @@ def test_failing_checks_keep_scrubbed_facts_and_fix_list(temp_trace_env):
     assert creds["fix"] == []
     assert "SECRET" not in repr(result)
 
-    adb = next(c for c in result["checks"] if c["id"] == "android_adb")
+    adb = next(c for c in result["checks"] if c["id"] == "ios_device")
     device = adb["facts"]["devices"][0]
     assert device["installed_package_count"] == 3
     assert "installed_packages" not in device
@@ -549,82 +395,6 @@ def test_optional_toolchain_failure_is_degraded(temp_trace_env):
 # --------------------------------------------------------------------------- #
 # Command hygiene
 # --------------------------------------------------------------------------- #
-
-
-def test_unauthorized_device_is_blocked_with_actionable_steps(temp_trace_env):
-    probes = _healthy_probes()
-    probes[5] = _probe(
-        "android_adb",
-        ProbeStatus.WARN,
-        category=ProbeCategory.DEVICE,
-        summary="Device Unauthorized",
-        description="Device detected (abc), but USB debugging is not yet authorized.",
-        metadata={
-            "installed": True,
-            "adb_keys": {"is_corrupted": False},
-            "installed_avds": [],
-            "devices": [{"serial": "abc", "state": "unauthorized"}],
-        },
-        actions=[
-            ProbeAction(action_type="hint", label="Authorize", payload="Tap Allow on the phone."),
-            ProbeAction(
-                action_type="command",
-                label="Restart ADB",
-                payload=r"C:\sdk\platform-tools\adb.exe kill-server && C:\sdk\platform-tools\adb.exe start-server",
-            ),
-            ProbeAction(action_type="link", label="Docs", payload="https://example.test/adb"),
-        ],
-    )
-    result = _run(probes)
-
-    assert result["verdict"] == "blocked"
-    steps = result["next_steps"]
-    assert steps[0] == (
-        "[REQUIRED] Android Adb: Device detected (abc), but USB debugging is not yet authorized."
-    )
-    assert "  Guidance: Tap Allow on the phone." in steps
-    # `&&` chains are split into consecutive Run lines (PowerShell 5.1 cannot parse &&).
-    first = steps.index(r"  Run: C:\sdk\platform-tools\adb.exe kill-server")
-    assert steps[first + 1] == r"  Run: C:\sdk\platform-tools\adb.exe start-server"
-    assert not any("&&" in s for s in steps)
-    assert "  Docs: https://example.test/adb" in steps
-    assert any("mobile_diagnose(attempt_fix=true)" in s for s in steps)
-    assert steps[-1] == "After each fix, call mobile_diagnose again until verdict is 'ready'."
-    assert "Attention: Android Adb: Device Unauthorized" in result["summary"]
-
-
-def test_emulator_launch_commands_become_launch_avd_guidance(temp_trace_env):
-    result = _run(_no_device_probes(["Pixel_8", "Tablet_API_35"]))
-    steps = result["next_steps"]
-
-    assert result["verdict"] == "blocked"
-    assert not any(s.startswith("  Run:") and "-avd" in s for s in steps)
-    assert (
-        '  Guidance: Call mobile_diagnose(launch_avd="Pixel_8") to start it in the background.'
-        in steps
-    )
-    assert (
-        '  Guidance: Call mobile_diagnose(launch_avd="Tablet_API_35") to start it in the '
-        "background." in steps
-    )
-    # Explicit proposal for the first installed AVD when nothing is ready and nothing boots.
-    assert any(
-        s.startswith('No device is ready. Call mobile_diagnose(launch_avd="Pixel_8")')
-        and "Tablet_API_35" in s
-        for s in steps
-    )
-    assert "  Guidance: Connect your Android phone via USB cable and enable USB Debugging." in steps
-
-
-def test_default_emulator_command_without_installed_avd_is_not_run(temp_trace_env):
-    result = _run(_no_device_probes([]))
-    steps = result["next_steps"]
-
-    assert not any(s.startswith("  Run:") for s in steps)
-    assert any("No AVD named 'Pixel_8_API_34' is installed" in s for s in steps)
-    assert not any(
-        s.startswith("No device is ready. Call mobile_diagnose(launch_avd=") for s in steps
-    )
 
 
 # --------------------------------------------------------------------------- #
@@ -686,16 +456,16 @@ def test_unwritable_traces_dir_blocks(temp_trace_env):
 
 
 def test_requested_device_missing_blocks_even_when_environment_is_ready(temp_trace_env):
-    result = _run(_healthy_probes(), device_serial=" emulator-5554 ")
+    result = _run(_healthy_probes(), device_serial=" sim-missing ")
 
     assert result["verdict"] == "blocked"
     assert result["next_steps"][0].startswith(
-        "[REQUIRED] Requested device 'emulator-5554' is not attached. Attached: pixel-1 (device)."
+        "[REQUIRED] Requested device 'sim-missing' is not attached. Attached: sim-1 (device)."
     )
 
 
 def test_requested_device_attached_and_ready_stays_ready(temp_trace_env):
-    result = _run(_healthy_probes(), device_serial="pixel-1")
+    result = _run(_healthy_probes(), device_serial="sim-1")
     assert result["verdict"] == "ready"
 
 
@@ -713,96 +483,6 @@ def test_multiple_ready_devices_ask_user_to_choose(temp_trace_env):
 # --------------------------------------------------------------------------- #
 # launch_avd
 # --------------------------------------------------------------------------- #
-
-
-def test_launch_avd_starts_installed_emulator_and_reports_compact_state(temp_trace_env):
-    launch = AsyncMock(return_value=_emulator_state(EmulatorLaunchStage.STARTING))
-    result = _run(_no_device_probes(["Pixel_8"]), launch=launch, launch_avd=" Pixel_8 ")
-
-    launch.assert_awaited_once_with("Pixel_8")
-    assert result["emulator"] == {
-        "avd_name": "Pixel_8",
-        "status": "starting",
-        "stage_message": "stage starting",
-        "error": None,
-        "serial": None,
-        "elapsed_seconds": 12,
-        "progress_percent": 30,
-    }
-    assert "logs" not in result["emulator"]
-    steps = result["next_steps"]
-    launch_line = next(s for s in steps if s.startswith("Emulator 'Pixel_8' is starting"))
-    assert "1-3 minutes" in launch_line
-    assert "60 seconds" in launch_line
-    assert "do not pass launch_avd again" in launch_line
-    # A launch that was just started supersedes the launch proposal and the attempt_fix nudge.
-    assert not any(
-        s.startswith("No device is ready. Call mobile_diagnose(launch_avd=") for s in steps
-    )
-    assert not any("mobile_diagnose(attempt_fix=true)" in s for s in steps)
-
-
-def test_launch_avd_rejects_uninstalled_avd_without_launching(temp_trace_env):
-    launch = AsyncMock()
-    result = _run(_no_device_probes(["Pixel_8", "Tablet_API_35"]), launch=launch, launch_avd="Nope")
-
-    launch.assert_not_awaited()
-    assert result["emulator"] is None
-    assert any(
-        s.startswith("[REQUIRED] Simulator 'Nope' is not known") and "Pixel_8, Tablet_API_35" in s
-        for s in result["next_steps"]
-    )
-
-
-def test_launch_avd_does_not_relaunch_while_booting(temp_trace_env):
-    launch = AsyncMock()
-    booting = _emulator_state(EmulatorLaunchStage.BOOTING)
-    result = _run(
-        _no_device_probes(["Pixel_8"]),
-        launch=launch,
-        emulator_status=booting,
-        launch_avd="Pixel_8",
-    )
-
-    launch.assert_not_awaited()
-    assert result["emulator"]["status"] == "booting"
-    assert any(
-        s.startswith("Emulator 'Pixel_8' is already booting") and "60 seconds" in s
-        for s in result["next_steps"]
-    )
-
-
-def test_launch_in_progress_replaces_connect_device_advice(temp_trace_env):
-    result = _run(
-        _no_device_probes(["Pixel_8"]),
-        emulator_status=_emulator_state(EmulatorLaunchStage.WAITING_FOR_ADB),
-    )
-    steps = result["next_steps"]
-
-    assert result["verdict"] == "blocked"
-    assert result["emulator"]["status"] == "waiting_for_adb"
-    assert any(
-        s.startswith("  Guidance: Emulator 'Pixel_8' is waiting_for_adb")
-        and "instead of asking the user to connect a device" in s
-        for s in steps
-    )
-    assert not any("Connect your Android phone" in s for s in steps)
-    assert not any("mobile_diagnose(attempt_fix=true)" in s for s in steps)
-    assert not any("launch_avd=" in s for s in steps)
-
-
-def test_launch_avd_failure_is_required_step(temp_trace_env):
-    failed = _emulator_state(
-        EmulatorLaunchStage.FAILED, error="emulator binary crashed", stage_message="Failed"
-    )
-    result = _run(
-        _no_device_probes(["Pixel_8"]), launch=AsyncMock(return_value=failed), launch_avd="Pixel_8"
-    )
-    assert result["emulator"]["status"] == "failed"
-    assert any(
-        s == "[REQUIRED] Emulator 'Pixel_8' failed to launch: emulator binary crashed."
-        for s in result["next_steps"]
-    )
 
 
 # --------------------------------------------------------------------------- #
@@ -908,8 +588,8 @@ def test_tasks_surface_active_and_queued_and_busy_device_step(temp_trace_env):
     queued_ticket = {
         "session_id": "trace-456",
         "goal": "Queued goal",
-        "device_id": "pixel-1",
-        "device_serial": "pixel-1",
+        "device_id": "sim-1",
+        "device_serial": "sim-1",
         "adb_endpoint_id": None,
         "pid": 888,
         "token": "tok-2",
@@ -918,12 +598,12 @@ def test_tasks_surface_active_and_queued_and_busy_device_step(temp_trace_env):
         "created_at": 1700000000.0,
         "start_time": 1700000000.0,
     }
-    result = _run(_healthy_probes(), active_owners={"pixel-1": _owner()}, queued=[queued_ticket])
+    result = _run(_healthy_probes(), active_owners={"sim-1": _owner()}, queued=[queued_ticket])
 
     assert result["tasks"] == {
         "active": [
             {
-                "device": "pixel-1",
+                "device": "sim-1",
                 "session_id": "trace-123",
                 "pid": 777,
                 "description": "Open settings and toggle wifi",
@@ -933,7 +613,7 @@ def test_tasks_surface_active_and_queued_and_busy_device_step(temp_trace_env):
         ],
         "queued": [
             {
-                "device": "pixel-1",
+                "device": "sim-1",
                 "session_id": "trace-456",
                 "pid": 888,
                 "description": "Queued goal",
@@ -943,7 +623,7 @@ def test_tasks_surface_active_and_queued_and_busy_device_step(temp_trace_env):
         ],
     }
     assert result["verdict"] == "ready"
-    busy = next(s for s in result["next_steps"] if s.startswith("Device 'pixel-1' is busy"))
+    busy = next(s for s in result["next_steps"] if s.startswith("Device 'sim-1' is busy"))
     assert "task trace-123 (pid 777)" in busy
     assert 'mobile_manage_task(action="stop", trace_id="trace-123")' in busy
 
@@ -952,7 +632,7 @@ def test_busy_step_only_for_the_targeted_device(temp_trace_env):
     probes = _healthy_probes()
     probes[5].metadata["devices"].append({"serial": "pixel-2", "state": "device"})
 
-    result = _run(probes, active_owners={"pixel-2": _owner("pixel-2")}, device_serial="pixel-1")
+    result = _run(probes, active_owners={"pixel-2": _owner("pixel-2")}, device_serial="sim-1")
     assert not any("is busy" in s for s in result["next_steps"])
 
     result = _run(probes, active_owners={"pixel-2": _owner("pixel-2")}, device_serial="pixel-2")
@@ -966,67 +646,6 @@ def test_busy_step_only_for_the_targeted_device(temp_trace_env):
 # --------------------------------------------------------------------------- #
 # attempt_fix
 # --------------------------------------------------------------------------- #
-
-
-def test_attempt_fix_heals_corrupted_keys_then_rechecks(temp_trace_env):
-    broken = _healthy_probes()
-    broken[5].metadata["adb_keys"] = {"is_corrupted": True}
-    broken[5].status = ProbeStatus.WARN
-    broken[5].summary = "ADB Key Corrupted"
-    healthy = _healthy_probes()
-
-    run_all = AsyncMock(side_effect=[_report(broken), _report(healthy)])
-    heal = AsyncMock(return_value={"success": True, "message": "keys regenerated"})
-    restart = AsyncMock()
-    with (
-        patch.object(diagnose.readiness_engine, "run_all", run_all),
-        patch.object(diagnose.readiness_engine, "heal_adb_keys", heal),
-        patch.object(diagnose.readiness_engine, "restart_adb_server", restart),
-        patch.object(diagnose.DeviceExecutionLock, "cleanup_stale_locks", return_value=0),
-        patch.object(diagnose.DeviceExecutionLock, "get_active_owners", return_value={}),
-        patch.object(diagnose.DeviceExecutionLock, "get_queued_tasks", return_value=[]),
-        patch.object(IntegrationHostProbe, "probe", AsyncMock(return_value=_host())),
-        patch.object(
-            diagnose,
-            "_helper_status",
-            lambda serial: {**_helper_healthy(serial), "serial": serial, "backend": "auto"},
-        ),
-    ):
-        result = asyncio.run(mobile_diagnose(attempt_fix=True))
-
-    heal.assert_awaited_once()
-    restart.assert_not_awaited()  # healing already restarted ADB
-    assert run_all.await_count == 2
-    assert result["verdict"] == "ready"
-    assert result["fixes_applied"] == [
-        {"fix": "heal_adb_keys", "success": True, "message": "keys regenerated", "skipped": False}
-    ]
-    assert any(s.startswith("Auto-fix heal_adb_keys applied") for s in result["next_steps"])
-
-
-def test_attempt_fix_restarts_adb_only_without_ready_device_or_active_task(temp_trace_env):
-    no_device = _no_device_probes([])
-    restart = AsyncMock(return_value={"success": False, "message": "adb start-server failed"})
-
-    with patch.object(diagnose.readiness_engine, "restart_adb_server", restart):
-        result = _run(no_device, attempt_fix=True)
-    restart.assert_awaited_once()
-    assert result["fixes_applied"][0]["fix"] == "restart_adb_server"
-    assert result["fixes_applied"][0]["success"] is False
-    assert any("did not help" in s for s in result["next_steps"])
-
-    restart.reset_mock()
-    with patch.object(diagnose.readiness_engine, "restart_adb_server", restart):
-        result = _run(no_device, active_owners={"d": _owner("d")}, attempt_fix=True)
-    restart.assert_not_awaited()
-    assert result["fixes_applied"][0]["skipped"] is True
-
-    # A ready device means there is nothing to restart, even with attempt_fix.
-    restart.reset_mock()
-    with patch.object(diagnose.readiness_engine, "restart_adb_server", restart):
-        result = _run(_healthy_probes(), attempt_fix=True)
-    restart.assert_not_awaited()
-    assert result["fixes_applied"] == []
 
 
 def test_attempt_fix_records_stale_lock_cleanup_only_when_something_was_removed(temp_trace_env):
@@ -1070,84 +689,9 @@ def test_attempt_fix_records_stale_lock_cleanup_only_when_something_was_removed(
 # --------------------------------------------------------------------------- #
 
 
-def test_probe_device_ok_keeps_verdict_ready(temp_trace_env):
-    smoke = AsyncMock(return_value=_smoke_ok())
-    result = _run(_healthy_probes(), smoke=smoke, probe_device=True)
-
-    smoke.assert_awaited_once_with("pixel-1")
-    assert result["verdict"] == "ready"
-    assert result["device_probe"] == _smoke_ok()
-    assert not any("Device probe failed" in s for s in result["next_steps"])
-
-
-def test_probe_device_failure_blocks_with_fix_guidance(temp_trace_env):
-    smoke = AsyncMock(
-        return_value={
-            "ok": False,
-            "serial": "pixel-1",
-            "elapsed_seconds": 8.1,
-            "screenshot_bytes": None,
-            "element_count": None,
-            "error": "uiautomator dump timed out after 8s",
-            "fix": ["Unlock the device.", "Run: adb -s pixel-1 shell input keyevent 82"],
-        }
-    )
-    result = _run(_healthy_probes(), smoke=smoke, device_serial="pixel-1", probe_device=True)
-
-    smoke.assert_awaited_once_with("pixel-1")
-    assert result["verdict"] == "blocked"
-    steps = result["next_steps"]
-    idx = steps.index(
-        "[REQUIRED] Device probe failed on pixel-1: uiautomator dump timed out after 8s"
-    )
-    assert steps[idx + 1] == "  Guidance: Unlock the device."
-    assert steps[idx + 2] == "  Guidance: Run: adb -s pixel-1 shell input keyevent 82"
-    assert "Device probe: uiautomator dump timed out" in result["summary"]
-
-
-def test_probe_device_is_skipped_without_a_ready_device(temp_trace_env):
-    smoke = AsyncMock()
-    result = _run(_no_device_probes([]), smoke=smoke, probe_device=True)
-
-    smoke.assert_not_awaited()
-    assert result["device_probe"]["ok"] is False
-    assert "no authorized device" in result["device_probe"]["error"]
-
-
 # --------------------------------------------------------------------------- #
 # Timeout / logs
 # --------------------------------------------------------------------------- #
-
-
-def test_hung_probe_yields_blocked_verdict_instead_of_hanging(temp_trace_env, monkeypatch):
-    async def _never():
-        await asyncio.sleep(10)
-
-    monkeypatch.setattr(diagnose, "DIAGNOSIS_TIMEOUT_SECONDS", 0.05)
-    monkeypatch.setattr(diagnose, "collect_readiness", _never)
-    with (
-        patch.object(diagnose.DeviceExecutionLock, "get_active_owners", return_value={}),
-        patch.object(diagnose.DeviceExecutionLock, "get_queued_tasks", return_value=[]),
-    ):
-        result = asyncio.run(mobile_diagnose())
-
-    assert result["verdict"] == "blocked"
-    assert result["checks"] == []
-    assert result["next_steps"][:2] == ["Run: adb kill-server", "Run: adb start-server"]
-    assert "hung" in result["summary"]
-    for field in ("device", "credentials", "device_probe"):
-        assert result[field] is None
-    assert result["tasks"] == {"active": [], "queued": []}
-
-
-def test_hung_device_probe_still_times_out(temp_trace_env, monkeypatch):
-    async def _hang(serial):
-        await asyncio.sleep(10)
-
-    monkeypatch.setattr(diagnose, "DIAGNOSIS_TIMEOUT_SECONDS", 0.05)
-    result = _run(_healthy_probes(), smoke=AsyncMock(side_effect=_hang), probe_device=True)
-    assert result["verdict"] == "blocked"
-    assert "hung" in result["summary"]
 
 
 def test_logs_surface_recent_errors_and_last_failed_task(temp_trace_env, monkeypatch):
@@ -1189,99 +733,3 @@ def test_logs_surface_recent_errors_and_last_failed_task(temp_trace_env, monkeyp
 # --------------------------------------------------------------------------- #
 # Accessibility helper (UI hierarchy backend)
 # --------------------------------------------------------------------------- #
-
-
-def test_missing_helper_in_auto_mode_degrades_with_optional_step(temp_trace_env):
-    status = {
-        **_helper_healthy(),
-        "installed": False,
-        "installed_version": None,
-        "reachable": False,
-    }
-    result = _run(_healthy_probes(), helper_status=status)
-
-    assert result["verdict"] == "degraded"
-    helper = result["device"] is None or result["device"]["accessibility_helper"]
-    assert helper
-    optional = [s for s in result["next_steps"] if s.startswith("[OPTIONAL] Accessibility helper")]
-    assert len(optional) == 1 and "is not installed" in optional[0]
-    assert "  Run: uv run apollo helper install --serial pixel-1" in result["next_steps"]
-    assert any("attempt_fix=true" in s for s in result["next_steps"])
-    result["_fake_helper"].provision.assert_not_called()
-
-
-def test_missing_helper_in_helper_mode_blocks(temp_trace_env):
-    status = {**_helper_healthy(), "installed": False, "reachable": False}
-    result = _run(_healthy_probes(), helper_status=status, backend="helper")
-
-    assert result["verdict"] == "blocked"
-    assert any(s.startswith("[REQUIRED] Accessibility helper") for s in result["next_steps"])
-
-
-def test_uiautomator_backend_ignores_helper_state(temp_trace_env):
-    status = {**_helper_healthy(), "installed": False, "reachable": False}
-    result = _run(_healthy_probes(), helper_status=status, backend="uiautomator")
-
-    assert result["verdict"] == "ready"
-    assert not any("Accessibility helper" in s for s in result["next_steps"])
-
-
-def test_outdated_helper_reports_versions(temp_trace_env):
-    status = {**_helper_healthy(), "installed_version": 1, "outdated": True}
-    result = _run(_healthy_probes(), helper_status=status)
-
-    step = next(s for s in result["next_steps"] if "Accessibility helper" in s)
-    assert "device has version 1, bundled is 2" in step
-
-
-def test_attempt_fix_provisions_missing_helper_on_idle_device(temp_trace_env):
-    status = {
-        **_helper_healthy(),
-        "installed": False,
-        "installed_version": None,
-        "reachable": False,
-    }
-    result = _run(_healthy_probes(), helper_status=status, attempt_fix=True)
-
-    result["_fake_helper"].provision.assert_called_once_with("pixel-1")
-    fix = next(f for f in result["fixes_applied"] if f["fix"] == "install_accessibility_helper")
-    assert fix["success"] is True and fix["skipped"] is False
-    assert "installed" in fix["message"]
-
-
-def test_attempt_fix_skips_helper_install_while_task_holds_device(temp_trace_env):
-    status = {**_helper_healthy(), "installed": False, "reachable": False}
-    result = _run(
-        _healthy_probes(),
-        helper_status=status,
-        attempt_fix=True,
-        active_owners={"pixel-1": _owner()},
-    )
-
-    result["_fake_helper"].provision.assert_not_called()
-    fix = next(f for f in result["fixes_applied"] if f["fix"] == "install_accessibility_helper")
-    assert fix["skipped"] is True
-
-
-def test_attempt_fix_leaves_healthy_helper_alone(temp_trace_env):
-    result = _run(_healthy_probes(), attempt_fix=True)
-
-    result["_fake_helper"].provision.assert_not_called()
-    assert not any(f["fix"] == "install_accessibility_helper" for f in result["fixes_applied"])
-
-
-def test_disabled_helper_step_includes_the_manual_path(temp_trace_env):
-    from apollo.runtime.helper_manager import MANUAL_ENABLE_PATH
-
-    status = {**_helper_healthy(), "enabled": False, "reachable": False}
-    result = _run(_healthy_probes(), helper_status=status)
-    step = next(s for s in result["next_steps"] if "Accessibility helper" in s)
-    assert "service is disabled" in step
-    assert any(MANUAL_ENABLE_PATH in s for s in result["next_steps"])
-
-
-def test_newer_helper_than_bundle_is_not_a_finding(temp_trace_env):
-    status = {**_helper_healthy(), "installed_version": 9, "newer_than_bundled": True}
-    result = _run(_healthy_probes(), helper_status=status)
-    assert result["verdict"] == "ready"
-    assert not any("Accessibility helper" in s for s in result["next_steps"])

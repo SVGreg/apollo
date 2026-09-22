@@ -17,13 +17,6 @@
 import os
 from typing import TYPE_CHECKING
 
-try:
-    from adbutils import AdbClient
-except ImportError:  # Android tooling is optional in Apollo
-    AdbClient = None
-
-from apollo.config import settings
-from apollo.drivers.android.adb_driver import AndroidAdbDriver
 from apollo.drivers.base import BaseDeviceDriver
 from apollo.drivers.mock.mock_driver import MockDeviceDriver
 from apollo.utils.logger import get_logger
@@ -36,20 +29,6 @@ logger = get_logger(__name__)
 
 def create_driver(ctx: "ApolloContext") -> BaseDeviceDriver:
     """Instantiates the appropriate BaseDeviceDriver based on the runtime context."""
-    # 1. Cloud mode check. Cloud devices are reached through the gateway's
-    # RemoteUIAutomatorClient; APOLLO_HIERARCHY_BACKEND does not apply there
-    # because the Accessibility Helper needs a local adb forward.
-    if os.environ.get("APOLLO_CLOUD_MODE") == "1":
-        if ctx.adb_client is None:
-            from cloud_service.virtualization import RemoteAdbClient
-
-            ctx.adb_client = RemoteAdbClient()
-        if ctx.ui_adb_client is None:
-            from cloud_service.virtualization import RemoteUIAutomatorClient
-
-            ctx.ui_adb_client = RemoteUIAutomatorClient(adb_client=ctx.adb_client)
-
-    # 2. Mock mode check
     if (
         getattr(ctx.device, "mobile_platform", None) == "mock"
         or os.environ.get("APOLLO_MOCK_DRIVER") == "1"
@@ -60,42 +39,27 @@ def create_driver(ctx: "ApolloContext") -> BaseDeviceDriver:
             height=ctx.device.device_height if ctx.device else 2400,
         )
 
-    # 3. iOS simulators and devices (WebDriverAgent + simctl / go-ios)
     platform = getattr(ctx.device, "mobile_platform", None)
-    if platform == "ios" or getattr(platform, "value", None) == "ios":
-        from apollo.drivers.ios.driver import IosDriver
-
-        ios_cfg = None
-        try:
-            from apollo.config import load_agent_config
-
-            ios_cfg = load_agent_config().ios
-        except (OSError, ValueError, RuntimeError) as exc:
-            logger.debug(f"iOS config unavailable; using driver defaults: {exc}")
-        return IosDriver(
-            udid=ctx.device.device_id,
-            wda_settings=dict(ios_cfg.wda_settings) if ios_cfg else None,
-            alert_policy=ios_cfg.alerts if ios_cfg else "observe",
-            recording_backend=ios_cfg.recording_backend if ios_cfg else "auto",
+    if platform != "ios" and getattr(platform, "value", None) != "ios":
+        raise RuntimeError(
+            f"Apollo drives iOS Simulators and devices; unsupported platform {platform!r}. "
+            "Pass an iOS UDID with --device-serial, or set APOLLO_MOCK_DRIVER=1."
         )
 
-    # 4. Default Android ADB driver
-    if ctx.adb_client is None:
-        if AdbClient is None:
-            raise RuntimeError(
-                "Android driver requested but adbutils is not installed; Apollo targets iOS "
-                "(use an iOS device platform or APOLLO_MOCK_DRIVER=1)."
-            )
-        ctx.adb_client = AdbClient(
-            host=settings.ADB_HOST or "localhost", port=settings.ADB_PORT or 5037
-        )
+    from apollo.drivers.ios.driver import IosDriver
 
-    return AndroidAdbDriver(
-        device_id=ctx.device.device_id,
-        adb_client=ctx.adb_client,
-        ui_adb_client=getattr(ctx, "ui_adb_client", None),
-        width=ctx.device.device_width,
-        height=ctx.device.device_height,
+    ios_cfg = None
+    try:
+        from apollo.config import load_agent_config
+
+        ios_cfg = load_agent_config().ios
+    except (OSError, ValueError, RuntimeError) as exc:
+        logger.debug(f"iOS config unavailable; using driver defaults: {exc}")
+    return IosDriver(
+        udid=ctx.device.device_id,
+        wda_settings=dict(ios_cfg.wda_settings) if ios_cfg else None,
+        alert_policy=ios_cfg.alerts if ios_cfg else "observe",
+        recording_backend=ios_cfg.recording_backend if ios_cfg else "auto",
     )
 
 

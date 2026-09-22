@@ -20,10 +20,6 @@ from pathlib import Path
 from shutil import which
 from typing import Annotated
 
-try:
-    from adbutils import AdbClient
-except ImportError:  # Android tooling is optional in Apollo
-    AdbClient = None
 from langchain_core.callbacks.base import Callbacks
 from apollo.config import checker_overrides_for_level, initialize_llm_config, settings
 from apollo.utils.startup_progress import publish_startup_progress
@@ -443,18 +439,7 @@ def run_command(
                 f"[yellow]Daemon routing notice: {exc}. Falling back to local execution...[/yellow]"
             )
 
-    adb_client = None
-    try:
-        if which("adb"):
-            adb_client = AdbClient(
-                host=settings.ADB_HOST or "localhost",
-                port=settings.ADB_PORT or 5037,
-            )
-    except Exception as exc:
-        # Optional cosmetic device-status display; run continues without it.
-        logger.debug(f"Could not create ADB client for device status display: {exc}")
-
-    display_device_status(console, adb_client=adb_client)
+    display_device_status(console)
 
     cancelled = False
     original_sigterm = None

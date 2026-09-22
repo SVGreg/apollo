@@ -39,7 +39,7 @@ def _live_client() -> tuple[ApolloClient, str]:
     )
 
 
-@pytest.mark.android
+@pytest.mark.ios_sim
 @pytest.mark.asyncio
 async def test_thin_sdk_remote_contract_on_real_device():
     client, serial = _live_client()
@@ -83,7 +83,7 @@ async def test_thin_sdk_remote_contract_on_real_device():
         pytest.fail("Apollo scheduler did not release the device after task completion")
 
 
-@pytest.mark.android
+@pytest.mark.ios_sim
 @pytest.mark.asyncio
 async def test_thin_sdk_rejects_unknown_real_device_serial():
     client, _ = _live_client()
@@ -95,7 +95,7 @@ async def test_thin_sdk_rejects_unknown_real_device_serial():
         )
 
 
-@pytest.mark.android
+@pytest.mark.ios_sim
 @pytest.mark.asyncio
 async def test_thin_sdk_can_cancel_remote_task_and_release_device():
     client, _ = _live_client()

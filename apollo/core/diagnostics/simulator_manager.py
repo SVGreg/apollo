@@ -1,20 +1,49 @@
 """Boot / shut down iOS Simulators for the console and `mobile_diagnose`.
 
-Mirrors the Android ``EmulatorManager`` state schema (``EmulatorLaunchState``) so the
-console's "launch emulator" panel and progress polling work unchanged; the payload's
-``avd_name`` carries the simulator name or UDID.
+Keeps the launch-state schema Artemis used for AVDs so the console's launch panel and
+its progress polling work unchanged; ``avd_name`` carries the simulator name or UDID.
 """
 
 import asyncio
+from enum import Enum
 import re
 import time
 from typing import Any
 
+from pydantic import BaseModel, Field
+
 from apollo.clients import simctl
-from apollo.core.diagnostics.emulator_manager import EmulatorLaunchStage, EmulatorLaunchState
 from apollo.utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+
+class EmulatorLaunchStage(str, Enum):
+    """Lifecycle stages of booting a simulator."""
+
+    IDLE = "idle"
+    STARTING = "starting"
+    WAITING_FOR_ADB = "waiting_for_adb"  # unused on iOS; kept for the console's schema
+    BOOTING = "booting"
+    READY = "ready"
+    FAILED = "failed"
+    STOPPED = "stopped"
+
+
+class EmulatorLaunchState(BaseModel):
+    """State schema for real-time boot tracking."""
+
+    avd_name: str | None = None
+    status: EmulatorLaunchStage = EmulatorLaunchStage.IDLE
+    pid: int | None = None
+    serial: str | None = None
+    stage_message: str = "Ready to launch"
+    progress_percent: int = 0
+    started_at: float | None = None
+    elapsed_seconds: int = 0
+    error: str | None = None
+    logs: list[str] = Field(default_factory=list)
+    can_retry: bool = True
 
 
 class SimulatorManager:

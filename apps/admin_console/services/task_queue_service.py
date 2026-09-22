@@ -42,11 +42,9 @@ from apollo.config import (
     WORKSPACE_ROOT,
 )
 from apollo.runtime import (
-    AdbEndpoint,
-    AdbTarget,
     DeviceExecutionLock,
+    DeviceTarget,
     clear_cancel_request,
-    current_adb_endpoint,
     pid_is_alive,
     process_supervisor,
     request_cancel,
@@ -216,15 +214,9 @@ class TaskQueueService:
         ).start()
 
     @staticmethod
-    def _task_target(task_item: dict[str, Any]) -> AdbTarget:
-        endpoint_data = task_item.get("adb_endpoint")
-        endpoint = (
-            AdbEndpoint.from_mapping(endpoint_data)
-            if isinstance(endpoint_data, dict)
-            else current_adb_endpoint()
-        )
+    def _task_target(task_item: dict[str, Any]) -> DeviceTarget:
         serial = task_item.get("device_serial")
-        return AdbTarget(endpoint=endpoint, serial=str(serial) if serial else None)
+        return DeviceTarget(serial=str(serial) if serial else None)
 
     @classmethod
     def _broadcast_event(cls, event_type: str, data: Any):
@@ -498,7 +490,7 @@ class TaskQueueService:
         sess_id: Any,
         goal: str,
         profile: str,
-        target: AdbTarget,
+        target: DeviceTarget,
     ) -> tuple[list[str], dict[str, str]]:
         """Assemble the worker subprocess command line and environment."""
         expected_output = task_item.get("expected_output")
@@ -525,7 +517,6 @@ class TaskQueueService:
             env["APOLLO_SESSION_ID"] = str(sess_id)
         env["APOLLO_TASK_INGRESS"] = str(task_item.get("ingress", "frontend"))
         env["APOLLO_TASK_WORKER"] = "1"
-        target.endpoint.apply_to_environment(env)
         env[DeviceExecutionLock.LOCK_SCOPE_ENV] = target.lock_scope
         queue_ticket = task_item.get("queue_ticket")
         if queue_ticket:
@@ -569,7 +560,7 @@ class TaskQueueService:
         sess_id: Any,
         goal: str,
         profile: str,
-        target: AdbTarget,
+        target: DeviceTarget,
         proc: asyncio.subprocess.Process,
     ) -> None:
         """Record the spawned worker in shared state and hand it the device reservation."""
@@ -580,7 +571,7 @@ class TaskQueueService:
             "process": proc,
             "device_id": str(device_serial) if device_serial else None,
             "lock_key": target.lock_key if device_serial else None,
-            "adb_endpoint": target.endpoint.to_dict(),
+            "device_target": target.to_dict(),
             "goal": goal,
             "profile": profile,
         }
@@ -907,7 +898,6 @@ class TaskQueueService:
         goals: list[str],
         session_id: str | None,
         device_serial: str | None,
-        endpoint: AdbEndpoint,
         now: float,
     ) -> dict[str, Any] | None:
         """Return the short-circuit response for a duplicate submission, if any."""
@@ -948,7 +938,6 @@ class TaskQueueService:
                     and item.get("status") == "pending"
                     and item.get("goal") == first_goal
                     and (not device_serial or item.get("device_serial") == device_serial)
-                    and item.get("adb_endpoint", {}).get("identity") == endpoint.identity
                     and (now - float(item.get("created_at", 0))) < 1.0
                 ),
                 None,
@@ -992,7 +981,6 @@ class TaskQueueService:
         goal: str,
         index: int,
         now: float,
-        endpoint: AdbEndpoint,
         single_session_id: str | None,
         profile: str,
         expected_output: str | None,
@@ -1015,7 +1003,7 @@ class TaskQueueService:
             device_id=assigned_serial or "pending",
             session_id=sess_id,
             ingress=ingress,
-            lock_scope=endpoint.identity,
+            lock_scope=DeviceTarget(assigned_serial).lock_scope,
         )
         return {
             "session_id": sess_id,
@@ -1028,7 +1016,7 @@ class TaskQueueService:
             "locked_app_package": locked_app_package,
             "app_path": app_path,
             "device_serial": assigned_serial,
-            "adb_endpoint": endpoint.to_dict(),
+            "device_target": DeviceTarget(assigned_serial).to_dict(),
             "ingress": ingress,
             "conversation_id": conversation_id,
             "status": "pending",
@@ -1067,11 +1055,7 @@ class TaskQueueService:
 
         enqueued_tasks = []
         now = time.time()
-        endpoint = current_adb_endpoint()
-
-        duplicate_response = cls._find_duplicate_submission(
-            goals, session_id, device_serial, endpoint, now
-        )
+        duplicate_response = cls._find_duplicate_submission(goals, session_id, device_serial, now)
         if duplicate_response is not None:
             return duplicate_response
 
@@ -1093,7 +1077,6 @@ class TaskQueueService:
                 goal,
                 i,
                 now,
-                endpoint,
                 single_session_id,
                 profile,
                 expected_output,

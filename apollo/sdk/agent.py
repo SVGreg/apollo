@@ -30,17 +30,12 @@ except ImportError:
 from pathlib import Path
 from platform import system
 import shutil
-from shutil import which
 import sys
 import threading
 from types import NoneType
 from typing import Any, TypeVar, overload
 import uuid
 
-try:
-    from adbutils import AdbClient
-except ImportError:  # Android tooling is optional in Apollo
-    AdbClient = Any
 from dotenv import load_dotenv
 from google import genai
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -49,13 +44,6 @@ from pydantic import BaseModel
 
 from apollo.agents.flash.runner import FlashRunner
 from apollo.agents.outputter.outputter import outputter
-from apollo.clients.screen_client_factory import (
-    ScreenClient,
-    create_screen_client,
-    describe_backend,
-    helper_version,
-    hierarchy_backend_sentence,
-)
 from apollo.config import (
     CheckerConfig,
     OutputConfig,
@@ -89,7 +77,6 @@ from apollo.sdk.types.exceptions import (
     AgentProfileNotFoundError,
     AgentTaskRequestError,
     DeviceNotFoundError,
-    ExecutableNotFoundError,
 )
 from apollo.sdk.types.task import (
     AgentProfile,
@@ -139,8 +126,8 @@ class Agent:
     _tmp_traces_dir: Path
     _initialized: bool = False
     _device_context: DeviceContext
-    _adb_client: AdbClient | None
-    _ui_adb_client: ScreenClient | Any | None
+    _adb_client: Any | None
+    _ui_adb_client: Any | None
 
     _current_task: asyncio.Task | None = None
     _task_lock: asyncio.Lock
@@ -248,30 +235,16 @@ class Agent:
             logger.error(error_msg)
             raise DeviceNotFoundError(error_msg)
 
-        ios_mode = platform == DevicePlatform.IOS
-        if (
-            os.environ.get("APOLLO_CLOUD_MODE") != "1"
-            and not mock_mode
-            and not ios_mode
-            and not which("adb")
-        ):
-            raise ExecutableNotFoundError("adb")
-
         # Initialize clients
         publish_startup_progress(
             "device_check",
-            "Checking the iOS simulator" if ios_mode else "Checking the Android device",
+            "Checking the device" if mock_mode else "Checking the iOS simulator",
             session_id=self._session_id,
         )
-        if mock_mode or ios_mode:
+        if os.environ.get("APOLLO_CLOUD_MODE") != "1":
             # iOS talks to WebDriverAgent through the driver; there is no adb-style client.
             self._adb_client = None
             self._ui_adb_client = None
-        elif os.environ.get("APOLLO_CLOUD_MODE") != "1":
-            self._init_clients(
-                device_id=device_id,
-                platform=platform,
-            )
         else:
             # Cloud mode is pinned to UIAutomator2 through the gateway; the
             # hierarchy backend switch only applies to locally attached devices.
@@ -289,7 +262,7 @@ class Agent:
         logger.info(self._device_context.to_str())
         publish_startup_progress(
             "device_ready",
-            "iOS simulator connected" if ios_mode else "Android device connected",
+            "Device connected" if mock_mode else "iOS simulator connected",
             session_id=self._session_id,
         )
 
@@ -402,13 +375,7 @@ class Agent:
             logger.info(f"App installed successfully on iOS simulator '{device_id}'")
             return
 
-        logger.info(f"Installing APK on Android device '{device_id}'")
-        if not self._adb_client:
-            raise AgentError("ADB client not initialized")
-
-        device = self._adb_client.device(serial=device_id)
-        await asyncio.to_thread(device.install, apk_path)
-        logger.info(f"APK installed successfully on Android device '{device_id}'")
+        raise AgentError(f"Cannot install {apk_path.name}: {device_id} is not an iOS Simulator.")
 
     async def install_app(self, app_path: str | Path) -> str | None:
         """Install an app on the connected device.
@@ -692,14 +659,6 @@ class Agent:
                 # finishing.
                 self._prepare_tracing(task=task, context=context)
                 self._prepare_output_files(task=task)
-                if (
-                    os.environ.get("APOLLO_CLOUD_MODE") != "1"
-                    and os.environ.get("APOLLO_MOCK_DRIVER") != "1"
-                    and self._device_context.mobile_platform == DevicePlatform.ANDROID
-                ):
-                    if self._ui_adb_client is not None:
-                        await self._connect_screen_client(context, str(sess_id))
-                    await self._ensure_device_unlocked()
                 publish_startup_progress(
                     "environment", "Preparing the device environment", session_id=str(sess_id)
                 )
@@ -1048,30 +1007,6 @@ class Agent:
         self._initialized = False
         logger.info("✅ Apollo agent stopped.")
 
-    async def _ensure_device_unlocked(self) -> None:
-        """Reject secure keyguard instead of allowing an agent to guess credentials."""
-        if self._adb_client is None:
-            raise AgentError("ADB client is not initialized.")
-
-        device = self._adb_client.device(serial=self._device_context.device_id)
-        try:
-            trust_state = str(await asyncio.to_thread(device.shell, "dumpsys trust"))
-        except Exception as exc:
-            logger.warning(f"Could not inspect Android keyguard state: {exc}")
-            return
-
-        # The first deviceLocked value belongs to the current Android user;
-        # later entries may describe a separately locked work profile.
-        match = re.search(r"\bdeviceLocked=(?:true|1|false|0)\b", trust_state, re.IGNORECASE)
-        if match is None:
-            return
-        value = match.group(0).split("=", 1)[1].lower()
-        if value in {"true", "1"}:
-            raise AgentError(
-                "Android secure keyguard is locked. Unlock the device manually before "
-                "running Apollo; automation will not guess a PIN, password, or pattern."
-            )
-
     async def _prepare_app_installation(self, task: Task) -> str | None:
         """Install app if app_path is specified in the task request.
 
@@ -1348,148 +1283,6 @@ class Agent:
     # ------------------------------------------------------------------ #
     # UI hierarchy backend: connect, and keep the user told which one serves
     # ------------------------------------------------------------------ #
-
-    async def _connect_screen_client(self, context: ApolloContext, session_id: str) -> None:
-        """Connect the screen client with visible progress for slow first-time steps."""
-        client = self._ui_adb_client
-        previous_listener = getattr(self, "_hierarchy_backend_listener", None)
-        if previous_listener is not None:
-            previous_client, listener = previous_listener
-            previous_client.remove_backend_listener(listener)
-            self._hierarchy_backend_listener = None
-        publish_startup_progress(
-            "uiautomator", "Connecting to the UI hierarchy service", session_id=session_id
-        )
-
-        def on_provision(event: str, details: dict) -> None:
-            version = details.get("version_name") or details.get("to_version")
-            if event == "installing":
-                publish_startup_progress(
-                    "helper_install",
-                    "Installing the Apollo accessibility helper on this device for the "
-                    f"first time (v{version}, about 3 seconds)",
-                    session_id=session_id,
-                    **details,
-                )
-            elif event == "upgrading":
-                publish_startup_progress(
-                    "helper_upgrade",
-                    "Upgrading the Apollo accessibility helper "
-                    f"(v{details.get('from_version')} -> v{details.get('to_version')})",
-                    session_id=session_id,
-                    **details,
-                )
-
-        # Clients without provisioning (UIAutomator2, cloud) take no callback.
-        try:
-            accepts_events = "on_event" in inspect.signature(client.connect).parameters
-        except (TypeError, ValueError):
-            accepts_events = False
-        if accepts_events:
-            await asyncio.to_thread(client.connect, on_event=on_provision)
-        else:
-            await asyncio.to_thread(client.connect)
-
-        backend = describe_backend(client) or "uiautomator"
-        publish_startup_progress(
-            "uiautomator_ready",
-            f"UI hierarchy service is ready ({backend})",
-            session_id=session_id,
-        )
-        self._announce_hierarchy_backend(context, session_id, None, backend, None)
-        add_listener = getattr(client, "add_backend_listener", None)
-        if callable(add_listener):
-
-            def listener(previous, new, reason):
-                self._announce_hierarchy_backend(context, session_id, previous, new, reason)
-
-            add_listener(listener)
-            self._hierarchy_backend_listener = (client, listener)
-
-    def _announce_hierarchy_backend(
-        self,
-        context: ApolloContext,
-        session_id: str,
-        previous: str | None,
-        backend: str,
-        reason: str | None,
-    ) -> None:
-        """One line everywhere a person or an agent looks for it.
-
-        Startup-progress event (UI timeline), a named log trace, the session's
-        device_info, and status.json for ``mobile_manage_task``. Runs from
-        worker threads too, so every sink is best effort.
-        """
-        label = {"helper": "Apollo accessibility helper", "uiautomator": "UIAutomator2"}
-        version = helper_version(self._ui_adb_client)
-        if previous is None:
-            message = f"UI hierarchy source: {label.get(backend, backend)}"
-            if backend == "helper" and version:
-                message += f" v{version}"
-            stage = "hierarchy_backend"
-        else:
-            message = (
-                f"UI hierarchy source switched from {label.get(previous, previous)} to "
-                f"{label.get(backend, backend)}"
-            )
-            if reason:
-                message += f" because {reason}"
-            stage = "hierarchy_backend_changed"
-        logger.info(message)
-        try:
-            publish_startup_progress(
-                stage,
-                message,
-                session_id=session_id,
-                backend=backend,
-                previous_backend=previous,
-                reason=reason,
-                helper_version=version,
-            )
-        except (OSError, ValueError, RuntimeError) as exc:
-            logger.debug(f"Could not publish hierarchy backend progress: {exc}")
-        engine = getattr(context, "data_engine", None)
-        if engine is not None and getattr(engine, "current_session_id", None):
-            try:
-                engine.record_trace(
-                    type="log",
-                    name="hierarchy_backend",
-                    payload={
-                        "message": message,
-                        "backend": backend,
-                        "previous_backend": previous,
-                        "reason": reason,
-                        "helper_version": version,
-                        "level": "WARNING" if previous is not None else "INFO",
-                    },
-                )
-                engine.update_session_device_info(
-                    hierarchy_backend=backend,
-                    hierarchy_backend_note=hierarchy_backend_sentence(
-                        self._ui_adb_client, relative_time=engine.get_relative_time
-                    ),
-                )
-            except (OSError, ValueError, RuntimeError) as exc:
-                logger.debug(f"Could not record hierarchy backend in the data engine: {exc}")
-        try:
-            trace_store.update_trace_fields(
-                session_id,
-                hierarchy_backend=backend,
-                hierarchy_backend_note=hierarchy_backend_sentence(self._ui_adb_client),
-            )
-        except (OSError, ValueError, RuntimeError) as exc:
-            logger.debug(f"Could not record hierarchy backend in status.json: {exc}")
-
-    def _init_clients(
-        self,
-        device_id: str,
-        platform: DevicePlatform,
-    ):
-        self._adb_client = AdbClient(
-            host=self._config.servers.adb_host,
-            port=self._config.servers.adb_port,
-        )
-        self._ui_adb_client = create_screen_client(device_id)
 
     async def _get_device_context(
         self,

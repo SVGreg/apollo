@@ -79,8 +79,7 @@ class DevicePool:
     HOT_QUERY_TIMEOUT = 2.0
     COLD_QUERY_TIMEOUT = 8.0
 
-    def __init__(self, adb_path: str | None = None):
-        self._adb_path = adb_path
+    def __init__(self):
         self._cache_lock = threading.Lock()
         self._cached_raw: list[tuple[str, str, str | None, str | None]] | None = None
         self._cached_at = 0.0
@@ -88,80 +87,8 @@ class DevicePool:
         self._sync_query_gate = threading.Lock()
         self._async_inflight: tuple[asyncio.AbstractEventLoop, asyncio.Task] | None = None
 
-    def _resolve_adb(self) -> str | None:
-        if self._adb_path:
-            return self._adb_path
-        try:
-            return toolchain.resolve("adb") or shutil.which("adb")
-        except Exception:
-            return shutil.which("adb")
-
     def _current_query_timeout(self) -> float:
         return self.HOT_QUERY_TIMEOUT if self._warmed else self.COLD_QUERY_TIMEOUT
-
-    def _query_adb_devices_sync(
-        self, timeout: float | None = None
-    ) -> list[tuple[str, str, str | None, str | None]] | None:
-        """Run `adb devices -l` synchronously. Returns None when the query
-        itself failed, as opposed to an empty list of attached devices."""
-        adb = self._resolve_adb()
-        if not adb:
-            return None
-        try:
-            res = subprocess.run(
-                [adb, "devices", "-l"],
-                stdin=subprocess.DEVNULL,
-                capture_output=True,
-                text=True,
-                timeout=timeout if timeout is not None else self._current_query_timeout(),
-                check=False,
-            )
-            if res.returncode != 0:
-                return None
-            return self._parse_device_lines(res.stdout.splitlines())
-        except Exception as exc:
-            logger.debug(f"Error querying adb devices: {exc}")
-            return None
-
-    async def _query_adb_devices_async(
-        self, timeout: float | None = None
-    ) -> list[tuple[str, str, str | None, str | None]] | None:
-        """Run `adb devices -l` asynchronously. Returns None when the query
-        itself failed, as opposed to an empty list of attached devices."""
-        adb = self._resolve_adb()
-        if not adb:
-            return None
-        proc = None
-        try:
-            proc = await asyncio.create_subprocess_exec(
-                adb,
-                "devices",
-                "-l",
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            stdout, _ = await asyncio.wait_for(
-                proc.communicate(),
-                timeout=timeout if timeout is not None else self._current_query_timeout(),
-            )
-            if proc.returncode != 0:
-                return None
-            return self._parse_device_lines(stdout.decode(errors="replace").splitlines())
-        except Exception as exc:
-            logger.debug(f"Error querying adb devices asynchronously: {exc}")
-            if proc is not None:
-                try:
-                    proc.kill()
-                except (ProcessLookupError, OSError):
-                    # Process already exited; nothing left to clean up.
-                    pass
-            return None
-
-    # ------------------------------------------------------------------ iOS
-    # Simulators are enumerated with `xcrun simctl list -j`; booted ones map to
-    # the adb "device" state so the rest of the pool (locks, selection, UI)
-    # works unchanged. Shutdown simulators are listed as "shutdown" so callers
-    # can offer to boot them.
 
     @staticmethod
     def _ios_rows(devices: list[Any]) -> list[tuple[str, str, str | None, str | None]]:
@@ -208,29 +135,13 @@ class DevicePool:
     def _query_devices_sync(
         self, timeout: float | None = None
     ) -> list[tuple[str, str, str | None, str | None]] | None:
-        """iOS simulators first, then any adb devices; None only if both queries failed."""
-        ios = self._query_ios_devices_sync(timeout)
-        android = (
-            self._query_adb_devices_sync()
-            if timeout is None
-            else self._query_adb_devices_sync(timeout)
-        )
-        if ios is None and android is None:
-            return None
-        return (ios or []) + (android or [])
+        """Simulators today; physical devices join this list in Phase 3."""
+        return self._query_ios_devices_sync(timeout)
 
     async def _query_devices_async(
         self, timeout: float | None = None
     ) -> list[tuple[str, str, str | None, str | None]] | None:
-        ios = await self._query_ios_devices_async(timeout)
-        android = (
-            await self._query_adb_devices_async()
-            if timeout is None
-            else await self._query_adb_devices_async(timeout)
-        )
-        if ios is None and android is None:
-            return None
-        return (ios or []) + (android or [])
+        return await self._query_ios_devices_async(timeout)
 
     @staticmethod
     def _parse_device_lines(lines: list[str]) -> list[tuple[str, str, str | None, str | None]]:
@@ -315,54 +226,22 @@ class DevicePool:
         self._store_snapshot(raw)
         return raw
 
-    async def _start_adb_server(self, timeout: float) -> None:
-        """Best-effort bounded `adb start-server` so later queries hit a warm daemon."""
-        adb = self._resolve_adb()
-        if not adb:
-            return
-        proc = None
-        try:
-            clean_env = os.environ.copy()
-            clean_env.pop("ADB_SERVER_SOCKET", None)
-            proc = await asyncio.create_subprocess_exec(
-                adb,
-                "start-server",
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                env=clean_env,
-            )
-            await asyncio.wait_for(proc.communicate(), timeout=timeout)
-        except Exception as exc:
-            logger.debug(f"adb start-server warm-up did not complete: {exc}")
-            if proc is not None:
-                try:
-                    proc.kill()
-                except (ProcessLookupError, OSError):
-                    # Process already exited; nothing left to clean up.
-                    pass
-
     async def warm_up_async(
         self,
         *,
-        server_timeout: float = 10.0,
         settle_timeout: float = 3.0,
         poll_interval: float = 0.5,
     ) -> bool:
-        """Start the adb server and complete one successful enumeration.
+        """Complete one successful enumeration before tasks are accepted.
 
-        Meant to run once before an entrypoint starts accepting task
-        submissions, so the first requests never race an adb cold start.
-        Devices reconnect asynchronously after the server comes up, so the
-        settle window keeps polling until at least one device reaches the
-        ready state (or the window closes). Returns True once any enumeration
-        succeeded -- zero attached devices is still a warm pool.
+        Meant to run once before an entrypoint starts accepting submissions, so
+        the first requests never race a cold CoreSimulator. Returns True once an
+        enumeration succeeded -- zero booted simulators is still a warm pool.
         """
         from apollo.clients import simctl
 
-        if self._resolve_adb() is None and not simctl.simctl_available():
+        if not simctl.simctl_available():
             return False
-        if self._resolve_adb() is not None:
-            await self._start_adb_server(timeout=server_timeout)
         deadline = time.monotonic() + max(settle_timeout, 0.0)
         succeeded = False
         while True:

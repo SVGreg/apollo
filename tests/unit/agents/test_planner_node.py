@@ -37,7 +37,7 @@ class DummyState:
 def mock_context():
     ctx = Mock(spec=ApolloContext)
     ctx.device = Mock()
-    ctx.device.mobile_platform = DevicePlatform.ANDROID
+    ctx.device.mobile_platform = DevicePlatform.IOS
     ctx.adb_client = Mock()
     ctx.ui_adb_client = Mock()
     mock_screen_data = Mock()

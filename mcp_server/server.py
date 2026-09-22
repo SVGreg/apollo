@@ -84,7 +84,6 @@ from mcp_server.base import mcp
 
 # 2. Import tools to register them
 import mcp_server.tools  # noqa: F401
-from apollo.runtime import shutdown_awake_service, start_awake_service
 
 
 import threading
@@ -92,14 +91,13 @@ import threading
 
 def main(transport: str = "stdio", host: str = "127.0.0.1", port: int = 8001):
     """Main entrypoint to run the Apollo Mobile Agent MCP server."""
-    threading.Thread(target=start_awake_service, daemon=True, name="apollo-awake-init").start()
     try:
         if transport.lower() == "sse":
             mcp.run(transport="sse", host=host, port=port)
         else:
             mcp.run(transport="stdio")
     finally:
-        shutdown_awake_service()
+        pass
 
 
 if __name__ == "__main__":

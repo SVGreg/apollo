@@ -23,10 +23,6 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from apollo.core.diagnostics import readiness_engine
-from apollo.core.diagnostics.adb_server_connection import (
-    InvalidAdbServerEndpoint,
-    adb_server_connection,
-)
 from apollo.core.diagnostics.schema import SystemReadinessReport
 
 router = APIRouter(prefix="/api/system", tags=["system"])
@@ -121,106 +117,56 @@ async def select_active_device(request: SelectDeviceRequest):
     }
 
 
+# The console still offers the legacy "ADB" connection panel from Artemis. Apollo drives
+# iOS, so these endpoints no longer run adb: the restart button re-scans devices, and the
+# remote-ADB-server routes report that they do not apply. The panel itself goes away with
+# the next Angular pass.
+_ADB_NOT_APPLICABLE = {
+    "success": False,
+    "message": "Apollo drives iOS Simulators and devices; there is no ADB server to configure.",
+}
+
+
 @router.post("/adb/restart")
-async def restart_adb_server():
-    """Restart local ADB server and return an updated readiness check."""
-    restart_result = await readiness_engine.restart_adb_server()
+async def rescan_devices():
+    """Re-scan simulators and devices, and return an updated readiness report."""
     readiness_engine.invalidate_cache()
     updated_report = await readiness_engine.run_all(force_refresh=True)
     return {
-        "restart_result": restart_result,
+        "restart_result": {"success": True, "message": "Devices re-scanned."},
         "report": updated_report,
     }
 
 
 @router.post("/adb/heal-keys")
 async def heal_adb_keys():
-    """Auto-heal corrupted ADB authentication RSA keys and return updated readiness."""
-    heal_result = await readiness_engine.heal_adb_keys()
-    updated_report = await readiness_engine.run_all()
-    return {
-        "heal_result": heal_result,
-        "report": updated_report,
-    }
-
-
-class ConnectAdbRequest(BaseModel):
-    """Payload to connect to an Android device over Wi-Fi."""
-
-    host: str = Field(description="IP address of Android device")
-    port: int = Field(default=5555, description="Port number")
+    """Not applicable on iOS; kept so the legacy console panel gets a clear answer."""
+    return {"heal_result": _ADB_NOT_APPLICABLE, "report": await readiness_engine.run_all()}
 
 
 @router.post("/adb/connect")
-async def connect_wireless_adb(request: ConnectAdbRequest):
-    """Connect to a device over Wi-Fi and return updated readiness."""
-    connect_result = await readiness_engine.connect_wireless_adb(request.host, request.port)
-    readiness_engine.invalidate_cache()
-    updated_report = await readiness_engine.run_all(force_refresh=True)
-    return {
-        "connect_result": connect_result,
-        "report": updated_report,
-    }
-
-
-class ConnectAdbServerRequest(BaseModel):
-    """Payload to select an ADB server endpoint accessible from this computer."""
-
-    host: str = Field(description="Host name or IP address of the ADB server")
-    port: int = Field(default=5037, ge=1, le=65535, description="ADB server port")
-    persist: bool = Field(default=True, description="Persist the endpoint for future launches")
+async def connect_wireless_adb():
+    """Not applicable on iOS (no Wi-Fi ADB pairing)."""
+    return {"connect_result": _ADB_NOT_APPLICABLE, "report": await readiness_engine.run_all()}
 
 
 @router.get("/adb/server")
 async def get_adb_server_status():
-    """Return the process-wide ADB server endpoint currently used by Apollo."""
-    return adb_server_connection.status()
+    """No ADB server endpoint exists on iOS; report the local default shape."""
+    return {
+        "endpoint": {"host": "localhost", "port": 5037, "is_local_default": True},
+        "applicable": False,
+        "message": _ADB_NOT_APPLICABLE["message"],
+    }
 
 
 @router.post("/adb/server/connect")
-async def connect_adb_server(payload: ConnectAdbServerRequest, request: Request):
-    """Validate and activate an ADB server endpoint."""
-    _require_local_admin_request(request)
-    try:
-        connection_result = await adb_server_connection.connect(
-            payload.host,
-            payload.port,
-            persist=payload.persist,
-        )
-    except InvalidAdbServerEndpoint as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    response: dict[str, object] = {"connection_result": connection_result}
-    if connection_result["success"]:
-        readiness_engine.set_probe_target_serial(None)
-        readiness_engine.invalidate_cache()
-        response["report"] = await readiness_engine.run_all(force_refresh=True)
-    return response
-
-
 @router.post("/adb/server/probe")
-async def probe_adb_server(payload: ConnectAdbServerRequest, request: Request):
-    """Test an ADB server endpoint without changing the active endpoint."""
-    _require_local_admin_request(request)
-    try:
-        connection_result = await adb_server_connection.probe(payload.host, payload.port)
-    except InvalidAdbServerEndpoint as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return {"connection_result": connection_result}
-
-
 @router.post("/adb/server/local")
-async def use_local_adb_server(request: Request, persist: bool = True):
-    """Restore the standard local ADB server without touching a remote daemon."""
+async def adb_server_not_applicable(request: Request):
+    """The remote-ADB-server flows have no iOS equivalent."""
     _require_local_admin_request(request)
-    connection_result = await adb_server_connection.use_local_server(persist=persist)
-    readiness_engine.set_probe_target_serial(None)
-    readiness_engine.invalidate_cache()
-    updated_report = await readiness_engine.run_all(force_refresh=True)
-    return {
-        "connection_result": connection_result,
-        "report": updated_report,
-    }
+    return {"connection_result": _ADB_NOT_APPLICABLE}
 
 
 class LaunchEmulatorRequest(BaseModel):

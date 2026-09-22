@@ -29,11 +29,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from apollo.clients import ui_automator_client
-from apollo.runtime.awake_lease import ScreenAwakeLease
-from apollo.runtime.awake_service import _run_awake_adb_command
 from apollo.utils.logger import get_logger
-from mcp_server.utils import device_utils, env_utils
+from mcp_server.utils import env_utils
 
 
 def _readline_with_timeout(pipe, timeout: float) -> str | None:
@@ -157,68 +154,12 @@ def test_mcp_stdio_handshake_immediate_input():
             p.kill()
 
 
-@pytest.mark.android  # Android tooling (adb/uiautomator2); replaced in Apollo Phase 1
-def test_awake_service_adb_command_isolates_stdin():
-    """Verify _run_awake_adb_command always sets stdin=subprocess.DEVNULL."""
-    with patch("apollo.runtime.awake_service.subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
-        _run_awake_adb_command("test-dev-1", ["shell", "date"], "test command")
-
-        assert mock_run.called
-        kwargs = mock_run.call_args.kwargs
-        assert kwargs.get("stdin") == subprocess.DEVNULL, (
-            "Expected stdin=subprocess.DEVNULL to prevent stdin hijacking!"
-        )
-
-
-@pytest.mark.android  # Android tooling (adb/uiautomator2); replaced in Apollo Phase 1
-def test_awake_lease_run_isolates_stdin():
-    """Verify ScreenAwakeLease._run always sets stdin=subprocess.DEVNULL."""
-    lease = ScreenAwakeLease("test-dev-1")
-    with patch("apollo.runtime.awake_lease.subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
-        lease._run(["shell", "date"], "test lease command")
-
-        assert mock_run.called
-        kwargs = mock_run.call_args.kwargs
-        assert kwargs.get("stdin") == subprocess.DEVNULL, (
-            "Expected stdin=subprocess.DEVNULL to prevent stdin hijacking!"
-        )
-
-
 def test_detached_process_kwargs_isolates_stdin():
     """Verify get_detached_process_kwargs always sets stdin=subprocess.DEVNULL."""
     kwargs = env_utils.get_detached_process_kwargs()
     assert kwargs.get("stdin") == subprocess.DEVNULL, (
         "Expected stdin=subprocess.DEVNULL for detached background tasks!"
     )
-
-
-def test_device_utils_isolates_stdin():
-    """Verify device_utils subprocess calls always set stdin=subprocess.DEVNULL."""
-    with patch("mcp_server.utils.device_utils.subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(
-            returncode=0, stdout="List of devices attached\n", stderr=""
-        )
-        device_utils.get_connected_devices()
-        assert mock_run.called
-        assert mock_run.call_args.kwargs.get("stdin") == subprocess.DEVNULL
-
-
-@pytest.mark.android  # Android tooling (adb/uiautomator2); replaced in Apollo Phase 1
-def test_ui_automator_client_isolates_stdin():
-    """Verify ui_automator_client helper commands isolate stdin."""
-    with patch("apollo.clients.ui_automator_client.subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(returncode=0, stdout="package:com.test\n", stderr="")
-        ui_automator_client._is_package_installed("dev-1", "com.test")
-        assert mock_run.called
-        assert mock_run.call_args.kwargs.get("stdin") == subprocess.DEVNULL
-
-    with patch("apollo.clients.ui_automator_client.subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-        ui_automator_client._uninstall_package("dev-1", "com.test")
-        assert mock_run.called
-        assert mock_run.call_args.kwargs.get("stdin") == subprocess.DEVNULL
 
 
 def test_logger_header_does_not_pollute_stdout():

@@ -14,7 +14,7 @@
 
 import asyncio
 import sys
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -54,7 +54,7 @@ def mock_context():
 
     # Create device context with necessary attributes
     ctx.device = Mock(spec=DeviceContext)
-    ctx.device.mobile_platform = DevicePlatform.ANDROID
+    ctx.device.mobile_platform = DevicePlatform.IOS
     ctx.device.device_id = "test_device_123"
     ctx.device.device_width = 1080
     ctx.device.device_height = 2340
@@ -67,17 +67,6 @@ def mock_context():
     mock_device = Mock()
     mock_device.shell = Mock(return_value="")
     ctx.adb_client.device = Mock(return_value=mock_device)
-
-    # Mock the ADB client for Android
-    mock_response = Mock()
-    mock_response.json.return_value = {"elements": []}
-    ctx.ui_adb_client.get_screen_data = Mock(return_value=mock_response)
-    ctx.ui_adb_client.get_hierarchy = Mock(
-        return_value=(
-            b'<hierarchy><node bounds="[0,0][1000,1000]"><node'
-            b' bounds="[0,0][100,100]"/></node></hierarchy>'
-        )
-    )
 
     return ctx
 
@@ -278,6 +267,17 @@ class TestMoveCursorToEndIfBounds:
 class TestFocusElementIfNeeded:
     """Test cases for focus_element_if_needed function."""
 
+    @pytest.fixture(autouse=True)
+    def _stub_hierarchy(self):
+        """focus_element_if_needed reads the tree through the controller."""
+        with patch(
+            "apollo.tools.utils.UnifiedMobileController.get_ui_elements",
+            new_callable=AsyncMock,
+            return_value=[],
+        ) as fetch:
+            self.fetch_hierarchy = fetch
+            yield fetch
+
     @patch("apollo.tools.utils.tap")
     @patch("apollo.tools.utils.find_element_by_resource_id")
     def test_focus_element_already_focused(
@@ -303,7 +303,7 @@ class TestFocusElementIfNeeded:
 
         mock_tap.assert_not_called()
         assert result == "resource_id"
-        mock_context.ui_adb_client.get_hierarchy.assert_called_once()
+        self.fetch_hierarchy.assert_awaited_once()
 
     @patch("apollo.tools.utils.tap")
     @patch("apollo.tools.utils.find_element_by_resource_id")
@@ -339,7 +339,7 @@ class TestFocusElementIfNeeded:
             selector_request=IdSelectorRequest(id="com.example:id/text_input"),
             index=0,
         )
-        assert mock_context.ui_adb_client.get_hierarchy.call_count == 2
+        assert self.fetch_hierarchy.await_count == 2
         assert result == "resource_id"
 
     @patch("apollo.tools.utils.tap")

@@ -51,16 +51,18 @@ diagnostics and the iOS-specific parts of the prompts are Apollo's.
 | D3 | **WebDriverAgent as the on-device runner**, pinned to v16.12.9 with a sha256 in `runner_manifest.json`. | Mature, BSD, unmodified on Xcode 26.6 / iOS 26.2 and 26.5, both simulator and device, MJPEG stream, W3C actions, tunable snapshots. It is the iOS analogue of the Artemis Accessibility Helper. |
 | D4 | **Keep Artemis's UIAutomator-style XML as the internal hierarchy contract**; iOS trees are normalized into it at the driver boundary. | Perception, OCR fusion, `filter_ui_hierarchy`, the prompts, the parity tests and the console all consume that schema, so ~all upstream code stays untouched. |
 | D5 | **MCP tool names and the action vocabulary stay unchanged** (`mobile_*`, `run_adb_command`); only `BACK`/`APP_SWITCH` semantics are re-mapped. | Drop-in for existing IDE configs and rules; agents need no new schema. |
+| D5b | **The Android device layer is deleted, not disabled** (2026-09-22). `upstream` still has it if it is ever wanted back. | A disabled Android path kept producing wrong behaviour on iOS (an emulator boot attempt when no simulator was named) and stale docs, while adding merge surface for no benefit. |
 | D6 | **go-ios for physical devices**, `devicectl` as an optional fallback. | MIT, handles the iOS 17+ tunnel in userspace, signs and runs WDA, forwards ports. idb is dead on iOS 17+ devices; pymobiledevice3 is GPL-3. |
 | D7 | **idb and DeviceKit stay optional, non-default backends.** | idb is a *perception* accelerator for simulators only (accessibility leaves, ASCII-only input); DeviceKit is young and FSL-licensed. Neither is implemented yet — see [`roadmap.md`](roadmap.md) Phase 4. |
 
 ## 3. Artemis → Apollo mapping
 
-| Artemis (Android) | Apollo (iOS) |
+| Artemis (Android), for orientation | Apollo (iOS) |
 |---|---|
 | adb / `adbutils` | `SimBridge` (`xcrun simctl`); `DeviceBridge` (go-ios) for devices |
 | Accessibility Helper APK, port 18888 via `adb forward` | WebDriverAgentRunner: `/source`, `/screenshot`, `/session/*/actions`, port 8100 on simulator loopback (or a go-ios forward on devices) |
 | uiautomator2 tier | idb `ui describe-all` + HID, simulators only (planned) |
+| Accessibility Helper APK provisioning, adb keys, wireless adb, AVD manager | deleted; the runner is provisioned by `RunnerManager` and simulators are booted with `SimulatorManager` |
 | ADBKeyboard IME / clipboard paste | WDA `/wda/keys` into the focused field; `setValue` by element; `simctl pbcopy` as a fallback |
 | scrcpy recording | ffmpeg capturing the WDA MJPEG stream; `simctl io recordVideo` without ffmpeg |
 | `adb exec-out screencap` polling | WDA MJPEG server passthrough; `simctl io screenshot` polling as fallback |
@@ -155,7 +157,11 @@ Kept deliberately small, so upstream merges stay cheap (the conflict list in
 
 | Area | Change |
 |---|---|
-| `drivers/factory.py` | Dispatch on `ctx.device.mobile_platform`; `ios` → `IosDriver` with the `agent.ios` config |
+| `drivers/factory.py` | iOS and mock only; any other platform is a clear error |
+| `drivers/android/`, `clients/{accessibility,ui_automator,screen_client_factory,adb_tunnel}`, `runtime/{helper_manager,awake_*,adb_endpoint}`, `core/diagnostics/{adb_keys,adb_server_connection,emulator_manager,device_smoke,hierarchy_parity,probes/adb_probe}`, `apollo helper` | deleted |
+| `runtime/device_target.py` | replaces the adb-endpoint lock scoping: the scope is this host, the key is the UDID |
+| `runtime/device_pool.py` | enumerates simulators only (devices join in Phase 3); no adb server warm-up |
+| `apps/admin_console/routers/system.py` | the console's legacy `/api/system/adb/*` routes answer "not applicable" instead of running adb |
 | `controllers/unified_controller.py` | iOS branches for recording start/stop and video segments; `get_ui_elements` prefers a driver fast path |
 | `clients/` | New `wda_client.py`, `simctl.py`, `goios.py` |
 | `runtime/runner_manager.py` | Replaces `helper_manager` for iOS |

@@ -26,10 +26,6 @@ if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
 # pylint: disable=wrong-import-position
-try:
-    from adbutils import AdbClient
-except ImportError:  # Android tooling is optional in Apollo
-    AdbClient = None
 from mcp.server.fastmcp import Context, FastMCP
 
 logger = logging.getLogger(__name__)
@@ -42,7 +38,6 @@ except Exception as exc:  # pylint: disable=broad-exception-caught
     # Best-effort compatibility shim for FastMCP/pydantic version drift.
     logger.debug("FastMCP Settings model_rebuild skipped: %s", exc, exc_info=True)
 
-from apollo.clients.screen_client_factory import create_screen_client
 from apollo.context import ApolloContext, DeviceContext, DevicePlatform
 from apollo.controllers.unified_controller import UnifiedMobileController
 from apollo.platform import platform
@@ -199,62 +194,10 @@ def _get_controller(device_serial: str | None = None):
             _GLOBAL_CONTROLLER = ios_controller
         return ios_controller
 
-    host = os.environ.get("ADB_HOST", "localhost")
-    port_str = os.environ.get("ADB_PORT", "5037")
-    port = int(port_str) if port_str.isdigit() else 5037
-    if "ADB_SERVER_SOCKET" not in os.environ and (host != "localhost" or port != 5037):
-        os.environ["ADB_SERVER_SOCKET"] = f"tcp:{host}:{port}"
-    if AdbClient is None:
-        raise Exception("No iOS simulator is booted and adbutils is not installed.")
-    adb = AdbClient(host=host, port=port)
-
-    devices = adb.device_list()
-    if not devices:
-        raise Exception(f"No Android devices found at {host}:{port}")
-
-    if target_serial:
-        matched = [d for d in devices if d.serial == target_serial]
-        if not matched:
-            raise Exception(
-                f"Target Android device '{target_serial}' not found at"
-                f" {host}:{port} among available devices."
-            )
-        device = matched[0]
-    else:
-        device = devices[0]
-    device_id = device.serial
-
-    # Observer path: the helper is used only when it is already installed and
-    # running; nothing is installed from here (that happens inside a task's
-    # device-lock boundary or via `apollo helper install`).
-    ui_client = create_screen_client(device_id)
-    try:
-        ui_data = ui_client.get_screen_data()
-        width, height = ui_data.width, ui_data.height
-    except Exception as e:
-        logger.warning(f"Failed initial screen data check, using defaults: {e}")
-        width, height = 1080, 2400
-
-    ctx = ApolloContext(
-        trace_id="mcp-session",
-        device=DeviceContext(
-            host_platform=platform.os_type.name,
-            mobile_platform=DevicePlatform.ANDROID,
-            device_id=device_id,
-            device_width=width,
-            device_height=height,
-        ),
-        adb_client=adb,
-        ui_adb_client=ui_client,
+    raise Exception(
+        "No iOS Simulator is booted. Boot one with `xcrun simctl boot <udid>` "
+        '(or mobile_diagnose(launch_avd="iPhone 17 Pro")) and retry.'
     )
-
-    controller = UnifiedMobileController(ctx)
-    if device_id:
-        _CONTROLLERS[device_id] = controller
-    if _GLOBAL_CONTROLLER is None:
-        _GLOBAL_CONTROLLER = controller
-    logger.info(f"Lazy device controller fully initialized for device: {device_id}")
-    return controller
 
 
 # Shared with the in-process actuator layer; this stdio server keeps its legacy
@@ -535,11 +478,5 @@ async def get_ui_hierarchy(ctx: Context) -> str:
 
 
 if __name__ == "__main__":
-    from apollo.runtime import shutdown_awake_service, start_awake_service
-
     configure_stdio_mode()
-    start_awake_service()
-    try:
-        mcp.run(transport="stdio")
-    finally:
-        shutdown_awake_service()
+    mcp.run(transport="stdio")

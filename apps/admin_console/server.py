@@ -53,8 +53,6 @@ from apollo.runtime import (
     DeviceExecutionLock,
     clear_server_info,
     device_pool,
-    shutdown_awake_service,
-    start_awake_service,
     write_server_info,
 )
 
@@ -127,7 +125,6 @@ async def on_startup():
         host=getattr(state, "host", "127.0.0.1"),
         lifecycle_token=LIFECYCLE_TOKEN,
     )
-    await asyncio.to_thread(start_awake_service)
     cleaned_device_locks = DeviceExecutionLock.cleanup_stale_locks()
     if cleaned_device_locks:
         print(f"[ServerStartup] Removed {cleaned_device_locks} stale device lock(s).")
@@ -136,11 +133,11 @@ async def on_startup():
     # served, so submissions in the first seconds never race an adb cold start
     # and get a false "no devices attached" rejection.
     try:
-        adb_warmed = await device_pool.warm_up_async()
+        devices_warmed = await device_pool.warm_up_async()
     except Exception as exc:
-        adb_warmed = False
+        devices_warmed = False
         print(f"[ServerStartup] ADB warm-up failed: {exc}")
-    if not adb_warmed:
+    if not devices_warmed:
         print(
             "[ServerStartup] ADB warm-up did not confirm a responding adb server; "
             "device enumeration will retry on demand."
@@ -209,7 +206,6 @@ async def on_shutdown():
 
     await ipc_service.stop_server()
     state.ipc_subscribers.clear()
-    await asyncio.to_thread(shutdown_awake_service)
     clear_server_info(
         port=getattr(state, "port", 8000),
         lifecycle_token=LIFECYCLE_TOKEN,

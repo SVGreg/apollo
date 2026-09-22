@@ -767,7 +767,7 @@ def _all_pass_probes():
     ]
 
 
-def _install_doctor_fakes(monkeypatch, probes, host=None, *, heal_result=None):
+def _install_doctor_fakes(monkeypatch, probes, host=None):
     """Patch the engine, the host probe, and the CLI-only extra rows."""
     from unittest.mock import AsyncMock
     import time
@@ -789,8 +789,6 @@ def _install_doctor_fakes(monkeypatch, probes, host=None, *, heal_result=None):
     )
     run_all = AsyncMock(return_value=report)
     monkeypatch.setattr(readiness_engine, "run_all", run_all)
-    heal = AsyncMock(return_value=heal_result or {"success": True, "message": "Keys regenerated."})
-    monkeypatch.setattr(readiness_engine, "heal_adb_keys", heal)
     host_probe = AsyncMock(
         return_value=host or _probe("integration_host", summary="Host Ready", description="host ok")
     )
@@ -819,7 +817,7 @@ def _install_doctor_fakes(monkeypatch, probes, host=None, *, heal_result=None):
             detail="Run ./start.sh or apollo ui to auto-compile.",
         ),
     )
-    return {"run_all": run_all, "heal": heal, "host": host_probe}
+    return {"run_all": run_all, "host": host_probe}
 
 
 def test_cli_doctor_all_pass_renders_table_in_fix_order(monkeypatch):
@@ -1043,16 +1041,14 @@ def test_cli_doctor_fix_heals_corrupted_keys_and_sweeps_locks(monkeypatch):
     )
 
     result = runner.invoke(app, ["doctor", "--fix"])
-    fakes["heal"].assert_awaited_once()
     assert cleanup_calls == [None]
     assert fakes["run_all"].await_count == 2  # report is re-collected after the repairs
     assert "Repairs (--fix)" in result.output
-    assert "Keys regenerated." in result.output
     assert "Removed 3 stale device lock(s)" in result.output
 
 
-def test_cli_doctor_fix_skips_heal_when_keys_are_healthy(monkeypatch):
-    """--fix does not touch healthy ADB keys but still sweeps stale locks."""
+def test_cli_doctor_fix_reports_when_there_is_nothing_to_sweep(monkeypatch):
+    """--fix always reports what the stale-lock sweep found."""
     from apollo.runtime.device_lock import DeviceExecutionLock
 
     fakes = _install_doctor_fakes(monkeypatch, _all_pass_probes())
@@ -1062,8 +1058,7 @@ def test_cli_doctor_fix_skips_heal_when_keys_are_healthy(monkeypatch):
 
     result = runner.invoke(app, ["doctor", "--fix"])
     assert result.exit_code == 0, result.output
-    fakes["heal"].assert_not_awaited()
-    assert "nothing to repair" in result.output
+    assert fakes["run_all"].await_count == 2
     assert "No stale device locks" in result.output
 
 

@@ -299,47 +299,6 @@ async def test_ocr_api_persistent_http_client_singleton_and_tls_reuse():
 
 
 @pytest.mark.asyncio
-async def test_ui_filter_and_ui_automator_client_pre_parsed_bounds_o1_lookup():
-    """Verify XML parsing pre-populates parsed_bounds and _parse_bounds hits this cache in O(1) without regex matches."""
-    import re
-    from apollo.clients.ui_automator_client import _parse_hierarchy_xml_to_elements
-    from apollo.utils.ui_filter import _parse_bounds
-
-    # 1. Test ingestion pre-parsing in _parse_hierarchy_xml_to_elements
-    xml_data = '<hierarchy><node text="Login Btn" bounds="[15,25][350,120]"/></hierarchy>'
-    elements = _parse_hierarchy_xml_to_elements(xml_data)
-    assert len(elements) == 1
-    assert elements[0]["parsed_bounds"] == {
-        "left": 15,
-        "top": 25,
-        "right": 350,
-        "bottom": 120,
-    }
-
-    # 2. Test _parse_bounds O(1) hit vs fallback
-    with patch.object(re, "match", wraps=re.match) as spy_match:
-        # Hit pre-parsed bounds -> re.match MUST NOT be called
-        hit_result = _parse_bounds(elements[0])
-        assert hit_result == {
-            "left": 15,
-            "top": 25,
-            "right": 350,
-            "bottom": 120,
-        }
-        spy_match.assert_not_called()
-
-        # Fallback raw string -> re.match is called exactly once
-        fallback_result = _parse_bounds("[50,60][150,160]")
-        assert fallback_result == {
-            "left": 50,
-            "top": 60,
-            "right": 150,
-            "bottom": 160,
-        }
-        assert spy_match.call_count == 1
-
-
-@pytest.mark.asyncio
 async def test_validator_pre_execution_loop_reverted_to_exact_safety_contract(
     mock_apollo_ctx, tmp_path
 ):

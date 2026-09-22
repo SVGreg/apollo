@@ -56,7 +56,7 @@ test: ## Run deterministic tests that need no device, credentials, or private se
 
 test-integration: ## Run non-device integration tests (may require configured model credentials)
 	@echo "🧪 Running integration tests..."
-	@uv run pytest tests/integration tests/tools -m "integration and not android and not cloud and not manual"
+	@uv run pytest tests/integration tests/tools -m "integration and not ios_sim and not cloud and not manual"
 
 test-device: ## Run device-bound and end-to-end tests explicitly (needs a booted simulator)
 	@echo "📱 Running device and end-to-end tests..."

@@ -21,19 +21,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def _get_embedded_adb() -> str | None:
-    """Fallback to adb binary bundled with adbutils if available."""
-    try:
-        import adbutils
-
-        if hasattr(adbutils, "adb_path"):
-            return adbutils.adb_path()
-    except Exception as exc:  # pylint: disable=broad-exception-caught
-        # Optional dependency probe: not installed or no bundled binary.
-        logger.debug("Embedded adb probe via adbutils skipped: %s", exc, exc_info=True)
-    return None
-
-
 def _get_embedded_ffmpeg() -> str | None:
     """Fallback to ffmpeg binary bundled with imageio_ffmpeg if available."""
     try:
@@ -67,7 +54,6 @@ TOOLS: dict[str, ToolDescriptor] = {
         binary_name="adb",
         win_binary_name="adb.exe",
         sdk_relative_path="platform-tools/adb",
-        embedded_fallback=_get_embedded_adb,
         description="Android Debug Bridge client",
     ),
     "ffmpeg": ToolDescriptor(

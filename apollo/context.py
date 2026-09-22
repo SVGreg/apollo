@@ -40,10 +40,6 @@ from typing import Any, Literal, TYPE_CHECKING
 if TYPE_CHECKING:
     from apollo.data_engine.engine import DataEngine
 
-try:
-    from adbutils import AdbClient
-except ImportError:
-    AdbClient = Any
 
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 from apollo.utils.video import detect_video_tools_enabled

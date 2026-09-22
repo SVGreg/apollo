@@ -19,15 +19,8 @@ from apollo.runtime.device_lock import (
     DeviceBusyError,
     DeviceExecutionLock,
 )
-from apollo.runtime.adb_endpoint import (
-    ADB_ENDPOINT_ID_ENV,
-    AdbEndpoint,
-    AdbSession,
-    AdbTarget,
-    InvalidAdbEndpoint,
-    current_adb_endpoint,
-)
 from apollo.runtime.device_pool import DevicePool, DeviceStatus, device_pool
+from apollo.runtime.device_target import DeviceTarget
 from apollo.runtime.process_probe import pid_is_alive
 from apollo.runtime.daemon_client import (
     ensure_daemon_running,
@@ -39,13 +32,6 @@ from apollo.runtime.daemon_client import (
     submit_batch_to_daemon,
     submit_task_to_daemon,
     wait_for_daemon_task,
-)
-from apollo.runtime.awake_service import (
-    ensure_device_awake,
-    sanitize_device_state,
-    screen_awake_service,
-    shutdown_awake_service,
-    start_awake_service,
 )
 from apollo.runtime.server_lifecycle import (
     clear_server_info,
@@ -65,22 +51,16 @@ from apollo.runtime.cancel_requests import (
 )
 
 __all__ = [
-    "ADB_ENDPOINT_ID_ENV",
-    "AdbEndpoint",
-    "AdbSession",
-    "AdbTarget",
     "ConcurrencyMode",
     "DeviceBusyError",
     "DeviceExecutionLock",
     "DevicePool",
     "DeviceStatus",
-    "InvalidAdbEndpoint",
+    "DeviceTarget",
     "clear_cancel_request",
     "clear_server_info",
-    "current_adb_endpoint",
     "device_pool",
     "ensure_daemon_running",
-    "ensure_device_awake",
     "find_server_pids",
     "get_daemon_session",
     "get_daemon_status",
@@ -94,10 +74,6 @@ __all__ = [
     "process_supervisor",
     "read_server_info",
     "request_cancel",
-    "sanitize_device_state",
-    "screen_awake_service",
-    "shutdown_awake_service",
-    "start_awake_service",
     "stop_server",
     "stop_task_on_daemon",
     "submit_batch_to_daemon",

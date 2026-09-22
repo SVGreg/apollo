@@ -40,7 +40,6 @@ from apollo.config.paths import ROOT_DIR
 from apollo.core.diagnostics.engine import readiness_engine
 from apollo.core.diagnostics.readiness import (
     Verdict,
-    adb_keys_corrupted,
     base_verdict,
     collect_readiness,
     sort_by_fix_order,
@@ -82,30 +81,9 @@ async def _collect() -> list[ProbeResult]:
 
 
 async def _apply_fixes(results: list[ProbeResult]) -> list[FixOutcome]:
-    """Repair corrupted ADB keys and sweep stale device locks left by dead runners."""
-    outcomes: list[FixOutcome] = []
-
-    if adb_keys_corrupted(results):
-        result = await readiness_engine.heal_adb_keys()
-        outcomes.append(
-            FixOutcome(
-                fix="heal_adb_keys",
-                success=bool(result.get("success")),
-                message=str(result.get("message") or "")
-                or ("Corrupted RSA keys regenerated." if result.get("success") else "Heal failed."),
-            )
-        )
-    else:
-        outcomes.append(
-            FixOutcome(
-                fix="heal_adb_keys",
-                success=True,
-                message="ADB authentication keys are healthy; nothing to repair.",
-            )
-        )
-
+    """Sweep stale device locks and queue tickets left by dead runners."""
     removed = await asyncio.to_thread(DeviceExecutionLock.cleanup_stale_locks)
-    outcomes.append(
+    return [
         FixOutcome(
             fix="cleanup_stale_locks",
             success=True,
@@ -115,8 +93,7 @@ async def _apply_fixes(results: list[ProbeResult]) -> list[FixOutcome]:
                 else "No stale device locks or queue tickets found."
             ),
         )
-    )
-    return outcomes
+    ]
 
 
 async def _diagnose(fix: bool) -> tuple[list[ProbeResult], list[FixOutcome]]:
@@ -193,74 +170,6 @@ def _showcase_row() -> ExtraRow:
         summary="Not Compiled",
         detail="Run ./start.sh or apollo ui to auto-compile.",
     )
-
-
-def _helper_row(results: list[ProbeResult]) -> ExtraRow | None:
-    """State of the Apollo accessibility helper on the one ready, idle device.
-
-    Tasks install the helper themselves when they take a device; this row lets a
-    person pre-install it so the first task does not pay the install delay, and
-    tells them the helper is a thing they can remove.
-    """
-    adb = next((r for r in results if r.id == "android_adb"), None)
-    if adb is None:
-        # iOS: the WebDriverAgent runner is reported inside the device probe itself.
-        return None
-    from apollo.clients.screen_client_factory import resolve_backend
-    from apollo.runtime.helper_manager import helper_manager
-
-    if resolve_backend().value == "uiautomator":
-        return None
-    devices = (adb.metadata.get("devices") if adb else None) or []
-    ready = [str(d.get("serial")) for d in devices if d.get("state") == "device"]
-    if len(ready) != 1:
-        return None
-    serial = ready[0]
-    try:
-        status = helper_manager.status(serial)
-    except (OSError, ValueError, subprocess.SubprocessError) as exc:
-        return ExtraRow(
-            key="accessibility_helper",
-            title="Apollo Accessibility Helper",
-            status="missing",
-            status_markup="[dim]⚪ Unknown[/dim]",
-            summary="Could not read",
-            detail=f"{serial}: {exc}",
-        )
-    healthy = status["installed"] and status["enabled"] and not status["outdated"]
-    if healthy and status["reachable"]:
-        version = status.get("installed_version")
-        note = " (newer than the bundled build)" if status.get("newer_than_bundled") else ""
-        return ExtraRow(
-            key="accessibility_helper",
-            title="Apollo Accessibility Helper",
-            status="pass",
-            status_markup="[bold green]✔ Ready[/bold green]",
-            summary=f"v{version} on {serial}{note}",
-            detail=f"Remove any time with: apollo helper uninstall --serial {serial}",
-        )
-    if not status["installed"]:
-        summary, why = "Not installed", "the first task on this device will install it (about 3 s)"
-    elif status["outdated"]:
-        summary = f"Outdated (v{status['installed_version']} < v{status['bundled_version']})"
-        why = "the next task will upgrade it"
-    elif not status["enabled"]:
-        summary, why = "Service disabled", "the next task will try to enable it"
-    else:
-        summary, why = "Not answering", "unlock the phone or reinstall with --force"
-    return ExtraRow(
-        key="accessibility_helper",
-        title="Apollo Accessibility Helper",
-        status="missing",
-        status_markup="[bold yellow]○ Pending[/bold yellow]",
-        summary=summary,
-        detail=f"{why}; pre-install now: apollo helper install --serial {serial}",
-    )
-
-
-# ---------------------------------------------------------------------------
-# Rendering
-# ---------------------------------------------------------------------------
 
 
 def _status_markup(result: ProbeResult) -> str:
@@ -367,10 +276,6 @@ def _render_footer(console: Console, verdict: Verdict, results: list[ProbeResult
         "[bold cyan]mobile_diagnose[/bold cyan] - it runs these same checks and can "
         "apply safe fixes from the assistant.",
     ]
-    if adb_keys_corrupted(results):
-        tips.append(
-            "• Corrupted ADB keys detected: run [bold cyan]apollo doctor --fix[/bold cyan]."
-        )
     console.print(Panel("\n".join(tips), title="Action Required", expand=False))
 
 
@@ -437,9 +342,6 @@ def doctor_command(
     """Run diagnostics to inspect system dependencies, device connectivity, and configuration."""
     results, fixes = asyncio.run(_diagnose(fix))
     extras = [_npm_row(), _showcase_row()]
-    helper_row = _helper_row(results)
-    if helper_row is not None:
-        extras.append(helper_row)
     verdict = base_verdict(results)
 
     if json_output:
