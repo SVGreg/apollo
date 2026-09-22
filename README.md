@@ -24,8 +24,8 @@ Requirements: macOS with Xcode 26.x and an iOS 26 simulator runtime, [`uv`](http
 ```sh
 git clone git@github.com:SVGreg/apollo.git && cd apollo
 make install                              # uv sync --dev
-cp .env.example .env                      # then set ANTHROPIC_API_KEY=… (default provider)
-                                          # or GOOGLE_API_KEY=… / OPENAI_API_KEY=…
+cp .env.example .env                      # then set GOOGLE_API_KEY=… (default provider)
+                                          # or ANTHROPIC_API_KEY=… / OPENAI_API_KEY=…
 xcrun simctl list devices available | grep iPhone
 xcrun simctl boot <udid>                  # e.g. "iPhone 17 Pro" (boots headless; keep Simulator.app open if you launch it)
 ```
@@ -40,6 +40,43 @@ uv run apollo run "Open Settings, go to General > About and tell me the iOS vers
 The first run downloads WebDriverAgent (pinned v16.12.9, checksum-verified), installs it on the
 simulator and starts it; later runs reuse it. The Operator sees a screenshot plus the accessibility
 tree of the foreground app and acts through taps, swipes, typing and app launches.
+
+### Easy start: `./start.sh`
+
+If you would rather not assemble the steps above, one script prepares the machine and opens the
+web console:
+
+```sh
+./start.sh            # or: make start
+```
+
+What it does, in order: normalizes `PATH` for Homebrew/uv/Node; installs `uv` if missing; checks
+for Xcode Command Line Tools and `simctl` (exits with instructions if absent) and warns about
+optional tools (`ffmpeg`, `go-ios` — `make install-deps` adds them); copies `.env.example` to
+`.env` if there is none; runs `uv sync`; builds the Angular console on first use (needs Node
+≥ 22.22 — it tries nvm, Homebrew, then a portable Node in `~/.local`, so no admin rights are
+required; the first build takes a few minutes and is skipped afterwards); asks whether to install
+the MCP server + rules into your IDE agents (Claude Code, Cursor, Codex, Antigravity, …; answer
+`n` to skip, `uv run apollo mcp --install all` does it later); then launches the console at
+<http://localhost:8000> and opens your browser.
+
+Things to know:
+
+- **API key.** Put `GOOGLE_API_KEY=…` (default provider) or `ANTHROPIC_API_KEY=…` /
+  `OPENAI_API_KEY=…` in `.env` before or after starting — the console's Setup Guide can also
+  save a key for you. Without one the Run button stays disabled and `apollo doctor` says why.
+- **Simulator.** Boot one from the console's device panel (or `xcrun simctl boot <udid>`
+  beforehand). WebDriverAgent is downloaded and installed on the first task or the first time
+  you open the live view. Don't quit Simulator.app while tasks run — it shuts every simulator down.
+- **Arguments pass through** to `apollo ui`: `./start.sh --port 8080`, `./start.sh --no-open`.
+- **Remote Macs.** Over SSH (or with no display) the browser isn't opened; the script prints the
+  tunnel to use (`ssh -L 8000:localhost:8000 user@host`).
+- **Stopping / restarting.** `Ctrl+C`, or from another terminal `uv run apollo stop` /
+  `uv run apollo restart` / `uv run apollo status`. Re-running `./start.sh` is fast once the
+  dependencies and UI build exist.
+- **What it does not do.** It never touches Xcode itself, never asks for `sudo` on macOS, and
+  does not boot a simulator or pick a model for you — those stay in the console and
+  `config/apollo.jsonc`.
 
 ### Everyday commands
 
@@ -63,8 +100,9 @@ Traces land in `traces/<session>_PASS|FAIL_<timestamp>/`.
 
 ### Choosing the model
 
-Models live in `config/apollo.jsonc`. The default is `anthropic/claude-sonnet-5` with
-`claude-opus-5` as fallback and `claude-haiku-4-5` for background summaries. Presets:
+Models live in `config/apollo.jsonc`. The default is `google/gemini-3.8-flash` (Gemini 3.5
+Flash Lite for background summaries) with Anthropic Claude models as fallbacks, so a
+`GOOGLE_API_KEY` alone runs everything. Presets:
 `anthropic-opus`, `anthropic-sonnet`, `gemini-flagship`, `gemini-flash`, `openai-gpt4o`,
 `cost-saving`, `local-ollama`. Switch for one run without editing the file:
 
